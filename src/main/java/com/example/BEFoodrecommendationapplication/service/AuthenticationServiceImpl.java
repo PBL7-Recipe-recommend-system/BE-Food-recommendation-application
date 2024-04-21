@@ -11,12 +11,15 @@ import com.example.BEFoodrecommendationapplication.exception.DuplicateDataExcept
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
 import com.example.BEFoodrecommendationapplication.repository.TokenRepository;
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
+import com.example.BEFoodrecommendationapplication.util.EmailUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,6 +39,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailUtil emailUtil;
+
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
     private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
 
@@ -85,6 +90,30 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .build();
+    }
+
+    @Override
+    public String forgotPassword(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new RecordNotFoundException("User not found with this email: " + email)
+        );
+
+        try {
+            emailUtil.sendResetPasswordEmail(email);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Unable to send email, please try again.");
+        }
+        return "Please check your email to set new password for your account.";
+    }
+
+    @Override
+    public String setPassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new RecordNotFoundException("User not found with this email: " + email)
+        );
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return "";
     }
 
 }

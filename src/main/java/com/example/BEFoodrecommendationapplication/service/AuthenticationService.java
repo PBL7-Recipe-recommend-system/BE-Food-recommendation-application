@@ -13,6 +13,7 @@ public interface AuthenticationService {
 
     AuthenticationResponse authenticate(AuthenticationRequest request);
 
+    String forgotPassword(String email);
 
-
+    String setPassword(String email, String newPassword);
 }
