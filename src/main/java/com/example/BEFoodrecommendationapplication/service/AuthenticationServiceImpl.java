@@ -37,7 +37,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-    private static final String PASSWORD_REGEX = "^(?=.*[!@#$%^&*(),.?\":{}|<>])\\S{8,}$";
+    private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
 
     @Override
     public AuthenticationResponse register(RegisterRequest request) throws DuplicateDataException {
@@ -45,7 +45,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new IllegalArgumentException("Invalid email format");
         }
         if (!request.getPassword().matches(PASSWORD_REGEX)) {
-            throw new IllegalArgumentException("Password must contain at least 8 characters and one special character");
+            throw new IllegalArgumentException("Password must contain uppercase and lowercase letters, at least 8 characters, at least one number, and at least one special character.");
         }
 
         Optional<User> existedUser = userRepository.findByEmail(request.getEmail());
