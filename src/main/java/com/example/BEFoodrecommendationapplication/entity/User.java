@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -51,7 +52,15 @@ public class User implements UserDetails {
     @Column(name = "role")
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
 
+    @Column(name = "daily_activities")
+    private String dailyActivities;
+
+    @Column(name = "birthday")
+    private Date birthday;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
