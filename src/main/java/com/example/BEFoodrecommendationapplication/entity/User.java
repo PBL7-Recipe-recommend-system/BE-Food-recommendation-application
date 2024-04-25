@@ -23,27 +23,35 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id")
+    @Column(name = "user_id")
     private Integer id;
 
-    @Column(length = 150)
+    @Column(name="name", length = 150)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(name="email", nullable = false, unique = true)
     private String email;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name="height")
+    private Float height;
+
+    @Column(name = "weight")
+    private Float weight;
+
+    @Column(name = "dietary_goal")
+    private String dietaryGoal;
+
+    @Column(name="password", columnDefinition = "TEXT", nullable = false)
     private String password;
 
-    @Column
+    @Column(name="created_at")
     private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "role")
     private Role role;
 
 
-    @OneToMany(mappedBy = "user")
-    private List<Token> tokens;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

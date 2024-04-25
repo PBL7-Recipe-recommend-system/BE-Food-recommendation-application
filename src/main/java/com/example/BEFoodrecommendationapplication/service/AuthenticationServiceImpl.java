@@ -4,31 +4,22 @@ import com.example.BEFoodrecommendationapplication.dto.AuthenticationRequest;
 import com.example.BEFoodrecommendationapplication.dto.AuthenticationResponse;
 import com.example.BEFoodrecommendationapplication.dto.RegisterRequest;
 import com.example.BEFoodrecommendationapplication.entity.Role;
-import com.example.BEFoodrecommendationapplication.entity.Token;
-import com.example.BEFoodrecommendationapplication.entity.TokenType;
+
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.exception.DuplicateDataException;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
-import com.example.BEFoodrecommendationapplication.repository.TokenRepository;
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import com.example.BEFoodrecommendationapplication.util.EmailUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -113,7 +104,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         );
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-        return "";
+        return "Set password successfully.";
     }
 
 }
