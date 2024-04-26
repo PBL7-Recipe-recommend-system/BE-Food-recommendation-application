@@ -109,4 +109,15 @@ CREATE TABLE user_diet_restriction (
                                        FOREIGN KEY (user_id) REFERENCES user(user_id),
                                        FOREIGN KEY (restriction_id) REFERENCES diet_restriction(restriction_id)
 );
-
+CREATE TABLE ingredient (
+                             ingredient_id INT AUTO_INCREMENT PRIMARY KEY,
+                             name VARCHAR(100) NOT NULL,
+                             Description TEXT
+);
+CREATE TABLE  user_ingredient (
+                                 user_id INT,
+                                 ingredient_id INT,
+                                 PRIMARY KEY (user_id, ingredient_id),
+                                 FOREIGN KEY (user_id) REFERENCES user(user_id),
+                                 FOREIGN KEY (ingredient_id) REFERENCES ingredient(ingredient_id)
+);

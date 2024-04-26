@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,7 +16,7 @@ public class EmailUtil {
 
 
     private final JavaMailSender javaMailSender;
-
+    @Async
     public void sendOtpEmail(String email, String otp) throws MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
@@ -29,7 +30,7 @@ public class EmailUtil {
 
         javaMailSender.send(mimeMessage);
     }
-
+    @Async
     public void sendResetPasswordEmail(String email) throws MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);

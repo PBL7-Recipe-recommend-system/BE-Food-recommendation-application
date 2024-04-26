@@ -27,7 +27,7 @@ public class ApiExceptionHandler {
     }
     @ExceptionHandler(value = {EntityNotFoundException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public ResponseEntity<String> handleEntityNotFoundException(Exception ex) {
+    public ResponseEntity<Object> handleEntityNotFoundException(Exception ex) {
         return ResponseEntity.status(400).body(ex.getMessage());
     }
 }
