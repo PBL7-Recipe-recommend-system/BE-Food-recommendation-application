@@ -1,19 +1,17 @@
 package com.example.BEFoodrecommendationapplication.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
 
     private String name;
-    @NotBlank(message = "email required")
+    @NotBlank(message = "Email required")
     private String email;
     @NotBlank(message = "Password required")
     private String password;

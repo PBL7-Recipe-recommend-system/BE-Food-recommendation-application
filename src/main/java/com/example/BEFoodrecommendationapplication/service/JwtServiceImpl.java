@@ -24,8 +24,14 @@ public class JwtServiceImpl implements JwtService {
     @Value("${application.security.jwt.refresh-token.expiration}")
     private long refreshExpiration;
     @Override
-    public String extractUserName(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public int getUserIdFromJWT(String token) {
+        Claims claims = extractAllClaims(token);
+        return Integer.parseInt(claims.get("userId", String.class));
+    }
+    @Override
+    public String getEmailFromJWT(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("email", String.class);
     }
     @Override
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver)
@@ -55,6 +61,7 @@ public class JwtServiceImpl implements JwtService {
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
+        extraClaims.put("email", userDetails.getEmail());
         extraClaims.put("userId", userDetails.getId());
 
         return Jwts
@@ -74,26 +81,7 @@ public class JwtServiceImpl implements JwtService {
         return !isTokenExpired(token);
     }
 
-    public Long getUserIdFromJWT(String token) {
-        try {
-            return Long.parseLong(Jwts
-                    .parserBuilder()
-                    .setSigningKey(getSignInKey())
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject());
-        } catch (MalformedJwtException ex) {
-            log.error("Invalid JWT token.");
-        } catch (ExpiredJwtException ex) {
-            log.error("Expired JWT token.");
-        } catch (UnsupportedJwtException ex) {
-            log.error("Unsupported JWT token.");
-        } catch (IllegalArgumentException ex) {
-            log.error("JWT claims string is empty.");
-        }
-        return null;
-    }
+
     @Override
     public boolean isTokenExpired(String token) {
         Date expirationDate = extractExpiration(token);

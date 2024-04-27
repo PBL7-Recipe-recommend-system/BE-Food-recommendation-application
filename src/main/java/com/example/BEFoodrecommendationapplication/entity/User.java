@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -23,27 +24,43 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id")
+    @Column(name = "user_id")
     private Integer id;
 
-    @Column(length = 150)
+    @Column(name="name", length = 150)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(name="email", nullable = false, unique = true)
     private String email;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name="height")
+    private Float height;
+
+    @Column(name = "weight")
+    private Float weight;
+
+    @Column(name = "dietary_goal")
+    private String dietaryGoal;
+
+    @Column(name="password", columnDefinition = "TEXT", nullable = false)
     private String password;
 
-    @Column
+    @Column(name="created_at")
     private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "role")
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
 
-    @OneToMany(mappedBy = "user")
-    private List<Token> tokens;
+    @Column(name = "daily_activities")
+    private String dailyActivities;
+
+    @Column(name = "birthday")
+    private Date birthday;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
