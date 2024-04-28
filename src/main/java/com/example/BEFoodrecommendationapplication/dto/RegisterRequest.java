@@ -11,8 +11,10 @@ import lombok.*;
 public class RegisterRequest {
 
     private String name;
+
     @NotBlank(message = "Email required")
     private String email;
+
     @NotBlank(message = "Password required")
     private String password;
 

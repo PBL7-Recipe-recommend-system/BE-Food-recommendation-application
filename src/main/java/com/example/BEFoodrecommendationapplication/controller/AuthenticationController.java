@@ -34,7 +34,10 @@ public class AuthenticationController {
     @Operation(summary = "Create user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Create user Success",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationResponse.class))}),
+                    content = {
+                    @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AuthenticationResponse.class))
+            }),
             @ApiResponse(responseCode = "400", description = "Email already exists")
     })
     @PostMapping("/register")
@@ -42,13 +45,16 @@ public class AuthenticationController {
             @RequestBody RegisterRequest request
     ) {
         try {
+
             Response response = Response.builder()
                     .statusCode(200)
                     .message("Register successfully")
                     .data(service.register(request))
                     .build();
             return ResponseEntity.ok(response);
+
         }catch (DuplicateDataException | InvalidEmailException | WrongFormatPasswordException e){
+
             Response errorResponse = Response.builder()
                     .statusCode(400)
                     .message(e.getMessage())
@@ -62,20 +68,26 @@ public class AuthenticationController {
     @Operation(summary = "Authenticate user to get access token")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Authentication Success",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationResponse.class))}),
+                    content = {
+                    @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AuthenticationResponse.class))
+            }),
             @ApiResponse(responseCode = "400", description = "Invalid Email or password")})
     @PostMapping("/authenticate")
     public ResponseEntity<Response> authenticate(
             @RequestBody AuthenticationRequest request
     ) {
         try {
+
             Response response = Response.builder()
                     .statusCode(200)
                     .message("Authenticate successfully")
                     .data(service.authenticate(request))
                     .build();
             return ResponseEntity.ok(response);
+
         }catch (InvalidEmailException | RecordNotFoundException e){
+
             Response errorResponse = Response.builder()
                     .statusCode(400)
                     .message(e.getMessage())
@@ -88,25 +100,32 @@ public class AuthenticationController {
     @Operation(summary = "Forgot password")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Send email successfully",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = String.class))}),
+                    content = {
+                    @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String.class))
+            }),
             @ApiResponse(responseCode = "400", description = "Send email failed")})
     @PutMapping("/forgot-password")
     public ResponseEntity<Response> forgotPassword(
             @RequestParam String email
     ) {
         try {
+
             Response response = Response.builder()
                     .statusCode(200)
                     .message(service.forgotPassword(email))
                     .data(null)
                     .build();
             return ResponseEntity.ok(response);
+
         }catch (ErrorException | RecordNotFoundException e){
+
             Response errorResponse = Response.builder()
                     .statusCode(400)
                     .message(e.getMessage())
                     .data(null)
                     .build();
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
 
@@ -114,25 +133,32 @@ public class AuthenticationController {
     @Operation(summary = "Set password")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Set password successfully",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = String.class))}),
+                    content = {
+                    @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String.class))
+            }),
             @ApiResponse(responseCode = "400", description = "Set password failed")})
     @PutMapping("/set-password")
     public ResponseEntity<Response> setPassword(
             @RequestParam String email, @RequestHeader String newPassword
     ) {
         try {
+
             Response response = Response.builder()
                     .statusCode(200)
                     .message(service.setPassword(email, newPassword))
                     .data(null)
                     .build();
+
             return ResponseEntity.ok(response);
         }catch (RecordNotFoundException e){
+
             Response errorResponse = Response.builder()
                     .statusCode(400)
                     .message(e.getMessage())
                     .data(null)
                     .build();
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
 

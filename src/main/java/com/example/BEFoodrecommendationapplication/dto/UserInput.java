@@ -12,20 +12,26 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserInput {
+
     @JsonProperty("weight")
     private float weight;
+
     @JsonProperty("height")
     private float height;
+
     @JsonProperty("gender")
     private String gender;
+
     @JsonProperty("birthday")
     private Date birthday;
+
     @JsonProperty("dailyActivities")
     private String daily_activities;
+
     @JsonProperty("dietaryGoal")
     private String dietary_goal;
+
     @JsonProperty("ingredients")
     private List<String> ingredients;
 
-    // getters and setters
 }

@@ -27,11 +27,15 @@ public class UserController {
     @Operation(summary = "Set user profile")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Set profile successfully",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
+                    content = {
+                    @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )}),
             @ApiResponse(responseCode = "400", description = "Set profile failed")})
     @PutMapping("set-profile/{id}")
     public ResponseEntity<Response> setUserProfile(@PathVariable Integer id, @RequestBody UserInput userInput) {
         try {
+
             User user = userService.save(id, userInput);
             Response response = Response.builder()
                     .statusCode(200)
@@ -39,13 +43,16 @@ public class UserController {
                     .data(user)
                     .build();
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
+
             Response errorResponse = Response.builder()
                     .statusCode(400)
                     .message(e.getMessage())
                     .data(null)
                     .build();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+
         }
     }
 }

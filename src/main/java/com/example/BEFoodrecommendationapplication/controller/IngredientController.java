@@ -30,11 +30,15 @@ public class IngredientController {
     @Operation(summary = "Get ingredients")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Get ingredients successfully",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = String.class))}),
+                    content = {
+                    @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String.class))
+            }),
             @ApiResponse(responseCode = "400", description = "Get ingredients failed")})
     @GetMapping("/get-ingredients")
     public ResponseEntity<Response> getTop100Ingredients() {
         try {
+
             List<Ingredient> ingredients = ingredientRepository.find100Ingredients();
             Response response = Response.builder()
                     .statusCode(200)
@@ -42,13 +46,16 @@ public class IngredientController {
                     .data(ingredients)
                     .build();
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
+
             Response errorResponse = Response.builder()
                     .statusCode(400)
                     .message(e.getMessage())
                     .data(null)
                     .build();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+
         }
     }
 }
