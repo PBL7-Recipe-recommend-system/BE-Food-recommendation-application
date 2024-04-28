@@ -14,5 +14,5 @@ public class Response {
     @JsonProperty("Message")
     public String message;
     @JsonProperty("Data")
-    public AuthenticationResponse data;
+    public Object data;
 }

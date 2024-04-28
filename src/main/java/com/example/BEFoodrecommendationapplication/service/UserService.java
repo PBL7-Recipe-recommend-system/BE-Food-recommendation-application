@@ -1,5 +1,10 @@
 package com.example.BEFoodrecommendationapplication.service;
 
-public interface UserService {
+import com.example.BEFoodrecommendationapplication.dto.UserInput;
+import com.example.BEFoodrecommendationapplication.entity.User;
+import org.springframework.stereotype.Service;
 
+
+public interface UserService {
+    public User save(Integer id, UserInput userInput);
 }
