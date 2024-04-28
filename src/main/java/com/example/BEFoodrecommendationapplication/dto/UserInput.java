@@ -20,9 +20,9 @@ public class UserInput {
     private String gender;
     @JsonProperty("birthday")
     private Date birthday;
-    @JsonProperty("daily activities")
+    @JsonProperty("dailyActivities")
     private String daily_activities;
-    @JsonProperty("dietary goal")
+    @JsonProperty("dietaryGoal")
     private String dietary_goal;
     @JsonProperty("ingredients")
     private List<String> ingredients;

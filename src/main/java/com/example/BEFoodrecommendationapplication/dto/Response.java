@@ -9,10 +9,10 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Response {
-    @JsonProperty("Status")
+    @JsonProperty("status")
     public Integer statusCode;
-    @JsonProperty("Message")
+    @JsonProperty("message")
     public String message;
-    @JsonProperty("Data")
+    @JsonProperty("data")
     public Object data;
 }
