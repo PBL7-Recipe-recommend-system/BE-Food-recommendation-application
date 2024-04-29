@@ -25,7 +25,7 @@ public class HelloWorld {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Hello world",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = String.class))}),
-            @ApiResponse(responseCode = "400", description = "Error")})
+            @ApiResponse(responseCode = "200", description = "Error")})
     @GetMapping("/hello")
     public ResponseEntity<Response> helloWorld() {
 
