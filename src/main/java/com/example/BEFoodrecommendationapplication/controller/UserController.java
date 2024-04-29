@@ -31,7 +31,7 @@ public class UserController {
                     @Content(mediaType = "application/json",
                             schema = @Schema(implementation = User.class)
                     )}),
-            @ApiResponse(responseCode = "400", description = "Set profile failed")})
+            @ApiResponse(responseCode = "200", description = "Set profile failed")})
     @PutMapping("set-profile/{id}")
     public ResponseEntity<Response> setUserProfile(@PathVariable Integer id, @RequestBody UserInput userInput) {
         try {
@@ -47,11 +47,11 @@ public class UserController {
         } catch (Exception e) {
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(200)
                     .message(e.getMessage())
                     .data(null)
                     .build();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
 
         }
     }

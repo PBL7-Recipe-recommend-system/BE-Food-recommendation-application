@@ -34,7 +34,7 @@ public class IngredientController {
                     @Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class))
             }),
-            @ApiResponse(responseCode = "400", description = "Get ingredients failed")})
+            @ApiResponse(responseCode = "200", description = "Get ingredients failed")})
     @GetMapping("/get-ingredients")
     public ResponseEntity<Response> getTop100Ingredients() {
         try {
@@ -50,11 +50,11 @@ public class IngredientController {
         } catch (Exception e) {
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(200)
                     .message(e.getMessage())
                     .data(null)
                     .build();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
 
         }
     }

@@ -38,7 +38,7 @@ public class AuthenticationController {
                     @Content(mediaType = "application/json",
                             schema = @Schema(implementation = AuthenticationResponse.class))
             }),
-            @ApiResponse(responseCode = "400", description = "Email already exists")
+            @ApiResponse(responseCode = "200", description = "Email already exists")
     })
     @PostMapping("/register")
     public ResponseEntity<Response> register(
@@ -56,11 +56,11 @@ public class AuthenticationController {
         }catch (DuplicateDataException | InvalidEmailException | WrongFormatPasswordException e){
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(200)
                     .message(e.getMessage())
                     .data(null)
                     .build();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
         }
 
     }
@@ -72,7 +72,7 @@ public class AuthenticationController {
                     @Content(mediaType = "application/json",
                             schema = @Schema(implementation = AuthenticationResponse.class))
             }),
-            @ApiResponse(responseCode = "400", description = "Invalid Email or password")})
+            @ApiResponse(responseCode = "200", description = "Invalid Email or password")})
     @PostMapping("/authenticate")
     public ResponseEntity<Response> authenticate(
             @RequestBody AuthenticationRequest request
@@ -89,11 +89,11 @@ public class AuthenticationController {
         }catch (InvalidEmailException | RecordNotFoundException e){
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(200)
                     .message(e.getMessage())
                     .data(null)
                     .build();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
         }
     }
 
@@ -104,7 +104,7 @@ public class AuthenticationController {
                     @Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class))
             }),
-            @ApiResponse(responseCode = "400", description = "Send email failed")})
+            @ApiResponse(responseCode = "200", description = "Send email failed")})
     @PutMapping("/forgot-password")
     public ResponseEntity<Response> forgotPassword(
             @RequestParam String email
@@ -121,12 +121,12 @@ public class AuthenticationController {
         }catch (ErrorException | RecordNotFoundException e){
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(200)
                     .message(e.getMessage())
                     .data(null)
                     .build();
 
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
         }
 
     }
@@ -137,7 +137,7 @@ public class AuthenticationController {
                     @Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class))
             }),
-            @ApiResponse(responseCode = "400", description = "Set password failed")})
+            @ApiResponse(responseCode = "200", description = "Set password failed")})
     @PutMapping("/set-password")
     public ResponseEntity<Response> setPassword(
             @RequestParam String email, @RequestHeader String newPassword
@@ -154,12 +154,12 @@ public class AuthenticationController {
         }catch (RecordNotFoundException e){
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(200)
                     .message(e.getMessage())
                     .data(null)
                     .build();
 
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
         }
 
     }
