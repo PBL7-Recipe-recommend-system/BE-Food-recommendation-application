@@ -6,6 +6,7 @@ import com.example.BEFoodrecommendationapplication.dto.RegisterRequest;
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.exception.*;
 import com.example.BEFoodrecommendationapplication.service.AuthenticationService;
+import com.example.BEFoodrecommendationapplication.util.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -38,7 +39,7 @@ public class AuthenticationController {
                     @Content(mediaType = "application/json",
                             schema = @Schema(implementation = AuthenticationResponse.class))
             }),
-            @ApiResponse(responseCode = "400", description = "Email already exists")
+            @ApiResponse(responseCode = "401", description = "Email already exists")
     })
     @PostMapping("/register")
     public ResponseEntity<Response> register(
@@ -47,7 +48,7 @@ public class AuthenticationController {
         try {
 
             Response response = Response.builder()
-                    .statusCode(200)
+                    .statusCode(StatusCode.SUCCESS.getCode())
                     .message("Register successfully")
                     .data(service.register(request))
                     .build();
@@ -56,7 +57,7 @@ public class AuthenticationController {
         }catch (DuplicateDataException | InvalidEmailException | WrongFormatPasswordException e){
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(StatusCode.UNAUTHORIZED.getCode())
                     .message(e.getMessage())
                     .data(null)
                     .build();
@@ -72,7 +73,7 @@ public class AuthenticationController {
                     @Content(mediaType = "application/json",
                             schema = @Schema(implementation = AuthenticationResponse.class))
             }),
-            @ApiResponse(responseCode = "400", description = "Invalid Email or password")})
+            @ApiResponse(responseCode = "401", description = "Invalid Email or password")})
     @PostMapping("/authenticate")
     public ResponseEntity<Response> authenticate(
             @RequestBody AuthenticationRequest request
@@ -80,7 +81,7 @@ public class AuthenticationController {
         try {
 
             Response response = Response.builder()
-                    .statusCode(200)
+                    .statusCode(StatusCode.SUCCESS.getCode())
                     .message("Authenticate successfully")
                     .data(service.authenticate(request))
                     .build();
@@ -89,7 +90,7 @@ public class AuthenticationController {
         }catch (InvalidEmailException | RecordNotFoundException e){
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(StatusCode.UNAUTHORIZED.getCode())
                     .message(e.getMessage())
                     .data(null)
                     .build();
@@ -112,7 +113,7 @@ public class AuthenticationController {
         try {
 
             Response response = Response.builder()
-                    .statusCode(200)
+                    .statusCode(StatusCode.SUCCESS.getCode())
                     .message(service.forgotPassword(email))
                     .data(null)
                     .build();
@@ -121,7 +122,7 @@ public class AuthenticationController {
         }catch (ErrorException | RecordNotFoundException e){
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(StatusCode.BAD_REQUEST.getCode())
                     .message(e.getMessage())
                     .data(null)
                     .build();
@@ -145,7 +146,7 @@ public class AuthenticationController {
         try {
 
             Response response = Response.builder()
-                    .statusCode(200)
+                    .statusCode(StatusCode.SUCCESS.getCode())
                     .message(service.setPassword(email, newPassword))
                     .data(null)
                     .build();
@@ -154,7 +155,7 @@ public class AuthenticationController {
         }catch (RecordNotFoundException e){
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(StatusCode.BAD_REQUEST.getCode())
                     .message(e.getMessage())
                     .data(null)
                     .build();

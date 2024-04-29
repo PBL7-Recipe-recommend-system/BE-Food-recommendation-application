@@ -3,6 +3,7 @@ package com.example.BEFoodrecommendationapplication.controller;
 
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.entity.Ingredient;
+import com.example.BEFoodrecommendationapplication.util.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,12 +26,12 @@ public class HelloWorld {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Hello world",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = String.class))}),
-            @ApiResponse(responseCode = "200", description = "Error")})
+            @ApiResponse(responseCode = "400", description = "Error")})
     @GetMapping("/hello")
     public ResponseEntity<Response> helloWorld() {
 
             Response response = Response.builder()
-                    .statusCode(200)
+                    .statusCode(StatusCode.SUCCESS.getCode())
                     .message("Hello world")
                     .data("Hello world")
                     .build();

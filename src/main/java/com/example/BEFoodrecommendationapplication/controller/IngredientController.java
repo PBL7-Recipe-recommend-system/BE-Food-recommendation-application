@@ -3,6 +3,7 @@ package com.example.BEFoodrecommendationapplication.controller;
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.entity.Ingredient;
 import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
+import com.example.BEFoodrecommendationapplication.util.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,14 +35,14 @@ public class IngredientController {
                     @Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class))
             }),
-            @ApiResponse(responseCode = "400", description = "Get ingredients failed")})
+            @ApiResponse(responseCode = "404", description = "Get ingredients failed")})
     @GetMapping("/get-ingredients")
     public ResponseEntity<Response> getTop100Ingredients() {
         try {
 
             List<Ingredient> ingredients = ingredientRepository.find100Ingredients();
             Response response = Response.builder()
-                    .statusCode(200)
+                    .statusCode(StatusCode.SUCCESS.getCode())
                     .message("Get ingredients successfully")
                     .data(ingredients)
                     .build();
@@ -50,7 +51,7 @@ public class IngredientController {
         } catch (Exception e) {
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(StatusCode.NOT_FOUND.getCode())
                     .message(e.getMessage())
                     .data(null)
                     .build();

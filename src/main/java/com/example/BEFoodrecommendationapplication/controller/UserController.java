@@ -5,6 +5,7 @@ import com.example.BEFoodrecommendationapplication.dto.UserInput;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
 import com.example.BEFoodrecommendationapplication.service.UserService;
+import com.example.BEFoodrecommendationapplication.util.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,14 +32,14 @@ public class UserController {
                     @Content(mediaType = "application/json",
                             schema = @Schema(implementation = User.class)
                     )}),
-            @ApiResponse(responseCode = "400", description = "Set profile failed")})
+            @ApiResponse(responseCode = "404", description = "Set profile failed")})
     @PutMapping("set-profile/{id}")
     public ResponseEntity<Response> setUserProfile(@PathVariable Integer id, @RequestBody UserInput userInput) {
         try {
 
             User user = userService.save(id, userInput);
             Response response = Response.builder()
-                    .statusCode(200)
+                    .statusCode(StatusCode.SUCCESS.getCode())
                     .message("Set profile successfully")
                     .data(user)
                     .build();
@@ -47,7 +48,7 @@ public class UserController {
         } catch (Exception e) {
 
             Response errorResponse = Response.builder()
-                    .statusCode(400)
+                    .statusCode(StatusCode.NOT_FOUND.getCode())
                     .message(e.getMessage())
                     .data(null)
                     .build();
