@@ -56,4 +56,36 @@ public class UserController {
 
         }
     }
+
+    @Operation(summary = "Get user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get user successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class)
+                            )}),
+            @ApiResponse(responseCode = "404", description = "Get user failed")})
+    @GetMapping("get-user/{id}")
+    public ResponseEntity<Response> getUser(@PathVariable Integer id) {
+        try {
+
+            User user = userService.getUser(id);
+            Response response = Response.builder()
+                    .statusCode(StatusCode.SUCCESS.getCode())
+                    .message("Get user successfully")
+                    .data(user)
+                    .build();
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+
+            Response errorResponse = Response.builder()
+                    .statusCode(StatusCode.NOT_FOUND.getCode())
+                    .message(e.getMessage())
+                    .data(null)
+                    .build();
+            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+
+        }
+    }
 }

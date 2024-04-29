@@ -7,4 +7,5 @@ import org.springframework.stereotype.Service;
 
 public interface UserService {
     public User save(Integer id, UserInput userInput);
+    public User getUser(Integer id);
 }

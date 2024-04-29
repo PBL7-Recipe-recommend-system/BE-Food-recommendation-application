@@ -47,4 +47,13 @@ public class UserServiceImpl implements UserService{
             throw new RecordNotFoundException("User not found with id : " + id);
         }
     }
+    public User getUser(Integer id) {
+        try {
+            return userRepository.findById(id).orElseThrow();
+        }catch(Exception e)
+        {
+            throw new RecordNotFoundException("User not found with id : " + id);
+        }
+
+    }
 }
