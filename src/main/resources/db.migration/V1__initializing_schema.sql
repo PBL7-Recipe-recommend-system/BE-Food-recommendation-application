@@ -13,10 +13,11 @@ CREATE TABLE user (
                       password VARCHAR(255) NOT NULL,
                       weight FLOAT,
                       height FLOAT,
-                      gender ENUM('Male', 'Female') NULL,
+                      gender ENUM('MALE', 'FEMALE') NULL,
                       birthday DATE NULL,
                       daily_activities VARCHAR(255) NULL,
-                      dietary_goal VARCHAR(255),
+                      dietary_goal INT,
+                      meals INT,
                       role ENUM('ADMIN', 'USER'),
                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

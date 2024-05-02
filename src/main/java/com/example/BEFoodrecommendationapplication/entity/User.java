@@ -1,5 +1,6 @@
 package com.example.BEFoodrecommendationapplication.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
@@ -40,28 +42,33 @@ public class User implements UserDetails {
     private Float weight;
 
     @Column(name = "dietary_goal")
-    private String dietaryGoal;
+    private Integer dietaryGoal;
 
     @Column(name="password", columnDefinition = "TEXT", nullable = false)
     @JsonIgnore
     private String password;
 
     @Column(name="created_at")
-    private LocalDateTime createdAt;
+    @JsonFormat(pattern="dd-MM-yyyy")
+    private LocalDate createdAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
 
-    @Enumerated(EnumType.STRING)
+
     @Column(name = "gender")
-    private Gender gender;
+    private String gender;
 
     @Column(name = "daily_activities")
     private String dailyActivities;
 
+    @Column(name = "meals")
+    private Integer meals;
+
     @Column(name = "birthday")
-    private Date birthday;
+    @JsonFormat(pattern="dd-MM-yyyy")
+    private LocalDate birthday;
 
     @ManyToMany
     @JoinTable(

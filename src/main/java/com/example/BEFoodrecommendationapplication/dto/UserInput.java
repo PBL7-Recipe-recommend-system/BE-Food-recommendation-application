@@ -1,9 +1,10 @@
 package com.example.BEFoodrecommendationapplication.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -22,14 +23,17 @@ public class UserInput {
     @JsonProperty("gender")
     private String gender;
 
-    @JsonProperty("birthday")
-    private Date birthday;
+    @JsonFormat(pattern="dd-MM-yyyy")
+    private LocalDate birthday;
 
     @JsonProperty("dailyActivities")
     private String daily_activities;
 
+    @JsonProperty("meals")
+    private Integer meals;
+
     @JsonProperty("dietaryGoal")
-    private String dietary_goal;
+    private Integer dietary_goal;
 
     @JsonProperty("ingredients")
     private List<String> ingredients;

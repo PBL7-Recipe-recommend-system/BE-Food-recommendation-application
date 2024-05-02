@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -54,7 +55,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(request.getEmail())
                 .name(request.getName())
                 .password(passwordEncode)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDate.now())
                 .role(Role.USER)
                 .build();
         userRepository.save(user);
