@@ -70,6 +70,7 @@ public class User implements UserDetails {
     @JsonFormat(pattern="dd-MM-yyyy")
     private LocalDate birthday;
 
+
     @ManyToMany
     @JoinTable(
             name = "user_ingredient",
@@ -78,6 +79,18 @@ public class User implements UserDetails {
     )
     private Set<Ingredient> ingredients;
 
+    public void setMeals(Integer meals) {
+        if (meals != 3 && meals != 4 && meals != 5) {
+            throw new IllegalArgumentException("Invalid value for meals");
+        }
+        this.meals = meals;
+    }
+    public void setDietaryGoal(Integer dietaryGoal) {
+        if (dietaryGoal != 1 && dietaryGoal != 2 && dietaryGoal != 3) {
+            throw new IllegalArgumentException("Invalid value for dietary goal");
+        }
+        this.dietaryGoal = dietaryGoal;
+    }
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {

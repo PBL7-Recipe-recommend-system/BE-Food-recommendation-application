@@ -33,7 +33,7 @@ public class UserController {
                             schema = @Schema(implementation = User.class)
                     )}),
             @ApiResponse(responseCode = "404", description = "Set profile failed")})
-    @PutMapping("set-profile/{id}")
+    @PutMapping("set-up-personalize/{id}")
     public ResponseEntity<Response> setUserProfile(@PathVariable Integer id, @RequestBody UserInput userInput) {
         try {
 
