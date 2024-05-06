@@ -160,4 +160,37 @@ public class FoodRecipeController {
         }
 
     }
+
+    @Operation(summary = "Get Popular Recipe")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get Popular successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = Response.class))
+                    }),
+            @ApiResponse(responseCode = "404", description = "Get Popular failed")})
+    @GetMapping("get-popular")
+    public ResponseEntity<Response> getPopularRecipes( @RequestParam Integer page, @RequestParam Integer size) {
+        try {
+
+            Page<RecipeDto> popularRecipes = foodRecipeService.findPopularRecipes(page,size);
+
+            Response response = Response.builder()
+                    .statusCode(StatusCode.SUCCESS.getCode())
+                    .message("Get popular recipes successfully")
+                    .data(popularRecipes)
+                    .build();
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+
+            Response errorResponse = Response.builder()
+                    .statusCode(StatusCode.NOT_FOUND.getCode())
+                    .message(e.getMessage())
+                    .data(null)
+                    .build();
+            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+
+        }
+    }
 }

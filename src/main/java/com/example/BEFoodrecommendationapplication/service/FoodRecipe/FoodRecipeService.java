@@ -10,7 +10,10 @@ import java.util.List;
 public interface FoodRecipeService {
 
      Page<RecipeDto> search(String name, String category, Integer rating, Pageable pageable);
+
      RecipeDto mapToDto(FoodRecipe foodRecipe);
 
      FoodRecipe findById(Integer id);
+
+     Page<RecipeDto> findPopularRecipes(int page, int size);
 }

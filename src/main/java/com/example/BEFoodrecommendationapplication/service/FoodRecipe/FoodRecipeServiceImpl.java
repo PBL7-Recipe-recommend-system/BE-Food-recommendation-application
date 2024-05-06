@@ -9,6 +9,8 @@ import com.example.BEFoodrecommendationapplication.service.AuthenticationService
 import com.example.BEFoodrecommendationapplication.util.FoodRecipeSpecification;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -24,11 +26,11 @@ import java.util.stream.Collectors;
 public class FoodRecipeServiceImpl implements FoodRecipeService {
 
     private final FoodRecipeRepository foodRecipeRepository;
-    private final ReviewRepository reviewRepository;
     private final StringUtil stringUtil;
 
 
     @Override
+    @Cacheable("searchRecipes")
     public Page<RecipeDto> search(String name, String category, Integer rating, Pageable pageable) {
         Specification<FoodRecipe> spec = Specification.where(null);
 
@@ -68,6 +70,12 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
     public FoodRecipe findById(Integer id) {
         return foodRecipeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("FoodRecipe not found with id " + id));
+    }
+    @Override
+    @Cacheable("popularRecipes")
+    public Page<RecipeDto> findPopularRecipes(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return foodRecipeRepository.findPopularRecipes(pageRequest).map(this::mapToDto);
     }
 
     @Override
