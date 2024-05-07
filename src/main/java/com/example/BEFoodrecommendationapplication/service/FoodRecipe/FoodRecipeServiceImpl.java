@@ -1,11 +1,9 @@
 package com.example.BEFoodrecommendationapplication.service.FoodRecipe;
 
 import com.example.BEFoodrecommendationapplication.dto.RecipeDto;
+import com.example.BEFoodrecommendationapplication.dto.SearchResult;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
-import com.example.BEFoodrecommendationapplication.entity.Review;
 import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
-import com.example.BEFoodrecommendationapplication.repository.ReviewRepository;
-import com.example.BEFoodrecommendationapplication.service.AuthenticationService;
 import com.example.BEFoodrecommendationapplication.util.FoodRecipeSpecification;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +12,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -31,7 +28,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
     @Override
     @Cacheable("searchRecipes")
-    public Page<RecipeDto> search(String name, String category, Integer rating, Pageable pageable) {
+    public Page<SearchResult> search(String name, String category, Integer rating, Pageable pageable) {
         Specification<FoodRecipe> spec = Specification.where(null);
 
         if (name != null) {
@@ -51,7 +48,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
             foodRecipes = foodRecipeRepository.findAll(spec, pageable);
         }
 
-        return foodRecipes.map(this::mapToDto);
+        return foodRecipes.map(this::mapToSearchResult);
     }
 
     public List<FoodRecipe> search(String keyword) {
@@ -72,10 +69,9 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 .orElseThrow(() -> new ResourceNotFoundException("FoodRecipe not found with id " + id));
     }
     @Override
-    @Cacheable("popularRecipes")
-    public Page<RecipeDto> findPopularRecipes(int page, int size) {
+    public Page<SearchResult> findPopularRecipes(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        return foodRecipeRepository.findPopularRecipes(pageRequest).map(this::mapToDto);
+        return foodRecipeRepository.findPopularRecipes(pageRequest).map(this::mapToSearchResult);
     }
 
     @Override
@@ -85,9 +81,9 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 .name(foodRecipe.getName())
                 .authorId(foodRecipe.getAuthor().getId())
                 .authorName(foodRecipe.getAuthorName())
-                .cookTime(foodRecipe.getCookTime())
-                .prepTime(foodRecipe.getPrepTime())
-                .totalTime(foodRecipe.getTotalTime())
+                .cookTime(cleanTime(foodRecipe.getCookTime()))
+                .prepTime(cleanTime(foodRecipe.getPrepTime()))
+                .totalTime(cleanTime(foodRecipe.getTotalTime()))
                 .datePublished(foodRecipe.getDatePublished())
                 .description(foodRecipe.getDescription())
                 .images(stringUtil.splitStringToList(foodRecipe.getImages()))
@@ -110,5 +106,28 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 .recipeYeild(foodRecipe.getRecipeYeild())
                 .recipeInstructions(stringUtil.splitStringToList(foodRecipe.getRecipeInstructions()))
                 .build();
+    }
+
+    @Override
+    public SearchResult mapToSearchResult(FoodRecipe foodRecipe) {
+        SearchResult searchResult = new SearchResult();
+        searchResult.setId(foodRecipe.getRecipeId());
+        searchResult.setName(foodRecipe.getName());
+        searchResult.setRating(foodRecipe.getAggregatedRatings());
+        searchResult.setAuthorName(foodRecipe.getAuthorName());
+        List<String> images = stringUtil.splitStringToList(foodRecipe.getImages());
+        if (!images.isEmpty()) {
+            searchResult.setImages(images.get(0));
+        }
+        searchResult.setCalories(foodRecipe.getCalories());
+        searchResult.setTotalTime(cleanTime(foodRecipe.getTotalTime()));
+        return searchResult;
+    }
+
+    public String cleanTime(String time) {
+        if (time.startsWith("PT")) {
+            return time.replaceFirst("PT", "");
+        }
+        throw new IllegalArgumentException("Invalid time format");
     }
 }

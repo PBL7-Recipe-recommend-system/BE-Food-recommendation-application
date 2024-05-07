@@ -1,4 +1,4 @@
-package com.example.BEFoodrecommendationapplication.service;
+package com.example.BEFoodrecommendationapplication.service.User;
 
 import com.example.BEFoodrecommendationapplication.dto.AuthenticationRequest;
 import com.example.BEFoodrecommendationapplication.dto.AuthenticationResponse;

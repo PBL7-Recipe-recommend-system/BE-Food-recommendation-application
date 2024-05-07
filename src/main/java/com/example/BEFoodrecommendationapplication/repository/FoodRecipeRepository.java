@@ -18,4 +18,7 @@ public interface FoodRecipeRepository extends JpaRepository<FoodRecipe, Integer>
             "WHERE r.aggregatedRatings > 3 " +
             "ORDER BY r.aggregatedRatings DESC, r.reviewCount DESC")
     Page<FoodRecipe> findPopularRecipes(Pageable pageable);
+
+    @Query("SELECT DISTINCT f.recipeCategory FROM FoodRecipe f")
+    List<String> findDistinctCategories();
 }

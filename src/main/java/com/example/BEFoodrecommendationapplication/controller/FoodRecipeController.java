@@ -3,10 +3,12 @@ package com.example.BEFoodrecommendationapplication.controller;
 import com.example.BEFoodrecommendationapplication.dto.RecipeDto;
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.dto.SearchRequest;
+import com.example.BEFoodrecommendationapplication.dto.SearchResult;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.entity.Ingredient;
 import com.example.BEFoodrecommendationapplication.entity.RecentSearch;
 import com.example.BEFoodrecommendationapplication.entity.User;
+import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
 import com.example.BEFoodrecommendationapplication.repository.RecentSearchRepository;
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import com.example.BEFoodrecommendationapplication.service.FoodRecipe.FoodRecipeService;
@@ -18,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -38,6 +41,7 @@ public class FoodRecipeController {
     private final FoodRecipeService foodRecipeService;
 
     private final UserRepository userRepository;
+    private final FoodRecipeRepository foodRecipeRepository;
 
     private final RecentSearchRepository recentSearchRepository;
     @Operation(summary = "Search Recipe")
@@ -49,10 +53,11 @@ public class FoodRecipeController {
                     }),
             @ApiResponse(responseCode = "404", description = "Search Recipe failed")})
     @GetMapping("/search")
+    @Cacheable("searchFilter")
     public ResponseEntity<Response> search(@RequestBody SearchRequest request){
         try {
 
-            Page<RecipeDto> listRecipes = foodRecipeService.search(request.getName(), request.getCategory(), request.getRating(), PageRequest.of(request.getPage(), request.getSize()));
+            Page<SearchResult> listRecipes = foodRecipeService.search(request.getName(), request.getCategory(), request.getRating(), PageRequest.of(request.getPage(), request.getSize()));
             Response response = Response.builder()
                     .statusCode(StatusCode.SUCCESS.getCode())
                     .message("Search Recipe successfully")
@@ -81,6 +86,7 @@ public class FoodRecipeController {
                     }),
             @ApiResponse(responseCode = "404", description = "Get Detail failed")})
     @GetMapping("get-detail/{id}")
+    @Cacheable("getDetail")
     public ResponseEntity<Response> getRecipeById(@PathVariable Integer id, @RequestParam Integer userId) {
         try {
 
@@ -134,12 +140,13 @@ public class FoodRecipeController {
                     }),
             @ApiResponse(responseCode = "404", description = "Get Recent Search failed")})
     @GetMapping("/recent-search")
+    @Cacheable("recentSearch")
     public ResponseEntity<Response> getRecentViews(@RequestParam Integer userId) {
         try {
 
-            List<RecipeDto> recentSearches = recentSearchRepository.findTop10ByUser_IdOrderByTimestampDesc(userId).stream()
+            List<SearchResult> recentSearches = recentSearchRepository.findTop10ByUser_IdOrderByTimestampDesc(userId).stream()
                     .map(RecentSearch::getRecipe)
-                    .map(foodRecipeService::mapToDto)
+                    .map(foodRecipeService::mapToSearchResult)
                     .toList();
             Response response = Response.builder()
                     .statusCode(StatusCode.SUCCESS.getCode())
@@ -170,15 +177,49 @@ public class FoodRecipeController {
                     }),
             @ApiResponse(responseCode = "404", description = "Get Popular failed")})
     @GetMapping("get-popular")
+    @Cacheable("getPopular")
     public ResponseEntity<Response> getPopularRecipes( @RequestParam Integer page, @RequestParam Integer size) {
         try {
 
-            Page<RecipeDto> popularRecipes = foodRecipeService.findPopularRecipes(page,size);
+            Page<SearchResult> popularRecipes = foodRecipeService.findPopularRecipes(page,size);
 
             Response response = Response.builder()
                     .statusCode(StatusCode.SUCCESS.getCode())
                     .message("Get popular recipes successfully")
                     .data(popularRecipes)
+                    .build();
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+
+            Response errorResponse = Response.builder()
+                    .statusCode(StatusCode.NOT_FOUND.getCode())
+                    .message(e.getMessage())
+                    .data(null)
+                    .build();
+            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+
+        }
+    }
+
+    @Operation(summary = "Get Category List")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get Category List successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = Response.class))
+                    }),
+            @ApiResponse(responseCode = "404", description = "Get Category List failed")})
+    @GetMapping("/get-category-list")
+    @Cacheable("getCategory")
+    public  ResponseEntity<Response> getCategories() {
+
+        try {
+
+            Response response = Response.builder()
+                    .statusCode(StatusCode.SUCCESS.getCode())
+                    .message("Get Category List successfully")
+                    .data(foodRecipeRepository.findDistinctCategories())
                     .build();
             return ResponseEntity.ok(response);
 

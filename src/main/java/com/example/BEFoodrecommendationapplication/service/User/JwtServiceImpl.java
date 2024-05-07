@@ -1,4 +1,4 @@
-package com.example.BEFoodrecommendationapplication.service;
+package com.example.BEFoodrecommendationapplication.service.User;
 
 import com.example.BEFoodrecommendationapplication.entity.User;
 import io.jsonwebtoken.*;
@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import lombok.extern.slf4j.Slf4j.*;
 
 import java.security.Key;
 import java.util.*;

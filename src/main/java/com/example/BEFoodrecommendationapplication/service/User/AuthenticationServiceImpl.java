@@ -1,4 +1,4 @@
-package com.example.BEFoodrecommendationapplication.service;
+package com.example.BEFoodrecommendationapplication.service.User;
 
 import com.example.BEFoodrecommendationapplication.dto.AuthenticationRequest;
 import com.example.BEFoodrecommendationapplication.dto.AuthenticationResponse;
@@ -12,16 +12,13 @@ import com.example.BEFoodrecommendationapplication.util.EmailUtil;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
