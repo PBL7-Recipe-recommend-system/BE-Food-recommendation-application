@@ -1,17 +1,15 @@
 package com.example.BEFoodrecommendationapplication.controller;
 
-import com.example.BEFoodrecommendationapplication.dto.RecipeDto;
 import com.example.BEFoodrecommendationapplication.dto.Response;
-import com.example.BEFoodrecommendationapplication.dto.SearchRequest;
 import com.example.BEFoodrecommendationapplication.dto.SearchResult;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
-import com.example.BEFoodrecommendationapplication.entity.Ingredient;
 import com.example.BEFoodrecommendationapplication.entity.RecentSearch;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
 import com.example.BEFoodrecommendationapplication.repository.RecentSearchRepository;
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import com.example.BEFoodrecommendationapplication.service.FoodRecipe.FoodRecipeService;
+import com.example.BEFoodrecommendationapplication.util.AuthenticationUtils;
 import com.example.BEFoodrecommendationapplication.util.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/recipes")
@@ -41,6 +39,7 @@ public class FoodRecipeController {
     private final FoodRecipeService foodRecipeService;
 
     private final UserRepository userRepository;
+
     private final FoodRecipeRepository foodRecipeRepository;
 
     private final RecentSearchRepository recentSearchRepository;
@@ -54,10 +53,14 @@ public class FoodRecipeController {
             @ApiResponse(responseCode = "404", description = "Search Recipe failed")})
     @GetMapping("/search")
     @Cacheable("searchFilter")
-    public ResponseEntity<Response> search(@RequestBody SearchRequest request){
+    public ResponseEntity<Response> search(@RequestParam(required = false) String name,
+                                           @RequestParam(required = false) String category,
+                                           @RequestParam(required = false) Integer rating,
+                                           @RequestParam(defaultValue = "0") Integer page,
+                                           @RequestParam(defaultValue = "10") Integer size){
         try {
 
-            Page<SearchResult> listRecipes = foodRecipeService.search(request.getName(), request.getCategory(), request.getRating(), PageRequest.of(request.getPage(), request.getSize()));
+            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, PageRequest.of(page, size));
             Response response = Response.builder()
                     .statusCode(StatusCode.SUCCESS.getCode())
                     .message("Search Recipe successfully")
@@ -87,11 +90,11 @@ public class FoodRecipeController {
             @ApiResponse(responseCode = "404", description = "Get Detail failed")})
     @GetMapping("get-detail/{id}")
     @Cacheable("getDetail")
-    public ResponseEntity<Response> getRecipeById(@PathVariable Integer id, @RequestParam Integer userId) {
+    public ResponseEntity<Response> getRecipeById(@PathVariable Integer id) {
         try {
 
             FoodRecipe foodRecipe = foodRecipeService.findById(id);
-
+            Integer userId = AuthenticationUtils.getUserFromSecurityContext().getId();
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
 
@@ -141,10 +144,12 @@ public class FoodRecipeController {
             @ApiResponse(responseCode = "404", description = "Get Recent Search failed")})
     @GetMapping("/recent-search")
     @Cacheable("recentSearch")
-    public ResponseEntity<Response> getRecentViews(@RequestParam Integer userId) {
+    public ResponseEntity<Response> getRecentViews() {
         try {
 
-            List<SearchResult> recentSearches = recentSearchRepository.findTop10ByUser_IdOrderByTimestampDesc(userId).stream()
+            List<SearchResult> recentSearches = recentSearchRepository
+                    .findTop10ByUser_IdOrderByTimestampDesc(AuthenticationUtils.getUserFromSecurityContext().getId())
+                    .stream()
                     .map(RecentSearch::getRecipe)
                     .map(foodRecipeService::mapToSearchResult)
                     .toList();
@@ -178,7 +183,8 @@ public class FoodRecipeController {
             @ApiResponse(responseCode = "404", description = "Get Popular failed")})
     @GetMapping("get-popular")
     @Cacheable("getPopular")
-    public ResponseEntity<Response> getPopularRecipes( @RequestParam Integer page, @RequestParam Integer size) {
+    public ResponseEntity<Response> getPopularRecipes( @RequestParam Integer page,
+                                                       @RequestParam Integer size) {
         try {
 
             Page<SearchResult> popularRecipes = foodRecipeService.findPopularRecipes(page,size);
