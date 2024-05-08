@@ -51,18 +51,6 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         return foodRecipes.map(this::mapToSearchResult);
     }
 
-    public List<FoodRecipe> search(String keyword) {
-
-        List<FoodRecipe> foodRecipes = foodRecipeRepository.findAll();
-
-        String lowerCaseKeyword = keyword.toLowerCase();
-
-
-        return foodRecipes.stream()
-                .filter(foodRecipe -> stringUtil.splitStringToList(foodRecipe.getKeywords()).stream()
-                        .anyMatch(k -> k.toLowerCase().contains(lowerCaseKeyword)))
-                .collect(Collectors.toList());
-    }
     @Override
     public FoodRecipe findById(Integer id) {
         return foodRecipeRepository.findById(id)
