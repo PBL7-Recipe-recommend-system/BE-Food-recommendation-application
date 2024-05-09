@@ -77,7 +77,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with this email: " + email));
         if (user.getOtp().equals(otp) && Duration.between(user.getOtpGeneratedTime(),
-                LocalDateTime.now()).getSeconds() < (2 * 60)) {
+                LocalDateTime.now()).getSeconds() < (3 * 60)) {
             user.setActive(true);
             userRepository.save(user);
             String jwtToken = jwtService.generateToken(user);

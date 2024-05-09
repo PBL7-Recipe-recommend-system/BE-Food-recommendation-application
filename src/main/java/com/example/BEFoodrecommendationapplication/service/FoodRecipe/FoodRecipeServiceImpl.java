@@ -32,7 +32,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         Specification<FoodRecipe> spec = Specification.where(null);
 
         if (name != null) {
-            spec = spec.and(FoodRecipeSpecification.nameContains(name));
+            spec = spec.and(FoodRecipeSpecification.nameStartsWith(name));
         }
 
         if (category != null) {
@@ -44,7 +44,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
         Page<FoodRecipe> foodRecipes = foodRecipeRepository.findAll(spec, pageable);
         if (foodRecipes.isEmpty() && name != null) {
-            spec = Specification.where(FoodRecipeSpecification.keywordContains(name));
+            spec = Specification.where(FoodRecipeSpecification.keywordStartsWith(name));
             foodRecipes = foodRecipeRepository.findAll(spec, pageable);
         }
 

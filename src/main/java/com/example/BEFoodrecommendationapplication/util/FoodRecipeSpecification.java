@@ -15,8 +15,8 @@ import java.util.function.Predicate;
 @NoArgsConstructor
 public class FoodRecipeSpecification {
 
-    public static Specification<FoodRecipe> nameContains(String name) {
-        return (root, query, cb) -> cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+    public static Specification<FoodRecipe> nameStartsWith(String name) {
+        return (root, query, cb) -> cb.like(cb.lower(root.get("name")), name.toLowerCase() + "%");
     }
 
     public static Specification<FoodRecipe> categoryContains(String category) {
@@ -26,8 +26,8 @@ public class FoodRecipeSpecification {
     public static Specification<FoodRecipe> ratingIs(Integer rating) {
         return (root, query, cb) -> cb.equal(root.get("aggregatedRatings"), rating);
     }
-    public static Specification<FoodRecipe> keywordContains(String keyword) {
-        return (root, query, cb) -> cb.like(cb.lower(root.get("keywords")), "%" + keyword.toLowerCase() + "%");
+    public static Specification<FoodRecipe> keywordStartsWith(String keyword) {
+        return (root, query, cb) -> cb.like(cb.lower(root.get("keywords")), keyword.toLowerCase() + "%");
     }
 
 }
