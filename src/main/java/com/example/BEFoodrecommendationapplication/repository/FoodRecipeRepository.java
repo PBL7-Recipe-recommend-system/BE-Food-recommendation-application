@@ -21,4 +21,7 @@ public interface FoodRecipeRepository extends JpaRepository<FoodRecipe, Integer>
 
     @Query("SELECT DISTINCT f.recipeCategory FROM FoodRecipe f")
     List<String> findDistinctCategories();
+
+    @Query("SELECT f.recipeCategory, COUNT(f) FROM FoodRecipe f GROUP BY f.recipeCategory ORDER BY COUNT(f) DESC")
+    List<Object[]> findTop10PopularCategories(Pageable pageable);
 }

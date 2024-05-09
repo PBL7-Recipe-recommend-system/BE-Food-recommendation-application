@@ -10,6 +10,7 @@ import com.example.BEFoodrecommendationapplication.repository.RecentSearchReposi
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import com.example.BEFoodrecommendationapplication.service.FoodRecipe.FoodRecipeService;
 import com.example.BEFoodrecommendationapplication.util.AuthenticationUtils;
+import com.example.BEFoodrecommendationapplication.util.ResponseBuilderUtil;
 import com.example.BEFoodrecommendationapplication.util.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,10 +19,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,21 +62,15 @@ public class FoodRecipeController {
         try {
 
             Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, PageRequest.of(page, size));
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message("Search Recipe successfully")
-                    .data(listRecipes)
-                    .build();
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    listRecipes,
+                    "Search Recipe successfully",
+                    StatusCode.SUCCESS));
 
         } catch (Exception e) {
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.NOT_FOUND.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.NOT_FOUND));
 
         }
 
@@ -113,24 +108,16 @@ public class FoodRecipeController {
                 recentSearch.setTimestamp(LocalDateTime.now());
             }
 
-
             recentSearchRepository.save(recentSearch);
 
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message("Get Detail successfully")
-                    .data(foodRecipeService.mapToDto(foodRecipe))
-                    .build();
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    foodRecipeService.mapToDto(foodRecipe),
+                    "Get Detail successfully",
+                    StatusCode.SUCCESS));
 
         } catch (Exception e) {
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.NOT_FOUND.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.NOT_FOUND));
 
         }
     }
@@ -153,21 +140,15 @@ public class FoodRecipeController {
                     .map(RecentSearch::getRecipe)
                     .map(foodRecipeService::mapToSearchResult)
                     .toList();
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message("Get Recent Search successfully")
-                    .data(recentSearches)
-                    .build();
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    recentSearches,
+                    "Get Recent Search successfully",
+                    StatusCode.SUCCESS));
 
         } catch (Exception e) {
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.NOT_FOUND.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.NOT_FOUND));
 
         }
 
@@ -189,21 +170,15 @@ public class FoodRecipeController {
 
             Page<SearchResult> popularRecipes = foodRecipeService.findPopularRecipes(page,size);
 
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message("Get popular recipes successfully")
-                    .data(popularRecipes)
-                    .build();
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    popularRecipes,
+                    "Get popular recipes successfully",
+                    StatusCode.SUCCESS));
 
         } catch (Exception e) {
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.NOT_FOUND.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.NOT_FOUND));
 
         }
     }
@@ -221,22 +196,16 @@ public class FoodRecipeController {
     public  ResponseEntity<Response> getCategories() {
 
         try {
-
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message("Get Category List successfully")
-                    .data(foodRecipeRepository.findDistinctCategories())
-                    .build();
-            return ResponseEntity.ok(response);
+            Pageable topTen = PageRequest.of(0, 10);
+            List<Object[]> top10Categories = foodRecipeRepository.findTop10PopularCategories(topTen);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    top10Categories,
+                    "Get Category List successfully",
+                    StatusCode.SUCCESS));
 
         } catch (Exception e) {
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.NOT_FOUND.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.NOT_FOUND));
 
         }
     }

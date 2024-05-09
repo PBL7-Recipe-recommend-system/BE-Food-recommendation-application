@@ -3,6 +3,7 @@ package com.example.BEFoodrecommendationapplication.controller;
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.entity.Ingredient;
 import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
+import com.example.BEFoodrecommendationapplication.util.ResponseBuilderUtil;
 import com.example.BEFoodrecommendationapplication.util.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,21 +42,15 @@ public class IngredientController {
         try {
 
             List<Ingredient> ingredients = ingredientRepository.find100Ingredients();
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message("Get ingredients successfully")
-                    .data(ingredients)
-                    .build();
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    ingredients,
+                    "Get ingredients successfully",
+                    StatusCode.SUCCESS));
 
         } catch (Exception e) {
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.NOT_FOUND.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.NOT_FOUND));
 
         }
     }

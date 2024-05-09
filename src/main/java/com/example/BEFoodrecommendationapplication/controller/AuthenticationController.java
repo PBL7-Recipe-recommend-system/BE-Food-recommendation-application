@@ -6,6 +6,7 @@ import com.example.BEFoodrecommendationapplication.dto.RegisterRequest;
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.exception.*;
 import com.example.BEFoodrecommendationapplication.service.User.AuthenticationService;
+import com.example.BEFoodrecommendationapplication.util.ResponseBuilderUtil;
 import com.example.BEFoodrecommendationapplication.util.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -40,21 +41,17 @@ public class AuthenticationController {
     ) {
         try {
 
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message(service.register(request))
-                    .data(null)
-                    .build();
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(
+                    ResponseBuilderUtil.responseBuilder(
+                            null,
+                                service.register(request),
+                                StatusCode.SUCCESS)
+            );
 
         }catch (DuplicateDataException | InvalidEmailException | WrongFormatPasswordException e){
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.UNAUTHORIZED.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.UNAUTHORIZED));
         }
 
     }
@@ -73,21 +70,15 @@ public class AuthenticationController {
     ) {
         try {
 
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message("Authenticate successfully")
-                    .data(service.authenticate(request))
-                    .build();
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    service.authenticate(request),
+                    "Authenticate success",
+                    StatusCode.SUCCESS));
 
         }catch (InvalidEmailException | RecordNotFoundException e){
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.UNAUTHORIZED.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.UNAUTHORIZED));
         }
     }
 
@@ -105,22 +96,15 @@ public class AuthenticationController {
     ) {
         try {
 
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message(service.forgotPassword(email))
-                    .data(null)
-                    .build();
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    null,
+                    service.forgotPassword(email),
+                    StatusCode.SUCCESS));
 
         }catch (ErrorException | RecordNotFoundException e){
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.BAD_REQUEST.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.BAD_REQUEST));
         }
 
     }
@@ -137,22 +121,13 @@ public class AuthenticationController {
                                                 @RequestParam String otp) {
         try {
 
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message("Verify successfully")
-                    .data(service.verifyAccount(email, otp))
-                    .build();
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    service.verifyAccount(email, otp),
+                    "Verify successfully",
+                    StatusCode.SUCCESS));
         }catch (RecordNotFoundException e){
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.BAD_REQUEST.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.BAD_REQUEST));
         }
     }
 
@@ -168,22 +143,13 @@ public class AuthenticationController {
     public ResponseEntity<Response> regenerateOtp(@RequestParam String email) {
         try {
 
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message(service.regenerateOtp(email))
-                    .data(null)
-                    .build();
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    null,
+                    service.regenerateOtp(email),
+                    StatusCode.SUCCESS));
         }catch (RecordNotFoundException e){
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.BAD_REQUEST.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.BAD_REQUEST));
         }
     }
     @Operation(summary = "Set password")
@@ -200,22 +166,14 @@ public class AuthenticationController {
     ) {
         try {
 
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message(service.setPassword(email, newPassword))
-                    .data(null)
-                    .build();
 
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    null,
+                    service.setPassword(email, newPassword),
+                    StatusCode.SUCCESS));
         }catch (RecordNotFoundException e){
 
-            Response errorResponse = Response.builder()
-                    .statusCode(StatusCode.BAD_REQUEST.getCode())
-                    .message(e.getMessage())
-                    .data(null)
-                    .build();
-
-            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.BAD_REQUEST));
         }
 
     }

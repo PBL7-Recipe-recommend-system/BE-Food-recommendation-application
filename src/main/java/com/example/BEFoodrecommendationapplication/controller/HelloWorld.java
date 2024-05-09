@@ -2,7 +2,7 @@ package com.example.BEFoodrecommendationapplication.controller;
 
 
 import com.example.BEFoodrecommendationapplication.dto.Response;
-import com.example.BEFoodrecommendationapplication.entity.Ingredient;
+import com.example.BEFoodrecommendationapplication.util.ResponseBuilderUtil;
 import com.example.BEFoodrecommendationapplication.util.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
@@ -30,12 +28,8 @@ public class HelloWorld {
     @GetMapping("/hello")
     public ResponseEntity<Response> helloWorld() {
 
-            Response response = Response.builder()
-                    .statusCode(StatusCode.SUCCESS.getCode())
-                    .message("Hello world")
-                    .data("Hello world")
-                    .build();
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder("Hello world", "Hello world", StatusCode.SUCCESS));
 
     }
 }
