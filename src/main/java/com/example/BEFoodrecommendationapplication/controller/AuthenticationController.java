@@ -42,8 +42,8 @@ public class AuthenticationController {
 
             Response response = Response.builder()
                     .statusCode(StatusCode.SUCCESS.getCode())
-                    .message("Register successfully")
-                    .data(service.register(request))
+                    .message(service.register(request))
+                    .data(null)
                     .build();
             return ResponseEntity.ok(response);
 
@@ -123,6 +123,68 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
         }
 
+    }
+    @Operation(summary = "Verify account")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Verify account successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = Response.class))
+                    }),
+            @ApiResponse(responseCode = "400", description = "Verify account failed")})
+    @PutMapping("/verify-account")
+    public ResponseEntity<Response> verifyAccount(@RequestParam String email,
+                                                @RequestParam String otp) {
+        try {
+
+            Response response = Response.builder()
+                    .statusCode(StatusCode.SUCCESS.getCode())
+                    .message("Verify successfully")
+                    .data(service.verifyAccount(email, otp))
+                    .build();
+
+            return ResponseEntity.ok(response);
+        }catch (RecordNotFoundException e){
+
+            Response errorResponse = Response.builder()
+                    .statusCode(StatusCode.BAD_REQUEST.getCode())
+                    .message(e.getMessage())
+                    .data(null)
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+        }
+    }
+
+    @Operation(summary = "Regenerate otp")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Regenerate otp successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = Response.class))
+                    }),
+            @ApiResponse(responseCode = "400", description = "Regenerate otp failed")})
+    @PutMapping("/regenerate-otp")
+    public ResponseEntity<Response> regenerateOtp(@RequestParam String email) {
+        try {
+
+            Response response = Response.builder()
+                    .statusCode(StatusCode.SUCCESS.getCode())
+                    .message(service.regenerateOtp(email))
+                    .data(null)
+                    .build();
+
+            return ResponseEntity.ok(response);
+        }catch (RecordNotFoundException e){
+
+            Response errorResponse = Response.builder()
+                    .statusCode(StatusCode.BAD_REQUEST.getCode())
+                    .message(e.getMessage())
+                    .data(null)
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
+        }
     }
     @Operation(summary = "Set password")
     @ApiResponses(value = {

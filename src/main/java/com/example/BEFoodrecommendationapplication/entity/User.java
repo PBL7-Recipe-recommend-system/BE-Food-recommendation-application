@@ -70,6 +70,15 @@ public class User implements UserDetails {
     @JsonFormat(pattern="dd-MM-yyyy")
     private LocalDate birthday;
 
+    @Column(name = "active")
+    private boolean active;
+
+    @Column(name = "otp")
+    private String otp;
+
+    @Column(name = "otp_generated_time")
+    private LocalDateTime otpGeneratedTime;
+
 
     @ManyToMany
     @JoinTable(

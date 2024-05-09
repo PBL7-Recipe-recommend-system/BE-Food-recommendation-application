@@ -1,0 +1,7 @@
+ALTER TABLE user
+    ADD COLUMN active BOOLEAN DEFAULT FALSE,
+    ADD COLUMN otp VARCHAR(255),
+    ADD COLUMN otp_generated_time TIMESTAMP;
+
+UPDATE user
+SET active = TRUE;

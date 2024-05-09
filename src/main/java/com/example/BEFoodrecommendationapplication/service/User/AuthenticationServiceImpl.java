@@ -9,6 +9,7 @@ import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.exception.*;
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import com.example.BEFoodrecommendationapplication.util.EmailUtil;
+import com.example.BEFoodrecommendationapplication.util.OtpUtil;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -29,13 +32,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final EmailUtil emailUtil;
+    private final OtpUtil otpUtil;
 
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
     private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
 
     @Override
     @Transactional
-    public AuthenticationResponse register(RegisterRequest request) throws DuplicateDataException {
+    public String register(RegisterRequest request) throws DuplicateDataException {
         if (!request.getEmail().matches(EMAIL_REGEX)) {
             throw new InvalidEmailException("Invalid email format");
         }
@@ -44,8 +48,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         Optional<User> existedUser = userRepository.findByEmail(request.getEmail());
-        if (existedUser.isPresent()) {
+        if (existedUser.isPresent() && existedUser.get().isActive()) {
             throw new DuplicateDataException("Email already exists.");
+        }
+
+        String otp = otpUtil.generateOtp();
+        try {
+            emailUtil.sendOtpEmail(request.getEmail(), otp);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Unable to send otp please try again");
         }
         String passwordEncode = passwordEncoder.encode(request.getPassword());
         User user = User.builder()
@@ -54,13 +65,44 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .password(passwordEncode)
                 .createdAt(LocalDate.now())
                 .role(Role.USER)
+                .otp(otp)
+                .active(false)
+                .otpGeneratedTime(LocalDateTime.now())
                 .build();
         userRepository.save(user);
-        String jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-                .accessToken(jwtToken)
-                .build();
+        return "Please check your email for the verification";
     }
+    @Override
+    public AuthenticationResponse verifyAccount(String email, String otp) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with this email: " + email));
+        if (user.getOtp().equals(otp) && Duration.between(user.getOtpGeneratedTime(),
+                LocalDateTime.now()).getSeconds() < (2 * 60)) {
+            user.setActive(true);
+            userRepository.save(user);
+            String jwtToken = jwtService.generateToken(user);
+            return AuthenticationResponse.builder().accessToken(jwtToken).build();
+        }
+        else {
+            throw new RuntimeException("Wrong token or time out, please try again!");
+        }
+    }
+    @Override
+    public String regenerateOtp(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with this email: " + email));
+        String otp = otpUtil.generateOtp();
+        try {
+            emailUtil.sendOtpEmail(email, otp);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Unable to send otp please try again");
+        }
+        user.setOtp(otp);
+        user.setOtpGeneratedTime(LocalDateTime.now());
+        userRepository.save(user);
+        return "Email sent... please verify account within 1 minute";
+    }
+
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -76,6 +118,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RecordNotFoundException("There is no user with that email!"));
+        if (!user.isActive()) {
+            throw new RuntimeException("Your account is not verified");
+        }
+
         String jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
