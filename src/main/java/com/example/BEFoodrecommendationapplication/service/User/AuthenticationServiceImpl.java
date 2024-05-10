@@ -5,8 +5,10 @@ import com.example.BEFoodrecommendationapplication.dto.AuthenticationResponse;
 import com.example.BEFoodrecommendationapplication.dto.RegisterRequest;
 import com.example.BEFoodrecommendationapplication.entity.Role;
 
+import com.example.BEFoodrecommendationapplication.entity.Token;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.exception.*;
+import com.example.BEFoodrecommendationapplication.repository.TokenRepository;
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import com.example.BEFoodrecommendationapplication.util.EmailUtil;
 import com.example.BEFoodrecommendationapplication.util.OtpUtil;
@@ -22,17 +24,20 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final EmailUtil emailUtil;
     private final OtpUtil otpUtil;
+    private final TokenRepository tokenRepository;
 
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
     private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
@@ -58,6 +63,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (MessagingException e) {
             throw new RuntimeException("Unable to send otp please try again");
         }
+
+        if(existedUser.isPresent() && !existedUser.get().isActive())
+        {
+            User user = existedUser.get();
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setCreatedAt(LocalDate.now());
+            user.setOtp(otp);
+            user.setOtpGeneratedTime(LocalDateTime.now());
+            userRepository.save(user);
+            return "Please check your email for the verification";
+        }
+
         String passwordEncode = passwordEncoder.encode(request.getPassword());
         User user = User.builder()
                 .email(request.getEmail())
@@ -70,6 +87,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .otpGeneratedTime(LocalDateTime.now())
                 .build();
         userRepository.save(user);
+
         return "Please check your email for the verification";
     }
     @Override
@@ -78,9 +96,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .orElseThrow(() -> new RuntimeException("User not found with this email: " + email));
         if (user.getOtp().equals(otp) && Duration.between(user.getOtpGeneratedTime(),
                 LocalDateTime.now()).getSeconds() < (3 * 60)) {
+
             user.setActive(true);
+
             userRepository.save(user);
+
             String jwtToken = jwtService.generateToken(user);
+
+            saveUserToken(jwtToken, user);
+
             return AuthenticationResponse.builder().accessToken(jwtToken).build();
         }
         else {
@@ -123,6 +147,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         String jwtToken = jwtService.generateToken(user);
+
+        revokeAllTokenByUser(user);
+        saveUserToken(jwtToken, user);
+
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .build();
@@ -148,8 +176,29 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 () -> new RecordNotFoundException("User not found with this email: " + email)
         );
         user.setPassword(passwordEncoder.encode(newPassword));
+        revokeAllTokenByUser(user);
         userRepository.save(user);
         return "Set password successfully.";
     }
 
+    private void revokeAllTokenByUser(User user) {
+        List<Token> validTokens = tokenRepository.findAllTokensByUser(user.getId());
+        if(validTokens.isEmpty()) {
+            return;
+        }
+
+        validTokens.forEach(t-> {
+            t.setLoggedOut(true);
+        });
+
+        tokenRepository.saveAll(validTokens);
+    }
+    private void saveUserToken(String jwt, User user) {
+        Token token = Token.builder()
+                .token(jwt)
+                .loggedOut(false)
+                .user(user)
+                .build();
+        tokenRepository.save(token);
+    }
 }

@@ -79,6 +79,9 @@ public class User implements UserDetails {
     @Column(name = "otp_generated_time")
     private LocalDateTime otpGeneratedTime;
 
+    @OneToMany(mappedBy = "user")
+    private List<Token> tokens;
+
 
     @ManyToMany
     @JoinTable(
