@@ -161,12 +161,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findByEmail(email).orElseThrow(
                 () -> new RecordNotFoundException("User not found with this email: " + email)
         );
-
-        try {
-            emailUtil.sendResetPasswordEmail(email);
-        } catch (MessagingException e) {
-            throw new ErrorException("Unable to send email, please try again.");
-        }
+        regenerateOtp(email);
         return "Please check your email to set new password for your account.";
     }
 
