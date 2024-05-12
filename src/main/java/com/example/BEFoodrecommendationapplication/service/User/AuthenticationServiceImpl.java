@@ -91,7 +91,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return "Please check your email for the verification";
     }
     @Override
-    public AuthenticationResponse verifyAccount(String email, String otp) {
+    public String verifyAccount(String email, String otp) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with this email: " + email));
         if (user.getOtp().equals(otp) && Duration.between(user.getOtpGeneratedTime(),
@@ -101,11 +101,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             userRepository.save(user);
 
-            String jwtToken = jwtService.generateToken(user);
-
-            saveUserToken(jwtToken, user);
-
-            return AuthenticationResponse.builder().accessToken(jwtToken).build();
+            return "Account Verified";
         }
         else {
             throw new RuntimeException("Wrong token or time out, please try again!");
@@ -166,14 +162,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public String setPassword(String email, String newPassword) {
+    public AuthenticationResponse setPassword(String email, String newPassword) {
         User user = userRepository.findByEmail(email).orElseThrow(
                 () -> new RecordNotFoundException("User not found with this email: " + email)
         );
         user.setPassword(passwordEncoder.encode(newPassword));
         revokeAllTokenByUser(user);
         userRepository.save(user);
-        return "Set password successfully.";
+        String jwtToken = jwtService.generateToken(user);
+
+        saveUserToken(jwtToken, user);
+        return AuthenticationResponse.builder().accessToken(jwtToken).build();
     }
 
     private void revokeAllTokenByUser(User user) {

@@ -122,8 +122,8 @@ public class AuthenticationController {
         try {
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    null,
                     service.verifyAccount(email, otp),
-                    "Verify successfully",
                     StatusCode.SUCCESS));
         }catch (RecordNotFoundException e){
 
@@ -162,14 +162,14 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "400", description = "Set password failed")})
     @PutMapping("/set-password")
     public ResponseEntity<Response> setPassword(
-            @RequestParam String email, @RequestHeader String newPassword
+            @RequestParam String email, @RequestBody String newPassword
     ) {
         try {
 
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    null,
                     service.setPassword(email, newPassword),
+                    "Set password successfully",
                     StatusCode.SUCCESS));
         }catch (RecordNotFoundException e){
 
