@@ -34,10 +34,10 @@ public class UserController {
                             schema = @Schema(implementation = User.class)
                     )}),
             @ApiResponse(responseCode = "404", description = "Set profile failed")})
-    @PutMapping("set-up-personalize/{id}")
-    public ResponseEntity<Response> setUserProfile(@PathVariable Integer id, @RequestBody UserInput userInput) {
+    @PutMapping("/me")
+    public ResponseEntity<Response> setUserProfile(@RequestBody UserInput userInput) {
         try {
-
+            Integer id = AuthenticationUtils.getUserFromSecurityContext().getId();
             User user = userService.save(id, userInput);
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
