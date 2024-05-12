@@ -83,9 +83,9 @@ public class FoodRecipeController {
                                     schema = @Schema(implementation = Response.class))
                     }),
             @ApiResponse(responseCode = "404", description = "Get Detail failed")})
-    @GetMapping("get-detail/{id}")
+    @GetMapping("/")
     @Cacheable("getDetail")
-    public ResponseEntity<Response> getRecipeById(@PathVariable Integer id) {
+    public ResponseEntity<Response> getRecipeById(@RequestParam Integer id) {
         try {
 
             FoodRecipe foodRecipe = foodRecipeService.findById(id);
@@ -129,7 +129,7 @@ public class FoodRecipeController {
                                     schema = @Schema(implementation = Response.class))
                     }),
             @ApiResponse(responseCode = "404", description = "Get Recent Search failed")})
-    @GetMapping("/recent-search")
+    @GetMapping("/recent")
     @Cacheable("recentSearch")
     public ResponseEntity<Response> getRecentViews() {
         try {
@@ -162,7 +162,7 @@ public class FoodRecipeController {
                                     schema = @Schema(implementation = Response.class))
                     }),
             @ApiResponse(responseCode = "404", description = "Get Popular failed")})
-    @GetMapping("get-popular")
+    @GetMapping("/popular")
     @Cacheable("getPopular")
     public ResponseEntity<Response> getPopularRecipes( @RequestParam Integer page,
                                                        @RequestParam Integer size) {
@@ -191,7 +191,7 @@ public class FoodRecipeController {
                                     schema = @Schema(implementation = Response.class))
                     }),
             @ApiResponse(responseCode = "404", description = "Get Category List failed")})
-    @GetMapping("/get-category-list")
+    @GetMapping("/categories")
     @Cacheable("getCategory")
     public  ResponseEntity<Response> getCategories() {
 
