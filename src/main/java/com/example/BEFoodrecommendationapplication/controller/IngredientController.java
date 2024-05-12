@@ -37,7 +37,7 @@ public class IngredientController {
                             schema = @Schema(implementation = String.class))
             }),
             @ApiResponse(responseCode = "404", description = "Get ingredients failed")})
-    @GetMapping("/get-ingredients")
+    @GetMapping("/ingredients")
     public ResponseEntity<Response> getTop100Ingredients() {
         try {
 
