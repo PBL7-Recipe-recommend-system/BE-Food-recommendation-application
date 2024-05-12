@@ -116,9 +116,9 @@ public class AuthenticationController {
                                     schema = @Schema(implementation = Response.class))
                     }),
             @ApiResponse(responseCode = "400", description = "Verify account failed")})
-    @PutMapping("/otp-verification")
+    @PostMapping("/otp-verification")
     public ResponseEntity<Response> verifyAccount(@RequestParam String email,
-                                                @RequestParam String otp) {
+                                                @RequestBody String otp) {
         try {
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
