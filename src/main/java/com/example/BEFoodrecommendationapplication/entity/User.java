@@ -74,12 +74,15 @@ public class User implements UserDetails {
     private boolean active;
 
     @Column(name = "otp")
+    @JsonIgnore
     private String otp;
 
     @Column(name = "otp_generated_time")
+    @JsonIgnore
     private LocalDateTime otpGeneratedTime;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Token> tokens;
 
 

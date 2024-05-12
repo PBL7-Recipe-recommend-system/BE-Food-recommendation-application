@@ -4,6 +4,7 @@ import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.service.User.UserService;
+import com.example.BEFoodrecommendationapplication.util.AuthenticationUtils;
 import com.example.BEFoodrecommendationapplication.util.ResponseBuilderUtil;
 import com.example.BEFoodrecommendationapplication.util.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,6 +67,31 @@ public class UserController {
             User user = userService.getUser(id);
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     user,
+                    "Get user successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.NOT_FOUND));
+
+        }
+    }
+
+    @Operation(summary = "Get user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get user successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class)
+                            )}),
+            @ApiResponse(responseCode = "404", description = "Get user failed")})
+    @GetMapping("/me")
+    public ResponseEntity<Response> getInfo() {
+        try {
+
+            Integer id = AuthenticationUtils.getUserFromSecurityContext().getId();
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    userService.getUser(id),
                     "Get user successfully",
                     StatusCode.SUCCESS));
 
