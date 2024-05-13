@@ -9,6 +9,7 @@ import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
     @Override
     @Cacheable("searchRecipes")
-    public Page<SearchResult> search(String name, String category, Integer rating, Pageable pageable) {
+    public Page<SearchResult> search(String name, String category, Integer rating, Integer dateRating, Pageable pageable) {
         Specification<FoodRecipe> spec = Specification.where(null);
 
         if (name != null) {
@@ -40,6 +41,18 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         }
         if (rating != null) {
             spec = spec.and(FoodRecipeSpecification.ratingIs(rating));
+        }
+
+
+        if (dateRating != null) {
+            if (dateRating == 2) {
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").descending());
+            } else if (dateRating == 3) {
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").ascending());
+            }
+            else if (dateRating == 4) {
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("aggregatedRatings").descending().and(Sort.by("reviewCount").descending()));
+            }
         }
 
         Page<FoodRecipe> foodRecipes = foodRecipeRepository.findAll(spec, pageable);

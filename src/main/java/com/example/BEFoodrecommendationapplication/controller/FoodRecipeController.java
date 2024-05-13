@@ -58,10 +58,11 @@ public class FoodRecipeController {
                                            @RequestParam(required = false) String category,
                                            @RequestParam(required = false) Integer rating,
                                            @RequestParam(defaultValue = "0") Integer page,
-                                           @RequestParam(defaultValue = "10") Integer size){
+                                           @RequestParam(defaultValue = "10") Integer size,
+                                           @RequestParam(defaultValue = "1") Integer timeRate){
         try {
 
-            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, PageRequest.of(page, size));
+            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate,PageRequest.of(page, size));
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     listRecipes,

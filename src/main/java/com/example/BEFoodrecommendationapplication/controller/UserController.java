@@ -60,7 +60,7 @@ public class UserController {
                                     schema = @Schema(implementation = User.class)
                             )}),
             @ApiResponse(responseCode = "404", description = "Get user failed")})
-    @GetMapping("get-user/{id}")
+    @GetMapping("user/{id}")
     public ResponseEntity<Response> getUser(@PathVariable Integer id) {
         try {
 
