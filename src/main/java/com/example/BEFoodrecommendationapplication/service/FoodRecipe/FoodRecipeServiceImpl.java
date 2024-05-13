@@ -29,7 +29,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
     @Override
     @Cacheable("searchRecipes")
-    public Page<SearchResult> search(String name, String category, Integer rating, Integer dateRating, Pageable pageable) {
+    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, Pageable pageable) {
         Specification<FoodRecipe> spec = Specification.where(null);
 
         if (name != null) {
@@ -44,13 +44,13 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         }
 
 
-        if (dateRating != null) {
-            if (dateRating == 2) {
+        if (timeRate != null) {
+            if (timeRate == 2) {
                 pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").descending());
-            } else if (dateRating == 3) {
+            } else if (timeRate == 3) {
                 pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").ascending());
             }
-            else if (dateRating == 4) {
+            else if (timeRate == 4) {
                 pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("aggregatedRatings").descending().and(Sort.by("reviewCount").descending()));
             }
         }
