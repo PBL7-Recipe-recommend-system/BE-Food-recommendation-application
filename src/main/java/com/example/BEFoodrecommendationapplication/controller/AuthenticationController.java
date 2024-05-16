@@ -1,9 +1,6 @@
 package com.example.BEFoodrecommendationapplication.controller;
 
-import com.example.BEFoodrecommendationapplication.dto.AuthenticationRequest;
-import com.example.BEFoodrecommendationapplication.dto.AuthenticationResponse;
-import com.example.BEFoodrecommendationapplication.dto.RegisterRequest;
-import com.example.BEFoodrecommendationapplication.dto.Response;
+import com.example.BEFoodrecommendationapplication.dto.*;
 import com.example.BEFoodrecommendationapplication.exception.*;
 import com.example.BEFoodrecommendationapplication.service.User.AuthenticationService;
 import com.example.BEFoodrecommendationapplication.util.ResponseBuilderUtil;
@@ -118,12 +115,12 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "400", description = "Verify account failed")})
     @PostMapping("/otp-verification")
     public ResponseEntity<Response> verifyAccount(@RequestParam String email,
-                                                @RequestBody String otp) {
+                                                @RequestBody OtpRequest otp) {
         try {
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     null,
-                    service.verifyAccount(email, otp),
+                    service.verifyAccount(email, otp.getOtp()),
                     StatusCode.SUCCESS));
         }catch (RecordNotFoundException e){
 
@@ -162,13 +159,13 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "400", description = "Set password failed")})
     @PutMapping("/set-password")
     public ResponseEntity<Response> setPassword(
-            @RequestParam String email, @RequestBody String newPassword
+            @RequestParam String email, @RequestBody SetPasswordRequest request
     ) {
         try {
 
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    service.setPassword(email, newPassword),
+                    service.setPassword(email, request.getNewPassword()),
                     "Set password successfully",
                     StatusCode.SUCCESS));
         }catch (RecordNotFoundException e){
