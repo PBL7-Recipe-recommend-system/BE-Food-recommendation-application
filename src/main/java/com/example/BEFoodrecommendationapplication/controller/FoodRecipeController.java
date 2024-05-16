@@ -84,7 +84,7 @@ public class FoodRecipeController {
                                     schema = @Schema(implementation = Response.class))
                     }),
             @ApiResponse(responseCode = "404", description = "Get Detail failed")})
-    @GetMapping("/")
+    @GetMapping("")
     @Cacheable("getDetail")
     public ResponseEntity<Response> getRecipeById(@RequestParam Integer id) {
         try {
