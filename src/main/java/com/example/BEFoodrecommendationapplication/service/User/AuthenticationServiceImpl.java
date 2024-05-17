@@ -94,8 +94,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public String verifyAccount(String email, String otp) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with this email: " + email));
+
         if (user.getOtp().equals(otp) && Duration.between(user.getOtpGeneratedTime(),
-                LocalDateTime.now()).getSeconds() < (3 * 60)) {
+                LocalDateTime.now()).getSeconds() < (5 * 60)) {
 
             user.setActive(true);
 
@@ -166,6 +167,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findByEmail(email).orElseThrow(
                 () -> new RecordNotFoundException("User not found with this email: " + email)
         );
+
+        if (!newPassword.matches(PASSWORD_REGEX)) {
+            throw new WrongFormatPasswordException("Password must contain uppercase and lowercase letters, at least 8 characters, at least one number, and at least one special character.");
+        }
         user.setPassword(passwordEncoder.encode(newPassword));
         revokeAllTokenByUser(user);
         userRepository.save(user);
