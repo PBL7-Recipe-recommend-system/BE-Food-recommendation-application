@@ -60,6 +60,9 @@ public class User implements UserDetails {
     @Column(name = "gender")
     private String gender;
 
+    @Column(name = "avatar")
+    private String avatar;
+
     @Column(name = "daily_activities")
     private String dailyActivities;
 
