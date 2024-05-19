@@ -14,6 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 public class UserInput {
 
+    @JsonProperty("name")
+    private String name;
+
     @JsonProperty("weight")
     private float weight;
 

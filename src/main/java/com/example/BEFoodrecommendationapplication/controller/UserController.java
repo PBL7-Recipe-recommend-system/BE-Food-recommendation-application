@@ -16,7 +16,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -51,6 +55,7 @@ public class UserController {
 
         }
     }
+
 
     @Operation(summary = "Get user")
     @ApiResponses(value = {
@@ -100,5 +105,32 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.NOT_FOUND));
 
         }
+    }
+
+    @Operation(summary = "Upload avatar")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Upload successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class)
+                            )}),
+            @ApiResponse(responseCode = "404", description = "Upload failed")})
+    @PostMapping("/avatar")
+    public ResponseEntity<Response> uploadFile(@RequestParam("image") MultipartFile multipartFile) throws IOException {
+
+        try {
+            Integer id = AuthenticationUtils.getUserFromSecurityContext().getId();
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    userService.uploadAvatar(multipartFile,id),
+                    "Upload successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.NOT_FOUND));
+
+        }
+
     }
 }
