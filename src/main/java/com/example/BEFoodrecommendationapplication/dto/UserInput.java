@@ -30,13 +30,13 @@ public class UserInput {
     private LocalDate birthday;
 
     @JsonProperty("dailyActivities")
-    private String daily_activities;
+    private String dailyActivities;
 
     @JsonProperty("meals")
     private Integer meals;
 
     @JsonProperty("dietaryGoal")
-    private Integer dietary_goal;
+    private Integer dietaryGoal;
 
     @JsonProperty("ingredients")
     private List<String> ingredients;

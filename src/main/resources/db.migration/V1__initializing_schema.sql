@@ -1,10 +1,3 @@
-DROP TABLE IF EXISTS `user`;
-DROP TABLE IF EXISTS `food_recipe`;
-DROP TABLE IF EXISTS `meal`;
-DROP TABLE IF EXISTS `meal_recipe`;
-DROP TABLE IF EXISTS `review`;
-DROP TABLE IF EXISTS `diet_restriction`;
-DROP TABLE IF EXISTS `user_diet_restriction`;
 
 CREATE TABLE user (
                       user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -49,7 +42,6 @@ CREATE TABLE food_recipe (
                              sugar_content FLOAT,
                              protein_content FLOAT,
                              recipe_servings INT,
-                             recipe_yeild VARCHAR(255),
                              recipe_instructions TEXT,
                              FOREIGN KEY (author_id) REFERENCES user(user_id)
 );
@@ -72,19 +64,20 @@ CREATE TABLE diet_plan (
 );
 
 CREATE TABLE meal (
-                       meal_id INT AUTO_INCREMENT PRIMARY KEY,
-                       plan_id INT NOT NULL,
-                       meal_name VARCHAR(100),
-                       meal_time TIME,
-                       FOREIGN KEY (plan_id) REFERENCES diet_plan(plan_id)
+                      meal_id INT AUTO_INCREMENT PRIMARY KEY,
+                      plan_id INT NOT NULL,
+                      meal_name VARCHAR(100),
+                      meal_time TIME,
+                      FOREIGN KEY (plan_id) REFERENCES diet_plan(plan_id)
 );
+
 CREATE TABLE meal_recipe (
-                              meal_id INT,
-                              recipe_id INT,
-                              serving_size INT,
-                              PRIMARY KEY (meal_id, recipe_id),
-                              FOREIGN KEY (meal_id) REFERENCES meal(meal_id),
-                              FOREIGN KEY (recipe_id) REFERENCES food_recipe(recipe_id)
+                             meal_id INT,
+                             recipe_id INT,
+                             serving_size INT,
+                             PRIMARY KEY (meal_id, recipe_id),
+                             FOREIGN KEY (meal_id) REFERENCES meal(meal_id),
+                             FOREIGN KEY (recipe_id) REFERENCES food_recipe(recipe_id)
 );
 CREATE TABLE review (
                         review_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -111,14 +104,14 @@ CREATE TABLE user_diet_restriction (
                                        FOREIGN KEY (restriction_id) REFERENCES diet_restriction(restriction_id)
 );
 CREATE TABLE ingredient (
-                             ingredient_id INT AUTO_INCREMENT PRIMARY KEY,
-                             name VARCHAR(100) NOT NULL,
-                             Description TEXT
+                            ingredient_id INT AUTO_INCREMENT PRIMARY KEY,
+                            name VARCHAR(100) NOT NULL,
+                            Description TEXT
 );
 CREATE TABLE  user_ingredient (
-                                 user_id INT,
-                                 ingredient_id INT,
-                                 PRIMARY KEY (user_id, ingredient_id),
-                                 FOREIGN KEY (user_id) REFERENCES user(user_id),
-                                 FOREIGN KEY (ingredient_id) REFERENCES ingredient(ingredient_id)
+                                  user_id INT,
+                                  ingredient_id INT,
+                                  PRIMARY KEY (user_id, ingredient_id),
+                                  FOREIGN KEY (user_id) REFERENCES user(user_id),
+                                  FOREIGN KEY (ingredient_id) REFERENCES ingredient(ingredient_id)
 );

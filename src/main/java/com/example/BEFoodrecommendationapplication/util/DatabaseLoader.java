@@ -20,14 +20,14 @@ public class DatabaseLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (ingredientRepository.count() == 0){
-            List<Ingredient> ingredients = new CsvToBeanBuilder<Ingredient>(new FileReader("src/main/java/com/example/BEFoodrecommendationapplication/data/ingredients.csv"))
-                    .withType(Ingredient.class)
-                    .withSeparator(';')
-                    .build()
-                    .parse();
-
-            ingredientRepository.saveAll(ingredients);
-        }
+//        if (ingredientRepository.count() == 0){
+//            List<Ingredient> ingredients = new CsvToBeanBuilder<Ingredient>(new FileReader("src/main/java/com/example/BEFoodrecommendationapplication/data/ingredients.csv"))
+//                    .withType(Ingredient.class)
+//                    .withSeparator(';')
+//                    .build()
+//                    .parse();
+//
+//            ingredientRepository.saveAll(ingredients);
+//        }
     }
 }

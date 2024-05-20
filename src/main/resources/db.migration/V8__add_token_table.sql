@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS `token`;
+
 CREATE TABLE token (
                        id INT PRIMARY KEY AUTO_INCREMENT,
                        token VARCHAR(255),

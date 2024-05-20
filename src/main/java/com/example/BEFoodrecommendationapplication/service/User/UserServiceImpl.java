@@ -33,9 +33,9 @@ public class UserServiceImpl implements UserService{
             user.setHeight(userInput.getHeight());
             user.setGender(userInput.getGender());
             user.setBirthday(userInput.getBirthday());
-            user.setDailyActivities(userInput.getDaily_activities());
+            user.setDailyActivities(userInput.getDailyActivities());
             user.setMeals(userInput.getMeals());
-            user.setDietaryGoal(userInput.getDietary_goal());
+            user.setDietaryGoal(userInput.getDietaryGoal());
 
             List<Ingredient> ingredients = ingredientRepository.findByNameIn(userInput.getIngredients());
             Set<Ingredient> ingredientSet = new HashSet<>(ingredients);

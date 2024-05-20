@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -48,7 +50,7 @@ public class AuthenticationController {
         }catch (DuplicateDataException | InvalidEmailException | WrongFormatPasswordException e){
 
 
-            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.UNAUTHORIZED));
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.UNAUTHORIZED));
         }
 
     }
@@ -75,7 +77,7 @@ public class AuthenticationController {
         }catch (InvalidEmailException | RecordNotFoundException e){
 
 
-            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.UNAUTHORIZED));
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.UNAUTHORIZED));
         }
     }
 
@@ -95,13 +97,13 @@ public class AuthenticationController {
 
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    null,
+                    new ArrayList<>(),
                     service.forgotPassword(email),
                     StatusCode.SUCCESS));
 
         }catch (ErrorException | RecordNotFoundException e){
 
-            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.BAD_REQUEST));
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.BAD_REQUEST));
         }
 
     }
@@ -119,12 +121,12 @@ public class AuthenticationController {
         try {
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    null,
+                    new ArrayList<>(),
                     service.verifyAccount(email, otp.getOtp()),
                     StatusCode.SUCCESS));
         }catch (RecordNotFoundException e){
 
-            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.BAD_REQUEST));
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.BAD_REQUEST));
         }
     }
 
@@ -141,12 +143,12 @@ public class AuthenticationController {
         try {
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    null,
+                    new ArrayList<>(),
                     service.regenerateOtp(email),
                     StatusCode.SUCCESS));
         }catch (RecordNotFoundException e){
 
-            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.BAD_REQUEST));
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.BAD_REQUEST));
         }
     }
     @Operation(summary = "Set password")
@@ -170,7 +172,7 @@ public class AuthenticationController {
                     StatusCode.SUCCESS));
         }catch (RecordNotFoundException e){
 
-            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.BAD_REQUEST));
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.BAD_REQUEST));
         }
 
     }
