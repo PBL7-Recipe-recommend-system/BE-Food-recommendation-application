@@ -5,7 +5,7 @@ import com.example.BEFoodrecommendationapplication.dto.AuthenticationResponse;
 import com.example.BEFoodrecommendationapplication.dto.RegisterRequest;
 
 public interface AuthenticationService {
-    String register(RegisterRequest request);
+    AuthenticationResponse register(RegisterRequest request);
 
     AuthenticationResponse authenticate(AuthenticationRequest request);
 

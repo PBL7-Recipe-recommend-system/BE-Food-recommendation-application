@@ -40,8 +40,8 @@ public class AuthenticationController {
 
             return ResponseEntity.ok(
                     ResponseBuilderUtil.responseBuilder(
-                            null,
-                                service.register(request),
+                            service.register(request),
+                                "Register successfully",
                                 StatusCode.SUCCESS)
             );
 

@@ -44,7 +44,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public String register(RegisterRequest request) throws DuplicateDataException {
+    public AuthenticationResponse register(RegisterRequest request) throws DuplicateDataException {
         if (!request.getEmail().matches(EMAIL_REGEX)) {
             throw new InvalidEmailException("Invalid email format");
         }
@@ -53,42 +53,30 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         Optional<User> existedUser = userRepository.findByEmail(request.getEmail());
-        if (existedUser.isPresent() && existedUser.get().isActive()) {
+        if (existedUser.isPresent()) {
             throw new DuplicateDataException("Email already exists.");
         }
-
-        String otp = otpUtil.generateOtp();
-        try {
-            emailUtil.sendOtpEmail(request.getEmail(), otp);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Unable to send otp please try again");
-        }
-
-        if(existedUser.isPresent() && !existedUser.get().isActive())
+        else
         {
-            User user = existedUser.get();
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setCreatedAt(LocalDate.now());
-            user.setOtp(otp);
-            user.setOtpGeneratedTime(LocalDateTime.now());
+
+            String passwordEncode = passwordEncoder.encode(request.getPassword());
+            User user = User.builder()
+                    .email(request.getEmail())
+                    .name(request.getName())
+                    .password(passwordEncode)
+                    .createdAt(LocalDate.now())
+                    .role(Role.USER)
+                    .active(true)
+                    .otpGeneratedTime(LocalDateTime.now())
+                    .build();
             userRepository.save(user);
-            return "Please check your email for the verification";
+            String jwtToken = jwtService.generateToken(user);
+            saveUserToken(jwtToken, user);
+
+            return AuthenticationResponse.builder().accessToken(jwtToken).build();
         }
 
-        String passwordEncode = passwordEncoder.encode(request.getPassword());
-        User user = User.builder()
-                .email(request.getEmail())
-                .name(request.getName())
-                .password(passwordEncode)
-                .createdAt(LocalDate.now())
-                .role(Role.USER)
-                .otp(otp)
-                .active(false)
-                .otpGeneratedTime(LocalDateTime.now())
-                .build();
-        userRepository.save(user);
 
-        return "Please check your email for the verification";
     }
     @Override
     public String verifyAccount(String email, String otp) {
