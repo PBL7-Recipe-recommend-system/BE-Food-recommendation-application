@@ -92,9 +92,6 @@ public class FoodRecipe {
     @Column(name = "recipe_servings")
     private Integer recipeServings;
 
-    @Column(name = "recipe_yeild")
-    private String recipeYeild;
-
     @Column(name = "recipe_instructions")
     private String recipeInstructions;
 
