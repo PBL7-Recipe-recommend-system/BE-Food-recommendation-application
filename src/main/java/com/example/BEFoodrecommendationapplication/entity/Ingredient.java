@@ -31,7 +31,11 @@ public class Ingredient {
     @CsvBindByName(column = "Description")
     private String description;
 
-    @ManyToMany(mappedBy = "ingredients")
+    @OneToMany(mappedBy = "ingredient")
     @JsonIgnore
-    private Set<User> users;
+    private Set<UserIncludeIngredient> includeUsers;
+
+    @OneToMany(mappedBy = "ingredient")
+    @JsonIgnore
+    private Set<UserExcludeIngredient> excludeUsers;
 }

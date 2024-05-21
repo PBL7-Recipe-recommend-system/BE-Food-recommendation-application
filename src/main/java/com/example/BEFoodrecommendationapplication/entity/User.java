@@ -89,13 +89,13 @@ public class User implements UserDetails {
     private List<Token> tokens;
 
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_ingredient",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "ingredient_id")
-    )
-    private Set<Ingredient> ingredients;
+    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    private Set<UserIncludeIngredient> includeIngredients;
+
+    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    private Set<UserExcludeIngredient> excludeIngredients;
 
     public void setMeals(Integer meals) {
         if (meals != 3 && meals != 4 && meals != 5) {

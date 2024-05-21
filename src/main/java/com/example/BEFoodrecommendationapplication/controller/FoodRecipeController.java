@@ -89,7 +89,7 @@ public class FoodRecipeController {
     @Cacheable("getDetail")
     public ResponseEntity<Response> getRecipeById(@RequestParam Integer id) {
         try {
-
+            System.out.println(id);
             FoodRecipe foodRecipe = foodRecipeService.findById(id);
             Integer userId = AuthenticationUtils.getUserFromSecurityContext().getId();
             User user = userRepository.findById(userId)

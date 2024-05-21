@@ -4,8 +4,11 @@ import com.cloudinary.Cloudinary;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
 import com.example.BEFoodrecommendationapplication.entity.Ingredient;
 import com.example.BEFoodrecommendationapplication.entity.User;
+import com.example.BEFoodrecommendationapplication.entity.UserExcludeIngredient;
+import com.example.BEFoodrecommendationapplication.entity.UserIncludeIngredient;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
 import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
+import com.example.BEFoodrecommendationapplication.repository.UserExcludeIngredientRepository;
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
 
     private final IngredientRepository ingredientRepository;
+    private final UserExcludeIngredientRepository userExcludeIngredientRepo;
 
     private final Cloudinary cloudinary;
 
@@ -38,13 +42,21 @@ public class UserServiceImpl implements UserService{
             user.setDietaryGoal(userInput.getDietaryGoal());
 
             List<Ingredient> ingredients = ingredientRepository.findByNameIn(userInput.getIngredients());
-            Set<Ingredient> ingredientSet = new HashSet<>(ingredients);
-            if(ingredientSet.isEmpty())
-            {
-                user.setIngredients(null);
+            Set<UserExcludeIngredient> userExcludeIngredients = new HashSet<>();
+
+            for (Ingredient ingredient : ingredients) {
+                UserExcludeIngredient userExcludeIngredient = new UserExcludeIngredient();
+                userExcludeIngredient.setUser(user);
+                userExcludeIngredient.setIngredient(ingredient);
+                userExcludeIngredients.add(userExcludeIngredient);
             }
-            else{
-                user.setIngredients(ingredientSet);
+
+            if(userExcludeIngredients.isEmpty()) {
+                user.setExcludeIngredients(null);
+                userExcludeIngredientRepo.saveAll(userExcludeIngredients);
+            } else {
+                user.setExcludeIngredients(userExcludeIngredients);
+                userExcludeIngredientRepo.saveAll(userExcludeIngredients);
             }
 
             return userRepository.save(user);

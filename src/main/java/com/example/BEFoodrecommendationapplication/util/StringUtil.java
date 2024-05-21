@@ -3,6 +3,7 @@ package com.example.BEFoodrecommendationapplication.util;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +11,10 @@ import java.util.List;
 @NoArgsConstructor
 public class StringUtil {
     public List<String> splitStringToList(String input) {
+        if(input == null)
+        {
+            return new ArrayList<>();
+        }
         if (!input.startsWith("c")) {
             return Collections.singletonList(input.replaceAll("^\"|\"$", ""));
         }
