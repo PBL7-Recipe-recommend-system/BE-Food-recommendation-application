@@ -30,11 +30,12 @@ public class StringUtil {
 
 
         if (input.length() > 2) {
-            input = input.substring(2, input.length() - 2);
+            input = input.substring(3, input.length() - 4);
         }
-        input = input.replace("\\\"", "\"");
-
-        input = input.replace("\\r\\n", " ").replace("\\n", " ").replace("\\r", " ");
+        input = input.replace("\\\"", "");
+        System.out.println(input);
+        input = input.replace("\\r\\n", "").replace("\\n", "").replace("\\r", "");
+        System.out.println(input);
         return new ArrayList<>(Arrays.asList(input.split("\", \"")));
     }
 
@@ -47,11 +48,11 @@ public class StringUtil {
         for (int i = 0; i < 4; i++) {
             int start = i * partSize + Math.min(i, remainder);
             int end = start + partSize + (i < remainder ? 1 : 0);
-            if (start < totalSize) {  // Check to ensure we do not go out of list's bounds
+            if (start < totalSize) {
                 String partInstructions = String.join(" ", instructions.subList(start, end));
                 partitioned.add(partInstructions);
             } else {
-                partitioned.add(""); // Add an empty string if there are no instructions to distribute
+                partitioned.add("");
             }
         }
         return partitioned;
