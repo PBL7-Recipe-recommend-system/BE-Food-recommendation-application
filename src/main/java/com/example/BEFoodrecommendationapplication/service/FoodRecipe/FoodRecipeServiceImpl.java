@@ -104,7 +104,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 .sugarContent(foodRecipe.getSugarContent())
                 .proteinContent(foodRecipe.getProteinContent())
                 .recipeServings(foodRecipe.getRecipeServings())
-                .recipeInstructions(stringUtil.splitStringToList(foodRecipe.getRecipeInstructions()))
+                .recipeInstructions(stringUtil.partitionIntoFourParts(stringUtil.splitInstructions(foodRecipe.getRecipeInstructions())))
                 .build();
     }
 
@@ -125,6 +125,10 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
     }
 
     public String cleanTime(String time) {
+        if(time == null)
+        {
+            return "";
+        }
         if (time.startsWith("PT")) {
             return time.replaceFirst("PT", "");
         }
