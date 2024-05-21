@@ -104,7 +104,6 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 .sugarContent(foodRecipe.getSugarContent())
                 .proteinContent(foodRecipe.getProteinContent())
                 .recipeServings(foodRecipe.getRecipeServings())
-                .recipeYeild(foodRecipe.getRecipeYeild())
                 .recipeInstructions(stringUtil.splitStringToList(foodRecipe.getRecipeInstructions()))
                 .build();
     }
