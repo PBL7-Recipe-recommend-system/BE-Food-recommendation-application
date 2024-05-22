@@ -77,23 +77,51 @@ public class UserServiceImpl implements UserService{
     }
 
     public UserDto mapUserToUserDto(User user) {
-        if (user.getBirthday() == null || user.getWeight() == null || user.getHeight() == null || user.getDailyActivities() == null || user.getMeals() == null || user.getDietaryGoal() == null) {
-            return UserDto.builder()
-                    .name(user.getName())
-                    .build();
+
+        float[] dietaryRate = {0.8f,1.2f, 1.0f };
+        float rate = 1;
+        float height = 0;
+        float weight = 0;
+        String gender = "";
+        String dailyActivities = "";
+        int meals = 0;
+        int dietaryGoal = 0;
+        if(user.getHeight() != null)
+        {
+            height = user.getHeight();
         }
-        float[] dietaryGoal = {0.8f,1.2f, 1.0f };
+        if(user.getGender() != null)
+        {
+            gender = user.getGender();
+        }
+        if(user.getWeight() != null)
+        {
+            weight = user.getWeight();
+        }
+        if(user.getDailyActivities() != null)
+        {
+            dailyActivities = user.getDailyActivities();
+        }
+        if(user.getMeals() != null)
+        {
+            meals = user.getMeals();
+        }
+        if(user.getDietaryGoal() != null)
+        {
+            rate = dietaryRate[user.getDietaryGoal()];
+            dietaryGoal = user.getDietaryGoal();
+        }
         return UserDto.builder()
                 .name(user.getName())
-                .weight(user.getWeight())
-                .height(user.getHeight())
-                .gender(user.getGender())
+                .weight(weight)
+                .height(height)
+                .gender(gender)
                 .age(user.calculateAge())
-                .dailyActivities(user.getDailyActivities())
-                .meals(user.getMeals())
-                .dietaryGoal(user.getDietaryGoal())
+                .dailyActivities(dailyActivities)
+                .meals(meals)
+                .dietaryGoal(dietaryGoal)
                 .bmi(user.calculateBmi())
-                .recommendCalories(Math.round(user.caloriesCalculator()*dietaryGoal[user.getDietaryGoal()]))
+                .recommendCalories(Math.round(user.caloriesCalculator()*rate))
                 .build();
     }
 

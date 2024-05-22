@@ -96,18 +96,30 @@ public class User implements UserDetails {
     private Set<UserExcludeIngredient> excludeIngredients;
 
     public int calculateAge() {
+        if (this.birthday == null)
+        {
+            return 0;
+        }
         LocalDate now = LocalDate.now();
         Period period = Period.between(this.birthday, now);
         return period.getYears();
     }
 
     public float calculateBmi() {
+        if (this.weight == null || this.height == null)
+        {
+            return 0;
+        }
         float heightInMeters = this.height / 100;
         float bmi = this.weight / (heightInMeters * heightInMeters);
         return Math.round(bmi * 100.0) / 100.0f;
     }
 
     public float calculateBmr() {
+        if (this.weight == null || this.height == null || this.birthday == null)
+        {
+            return 0;
+        }
         int age = this.calculateAge();
         float bmr;
         if (this.gender.equals("Male")) {
@@ -119,7 +131,10 @@ public class User implements UserDetails {
     }
 
     public float caloriesCalculator() {
-
+        if(this.dailyActivities == null)
+        {
+            return 0;
+        }
         String[] activities = {"Little/no exercise", "Light exercise", "Moderate exercise (3-5 days/wk)", "Very active (6-7 days/wk)", "Extra active (very active & physical job)"};
         float[] weights = {1.2f, 1.375f, 1.55f, 1.725f, 1.9f};
         int activityIndex = Arrays.asList(activities).indexOf(this.dailyActivities);
