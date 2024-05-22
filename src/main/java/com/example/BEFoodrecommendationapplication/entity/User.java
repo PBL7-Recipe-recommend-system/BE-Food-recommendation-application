@@ -10,10 +10,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.time.Period;
+import java.util.*;
 
 @Getter
 @Setter
@@ -97,6 +95,38 @@ public class User implements UserDetails {
     @JsonIgnore
     private Set<UserExcludeIngredient> excludeIngredients;
 
+    public int calculateAge() {
+        LocalDate now = LocalDate.now();
+        Period period = Period.between(this.birthday, now);
+        return period.getYears();
+    }
+
+    public float calculateBmi() {
+        float heightInMeters = this.height / 100;
+        float bmi = this.weight / (heightInMeters * heightInMeters);
+        return Math.round(bmi * 100.0) / 100.0f;
+    }
+
+    public float calculateBmr() {
+        int age = this.calculateAge();
+        float bmr;
+        if (this.gender.equals("Male")) {
+            bmr = 10 * this.weight + 6.25f * this.height - 5 * age + 5;
+        } else {
+            bmr = 10 * this.weight + 6.25f * this.height - 5 * age - 161;
+        }
+        return bmr;
+    }
+
+    public float caloriesCalculator() {
+
+        String[] activities = {"Little/no exercise", "Light exercise", "Moderate exercise (3-5 days/wk)", "Very active (6-7 days/wk)", "Extra active (very active & physical job)"};
+        float[] weights = {1.2f, 1.375f, 1.55f, 1.725f, 1.9f};
+        int activityIndex = Arrays.asList(activities).indexOf(this.dailyActivities);
+        float weight = weights[activityIndex];
+
+        return this.calculateBmr() * weight;
+    }
     public void setMeals(Integer meals) {
         if (meals != 3 && meals != 4 && meals != 5) {
             throw new IllegalArgumentException("Invalid value for meals");

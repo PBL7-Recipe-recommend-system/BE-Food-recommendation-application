@@ -1,6 +1,7 @@
 package com.example.BEFoodrecommendationapplication.controller;
 
 import com.example.BEFoodrecommendationapplication.dto.Response;
+import com.example.BEFoodrecommendationapplication.dto.UserDto;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.service.User.UserService;
@@ -70,7 +71,7 @@ public class UserController {
     public ResponseEntity<Response> getUser(@PathVariable Integer id) {
         try {
 
-            User user = userService.getUser(id);
+            UserDto user = userService.getUser(id);
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     user,
                     "Get user successfully",

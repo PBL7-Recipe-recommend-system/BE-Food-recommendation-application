@@ -1,6 +1,7 @@
 package com.example.BEFoodrecommendationapplication.service.User;
 
 import com.cloudinary.Cloudinary;
+import com.example.BEFoodrecommendationapplication.dto.UserDto;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
 import com.example.BEFoodrecommendationapplication.entity.Ingredient;
 import com.example.BEFoodrecommendationapplication.entity.User;
@@ -64,14 +65,31 @@ public class UserServiceImpl implements UserService{
             throw new RecordNotFoundException("User not found with id : " + id);
         }
     }
-    public User getUser(Integer id) {
+    public UserDto getUser(Integer id) {
         try {
-            return userRepository.findById(id).orElseThrow();
+            User user = userRepository.findById(id).orElseThrow();
+            return mapUserToUserDto(user);
         }catch(Exception e)
         {
             throw new RecordNotFoundException("User not found with id : " + id);
         }
 
+    }
+
+    public UserDto mapUserToUserDto(User user) {
+        float[] dietaryGoal = {0.8f,1.2f, 1.0f };
+        return UserDto.builder()
+                .name(user.getName())
+                .weight(user.getWeight())
+                .height(user.getHeight())
+                .gender(user.getGender())
+                .age(user.calculateAge())
+                .dailyActivities(user.getDailyActivities())
+                .meals(user.getMeals())
+                .dietaryGoal(user.getDietaryGoal())
+                .bmi(user.calculateBmi())
+                .recommendCalories(Math.round(user.caloriesCalculator()*dietaryGoal[user.getDietaryGoal()]))
+                .build();
     }
 
 
