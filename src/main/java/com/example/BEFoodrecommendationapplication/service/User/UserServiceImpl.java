@@ -66,17 +66,22 @@ public class UserServiceImpl implements UserService{
         }
     }
     public UserDto getUser(Integer id) {
-        try {
-            User user = userRepository.findById(id).orElseThrow();
-            return mapUserToUserDto(user);
-        }catch(Exception e)
+
+        Optional<User> user = userRepository.findById(id);
+        if(user.isEmpty())
         {
             throw new RecordNotFoundException("User not found with id : " + id);
         }
+        return mapUserToUserDto(user.get());
 
     }
 
     public UserDto mapUserToUserDto(User user) {
+        if (user.getBirthday() == null || user.getWeight() == null || user.getHeight() == null || user.getDailyActivities() == null || user.getMeals() == null || user.getDietaryGoal() == null) {
+            return UserDto.builder()
+                    .name(user.getName())
+                    .build();
+        }
         float[] dietaryGoal = {0.8f,1.2f, 1.0f };
         return UserDto.builder()
                 .name(user.getName())
