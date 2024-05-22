@@ -1,10 +1,12 @@
 package com.example.BEFoodrecommendationapplication.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 
 import java.util.Date;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -98,5 +100,9 @@ public class FoodRecipe {
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
+
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<SavedRecipe> savedRecipes;
 
 }

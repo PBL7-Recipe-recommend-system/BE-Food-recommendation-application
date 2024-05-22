@@ -3,15 +3,14 @@ package com.example.BEFoodrecommendationapplication.service.User;
 import com.cloudinary.Cloudinary;
 import com.example.BEFoodrecommendationapplication.dto.UserDto;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
-import com.example.BEFoodrecommendationapplication.entity.Ingredient;
-import com.example.BEFoodrecommendationapplication.entity.User;
-import com.example.BEFoodrecommendationapplication.entity.UserExcludeIngredient;
-import com.example.BEFoodrecommendationapplication.entity.UserIncludeIngredient;
+import com.example.BEFoodrecommendationapplication.entity.*;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
 import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
+import com.example.BEFoodrecommendationapplication.repository.SavedRecipeRepository;
 import com.example.BEFoodrecommendationapplication.repository.UserExcludeIngredientRepository;
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,12 +22,30 @@ import java.util.*;
 public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
-
     private final IngredientRepository ingredientRepository;
     private final UserExcludeIngredientRepository userExcludeIngredientRepo;
-
     private final Cloudinary cloudinary;
+    private final SavedRecipeRepository savedRecipeRepository;
 
+
+
+    @Override
+    public void saveOrDeleteRecipeForUser(User user, FoodRecipe recipe, boolean save) {
+        if (save) {
+            SavedRecipe savedRecipe = new SavedRecipe();
+            savedRecipe.setUser(user);
+            savedRecipe.setRecipe(recipe);
+            savedRecipeRepository.save(savedRecipe);
+        } else {
+            SavedRecipe savedRecipe = savedRecipeRepository.findByUserAndRecipe(user, recipe);
+            if (savedRecipe != null) {
+                savedRecipeRepository.delete(savedRecipe);
+            }
+            else {
+                throw new RecordNotFoundException("Save recipe not found");
+            }
+        }
+    }
     public User save(Integer id, UserInput userInput) {
         Optional<User> optionalUser = userRepository.findById(id);
 
@@ -138,5 +155,11 @@ public class UserServiceImpl implements UserService{
         user.setAvatar(imageUrl);
         userRepository.save(user);
         return imageUrl;
+    }
+
+    @Override
+    public User findById(Integer id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("FoodRecipe not found with id " + id));
     }
 }

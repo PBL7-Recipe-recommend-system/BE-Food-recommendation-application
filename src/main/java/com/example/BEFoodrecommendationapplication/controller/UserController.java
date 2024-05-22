@@ -3,7 +3,10 @@ package com.example.BEFoodrecommendationapplication.controller;
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.dto.UserDto;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
+import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
+import com.example.BEFoodrecommendationapplication.entity.SavedRecipe;
 import com.example.BEFoodrecommendationapplication.entity.User;
+import com.example.BEFoodrecommendationapplication.service.FoodRecipe.FoodRecipeService;
 import com.example.BEFoodrecommendationapplication.service.User.UserService;
 import com.example.BEFoodrecommendationapplication.util.AuthenticationUtils;
 import com.example.BEFoodrecommendationapplication.util.ResponseBuilderUtil;
@@ -15,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
@@ -31,6 +35,7 @@ import java.util.ArrayList;
 public class UserController {
 
     private final UserService userService;
+    private final FoodRecipeService foodRecipeService;
 
     @Operation(summary = "Set user profile")
     @ApiResponses(value = {
@@ -133,6 +138,37 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
 
         }
+
+    }
+
+    @Operation(summary = "Save recipe")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Save recipe successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class)
+                            )}),
+            @ApiResponse(responseCode = "500", description = "Save recipe failed")})
+    @PostMapping("/saved-recipe")
+    public ResponseEntity<Response> saveRecipeForUser(@RequestParam int foodId, @RequestParam (defaultValue = "true") boolean save) {
+
+        try {
+            Integer userId = AuthenticationUtils.getUserFromSecurityContext().getId();
+
+            userService.saveOrDeleteRecipeForUser(userService.findById(userId), foodRecipeService.findById(foodId), save);
+            String message = save ? "Saved successfully" : "Deleted successfully";
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    new ArrayList<>(),
+                    message,
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.INTERNAL_SERVER_ERROR));
+
+        }
+
 
     }
 }

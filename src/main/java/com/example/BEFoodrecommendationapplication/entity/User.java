@@ -86,6 +86,9 @@ public class User implements UserDetails {
     @JsonIgnore
     private List<Token> tokens;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<SavedRecipe> savedRecipes;
 
     @OneToMany(mappedBy = "user")
     @JsonIgnore
