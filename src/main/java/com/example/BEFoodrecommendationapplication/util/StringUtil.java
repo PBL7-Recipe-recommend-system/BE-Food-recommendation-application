@@ -57,4 +57,14 @@ public class StringUtil {
         }
         return partitioned;
     }
+    public String cleanTime(String time) {
+        if(time == null)
+        {
+            return "";
+        }
+        if (time.startsWith("PT")) {
+            return time.replaceFirst("PT", "");
+        }
+        throw new IllegalArgumentException("Invalid time format");
+    }
 }
