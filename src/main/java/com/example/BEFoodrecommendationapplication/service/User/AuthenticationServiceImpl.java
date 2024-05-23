@@ -67,6 +67,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .createdAt(LocalDate.now())
                     .role(Role.USER)
                     .active(true)
+                    .isCustomPlan(false)
                     .otpGeneratedTime(LocalDateTime.now())
                     .build();
             userRepository.save(user);

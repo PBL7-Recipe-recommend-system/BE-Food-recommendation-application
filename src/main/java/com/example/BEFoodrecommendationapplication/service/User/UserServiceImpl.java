@@ -138,6 +138,7 @@ public class UserServiceImpl implements UserService{
                 .meals(meals)
                 .dietaryGoal(dietaryGoal)
                 .bmi(user.calculateBmi())
+                .isCustomPlan(user.isCustomPlan())
                 .recommendCalories(Math.round(user.caloriesCalculator()*rate))
                 .build();
     }

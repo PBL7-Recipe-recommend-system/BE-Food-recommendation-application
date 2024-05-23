@@ -74,6 +74,9 @@ public class User implements UserDetails {
     @Column(name = "active")
     private boolean active;
 
+    @Column(name = "is_custom_plan")
+    private boolean isCustomPlan;
+
     @Column(name = "otp")
     @JsonIgnore
     private String otp;
