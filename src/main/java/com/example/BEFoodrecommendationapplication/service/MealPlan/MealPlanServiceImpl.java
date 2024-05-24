@@ -31,6 +31,10 @@ public class MealPlanServiceImpl implements MealPlanService {
     public MealPlanInput addMealPlans(MealPlanInput mealPlanInput, int userId) {
 
         User user = checkUser(userId).get();
+        if(user.isCustomPlan())
+        {
+            return mealPlanInput;
+        }
         MealPlan mealPlan = new MealPlan();
         mealPlan.setUser(user);
         mealPlan.setDate(LocalDate.now());
