@@ -72,12 +72,12 @@ public class MealPlanServiceImpl implements MealPlanService {
             mealPlan.setBreakfast(foodRecipeRepository.findById(mealPlanInput.getBreakfast()).orElse(null));
             mealPlan.setLunch(foodRecipeRepository.findById(mealPlanInput.getLunch()).orElse(null));
             mealPlan.setDinner(foodRecipeRepository.findById(mealPlanInput.getDinner()).orElse(null));
-            mealPlan.setBrunch(foodRecipeRepository.findById(mealPlanInput.getBrunch()).orElse(null));
-            mealPlan.setSnack(foodRecipeRepository.findById(mealPlanInput.getSnack()).orElse(null));
+            mealPlan.setMorningSnack(foodRecipeRepository.findById(mealPlanInput.getMorningSnack()).orElse(null));
+            mealPlan.setAfternoonSnack(foodRecipeRepository.findById(mealPlanInput.getAfternoonSnack()).orElse(null));
             mealPlan.setDate(mealPlanInput.getDate());
             mealPlan.setDescription(mealPlanInput.getDescription());
-            mealPlan.setDailyCalorie(mealPlanInput.getDailyCalorie());
-            mealPlan.setTotalCalorie(mealPlanInput.getTotalCalorie());
+            mealPlan.setDailyCalorie(mealPlanInput.getDailyCalories());
+            mealPlan.setTotalCalorie(mealPlanInput.getTotalCalories());
             mealPlan.setMealCount(mealPlanInput.getMealCount());
             mealPlans.add(mealPlan);
             mealPlanDtos.add(mapToDto(mealPlanInput));
@@ -105,12 +105,12 @@ public class MealPlanServiceImpl implements MealPlanService {
                 .breakfast(mapToShortRecipe(mealPlan.getBreakfast()))
                 .lunch(mapToShortRecipe(mealPlan.getLunch()))
                 .dinner(mapToShortRecipe(mealPlan.getDinner()))
-                .brunch(mapToShortRecipe(mealPlan.getBrunch()))
-                .snack(mapToShortRecipe(mealPlan.getSnack()))
+                .morningSnack(mapToShortRecipe(mealPlan.getMorningSnack()))
+                .afternoonSnack(mapToShortRecipe(mealPlan.getAfternoonSnack()))
                 .date(mealPlan.getDate())
                 .description(mealPlan.getDescription())
-                .dailyCalorie(mealPlan.getDailyCalorie())
-                .totalCalorie(mealPlan.getTotalCalorie())
+                .dailyCalorie(mealPlan.getDailyCalories())
+                .totalCalorie(mealPlan.getTotalCalories())
                 .build();
     }
 }

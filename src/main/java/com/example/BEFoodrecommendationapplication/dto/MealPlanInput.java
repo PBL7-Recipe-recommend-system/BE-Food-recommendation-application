@@ -19,18 +19,18 @@ public class MealPlanInput {
 
     private int dinner;
 
-    private int brunch;
+    private int morningSnack;
 
-    private int snack;
+    private int afternoonSnack;
 
     private int mealCount;
 
     @JsonFormat(pattern="dd-MM-yyyy")
     private LocalDate date;
 
-    private Integer dailyCalorie;
+    private Integer dailyCalories;
 
-    private Integer totalCalorie;
+    private Integer totalCalories;
 
     private String description;
 

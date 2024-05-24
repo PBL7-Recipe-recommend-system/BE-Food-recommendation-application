@@ -18,9 +18,9 @@ public class MealPlanDto {
 
     private ShortRecipe dinner;
 
-    private ShortRecipe brunch;
+    private ShortRecipe morningSnack;
 
-    private ShortRecipe snack;
+    private ShortRecipe afternoonSnack;
 
     private int mealCount;
 

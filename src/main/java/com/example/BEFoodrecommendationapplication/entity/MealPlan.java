@@ -1,14 +1,12 @@
 package com.example.BEFoodrecommendationapplication.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 
 @Entity
@@ -40,11 +38,11 @@ public class MealPlan {
 
     @OneToOne
     @JoinColumn(name = "brunch_id")
-    private FoodRecipe brunch;
+    private FoodRecipe morningSnack;
 
     @OneToOne
     @JoinColumn(name = "snack_id")
-    private FoodRecipe snack;
+    private FoodRecipe afternoonSnack;
 
     @Column(name = "meal_count")
     private int mealCount;
