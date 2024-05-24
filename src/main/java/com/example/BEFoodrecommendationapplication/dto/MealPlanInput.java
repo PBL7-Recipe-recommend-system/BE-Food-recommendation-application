@@ -19,9 +19,11 @@ public class MealPlanInput {
 
     private int dinner;
 
-    private int snack1;
+    private int brunch;
 
-    private int snack2;
+    private int snack;
+
+    private int mealCount;
 
     @JsonFormat(pattern="dd-MM-yyyy")
     private LocalDate date;

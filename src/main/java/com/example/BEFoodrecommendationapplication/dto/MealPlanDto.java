@@ -18,9 +18,11 @@ public class MealPlanDto {
 
     private ShortRecipe dinner;
 
-    private ShortRecipe snack1;
+    private ShortRecipe brunch;
 
-    private ShortRecipe snack2;
+    private ShortRecipe snack;
+
+    private int mealCount;
 
     @JsonFormat(pattern="dd-MM-yyyy")
     private LocalDate date;

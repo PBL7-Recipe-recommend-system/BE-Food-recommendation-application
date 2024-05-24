@@ -7,5 +7,6 @@ import com.example.BEFoodrecommendationapplication.entity.MealPlan;
 import java.util.List;
 
 public interface MealPlanService  {
-    List<MealPlanDto> addMealPlans(List<MealPlanInput> mealPlansDto, int userId);
+    List<MealPlanDto> editMealPlans(List<MealPlanInput> mealPlansDto, int userId);
+    MealPlanInput addMealPlans(MealPlanInput mealPlanInput, int userId);
 }

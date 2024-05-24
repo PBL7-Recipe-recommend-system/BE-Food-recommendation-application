@@ -2,7 +2,6 @@ package com.example.BEFoodrecommendationapplication.service.MealPlan;
 
 import com.example.BEFoodrecommendationapplication.dto.MealPlanDto;
 import com.example.BEFoodrecommendationapplication.dto.MealPlanInput;
-import com.example.BEFoodrecommendationapplication.dto.RecipeDto;
 import com.example.BEFoodrecommendationapplication.dto.ShortRecipe;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.entity.MealPlan;
@@ -15,6 +14,7 @@ import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +26,21 @@ public class MealPlanServiceImpl implements MealPlanService {
     private final UserRepository userRepository;
     private  final FoodRecipeRepository foodRecipeRepository;
     private final StringUtil stringUtil;
+
     @Override
-    public List<MealPlanDto> addMealPlans(List<MealPlanInput> mealPlansDtos, int userId) {
+    public MealPlanInput addMealPlans(MealPlanInput mealPlanInput, int userId) {
+
+        User user = checkUser(userId).get();
+        MealPlan mealPlan = new MealPlan();
+        mealPlan.setUser(user);
+        mealPlan.setDate(LocalDate.now());
+        mealPlan.setDescription(mealPlanInput.getDescription());
+        mealPlan.setMealCount(mealPlanInput.getMealCount());
+        mealPlanRepository.save(mealPlan);
+       return mealPlanInput;
+    }
+
+    private Optional<User> checkUser(int userId) {
         Optional<User> user = userRepository.findById(userId);
         User temp;
         if(user.isPresent())
@@ -40,6 +53,12 @@ public class MealPlanServiceImpl implements MealPlanService {
         {
             throw new RecordNotFoundException("User not found with id: " + userId);
         }
+        return user;
+    }
+
+    @Override
+    public List<MealPlanDto> editMealPlans(List<MealPlanInput> mealPlansDtos, int userId) {
+        Optional<User> user = checkUser(userId);
         List<MealPlan> mealPlans = new ArrayList<>();
         List<MealPlanDto> mealPlanDtos = new ArrayList<>();
         for (MealPlanInput mealPlanInput : mealPlansDtos) {
@@ -53,12 +72,13 @@ public class MealPlanServiceImpl implements MealPlanService {
             mealPlan.setBreakfast(foodRecipeRepository.findById(mealPlanInput.getBreakfast()).orElse(null));
             mealPlan.setLunch(foodRecipeRepository.findById(mealPlanInput.getLunch()).orElse(null));
             mealPlan.setDinner(foodRecipeRepository.findById(mealPlanInput.getDinner()).orElse(null));
-            mealPlan.setSnack1(foodRecipeRepository.findById(mealPlanInput.getSnack1()).orElse(null));
-            mealPlan.setSnack2(foodRecipeRepository.findById(mealPlanInput.getSnack2()).orElse(null));
+            mealPlan.setBrunch(foodRecipeRepository.findById(mealPlanInput.getBrunch()).orElse(null));
+            mealPlan.setSnack(foodRecipeRepository.findById(mealPlanInput.getSnack()).orElse(null));
             mealPlan.setDate(mealPlanInput.getDate());
             mealPlan.setDescription(mealPlanInput.getDescription());
             mealPlan.setDailyCalorie(mealPlanInput.getDailyCalorie());
             mealPlan.setTotalCalorie(mealPlanInput.getTotalCalorie());
+            mealPlan.setMealCount(mealPlanInput.getMealCount());
             mealPlans.add(mealPlan);
             mealPlanDtos.add(mapToDto(mealPlanInput));
         }
@@ -85,8 +105,8 @@ public class MealPlanServiceImpl implements MealPlanService {
                 .breakfast(mapToShortRecipe(mealPlan.getBreakfast()))
                 .lunch(mapToShortRecipe(mealPlan.getLunch()))
                 .dinner(mapToShortRecipe(mealPlan.getDinner()))
-                .snack1(mapToShortRecipe(mealPlan.getSnack1()))
-                .snack2(mapToShortRecipe(mealPlan.getSnack2()))
+                .brunch(mapToShortRecipe(mealPlan.getBrunch()))
+                .snack(mapToShortRecipe(mealPlan.getSnack()))
                 .date(mealPlan.getDate())
                 .description(mealPlan.getDescription())
                 .dailyCalorie(mealPlan.getDailyCalorie())

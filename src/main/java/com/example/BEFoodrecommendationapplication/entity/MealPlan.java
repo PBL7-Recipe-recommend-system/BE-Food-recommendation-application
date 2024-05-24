@@ -39,12 +39,15 @@ public class MealPlan {
     private FoodRecipe dinner;
 
     @OneToOne
-    @JoinColumn(name = "snack1_id")
-    private FoodRecipe snack1;
+    @JoinColumn(name = "brunch_id")
+    private FoodRecipe brunch;
 
     @OneToOne
-    @JoinColumn(name = "snack2_id")
-    private FoodRecipe snack2;
+    @JoinColumn(name = "snack_id")
+    private FoodRecipe snack;
+
+    @Column(name = "meal_count")
+    private int mealCount;
 
     @Column(name = "date", nullable = false)
     @JsonFormat(pattern="dd-MM-yyyy")
@@ -58,5 +61,7 @@ public class MealPlan {
 
     @Column(name = "description")
     private String description;
+
+
 
 }
