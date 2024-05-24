@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 public class SearchResult {
 
-    private Integer id;
+    private Integer recipeId;
 
     private String name;
 

@@ -111,7 +111,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
     @Override
     public SearchResult mapToSearchResult(FoodRecipe foodRecipe) {
         SearchResult searchResult = new SearchResult();
-        searchResult.setId(foodRecipe.getRecipeId());
+        searchResult.setRecipeId(foodRecipe.getRecipeId());
         searchResult.setName(foodRecipe.getName());
         searchResult.setRating(foodRecipe.getAggregatedRatings());
         searchResult.setAuthorName(foodRecipe.getAuthorName());
