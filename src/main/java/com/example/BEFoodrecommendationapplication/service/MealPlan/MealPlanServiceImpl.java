@@ -80,8 +80,8 @@ public class MealPlanServiceImpl implements MealPlanService {
             mealPlan.setAfternoonSnack(foodRecipeRepository.findById(mealPlanInput.getAfternoonSnack()).orElse(null));
             mealPlan.setDate(mealPlanInput.getDate());
             mealPlan.setDescription(mealPlanInput.getDescription());
-            mealPlan.setDailyCalorie(mealPlanInput.getDailyCalories());
-            mealPlan.setTotalCalorie(mealPlanInput.getTotalCalories());
+            mealPlan.setDailyCalories(mealPlanInput.getDailyCalories());
+            mealPlan.setTotalCalories(mealPlanInput.getTotalCalories());
             mealPlan.setMealCount(mealPlanInput.getMealCount());
             mealPlans.add(mealPlan);
             mealPlanDtos.add(mapToDto(mealPlanInput));
@@ -113,8 +113,8 @@ public class MealPlanServiceImpl implements MealPlanService {
                 .afternoonSnack(mapToShortRecipe(mealPlan.getAfternoonSnack()))
                 .date(mealPlan.getDate())
                 .description(mealPlan.getDescription())
-                .dailyCalorie(mealPlan.getDailyCalories())
-                .totalCalorie(mealPlan.getTotalCalories())
+                .dailyCalories(mealPlan.getDailyCalories())
+                .totalCalories(mealPlan.getTotalCalories())
                 .mealCount(mealPlan.getMealCount())
                 .build();
     }
@@ -132,8 +132,8 @@ public class MealPlanServiceImpl implements MealPlanService {
             mealPlanDto.setLunch(mealPlan.getLunch() != null ? mapToShortRecipe(mealPlan.getLunch().getRecipeId()) : new ArrayList<>());
             mealPlanDto.setAfternoonSnack(mealPlan.getAfternoonSnack() != null ? mapToShortRecipe(mealPlan.getAfternoonSnack().getRecipeId()) : new ArrayList<>());
             mealPlanDto.setMorningSnack(mealPlan.getMorningSnack() != null ? mapToShortRecipe(mealPlan.getMorningSnack().getRecipeId()) : new ArrayList<>());
-            mealPlanDto.setDailyCalorie(mealPlan.getDailyCalorie());
-            mealPlanDto.setTotalCalorie(mealPlan.getTotalCalorie());
+            mealPlanDto.setDailyCalories(mealPlan.getDailyCalories());
+            mealPlanDto.setTotalCalories(mealPlan.getTotalCalories());
             output.add(mealPlanDto);
         }
         return output;
