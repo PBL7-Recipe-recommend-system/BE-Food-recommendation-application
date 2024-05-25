@@ -49,7 +49,7 @@ public class MealPlanController {
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     mealPlanService.addMealPlans(mealPlan,id),
-                    "Update meal plan successfully",
+                    "Adds meal plan successfully",
                     StatusCode.SUCCESS));
 
         } catch (Exception e) {
@@ -60,7 +60,7 @@ public class MealPlanController {
     }
     @Operation(summary = "Update meal plan")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Add meal plan successfully",
+            @ApiResponse(responseCode = "200", description = "Update meal plan successfully",
                     content = {
                             @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = User.class)
@@ -76,6 +76,33 @@ public class MealPlanController {
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     mealPlanService.editMealPlans(mealPlans,id),
                     "Update meal plan successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.INTERNAL_SERVER_ERROR));
+
+        }
+    }
+
+    @Operation(summary = "Get meal plan")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get meal plan successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class)
+                            )}),
+            @ApiResponse(responseCode = "500", description = "Get meal plan failed")})
+    @GetMapping
+    public ResponseEntity<Response> getMealPlans() {
+
+        try {
+            Integer id = AuthenticationUtils.getUserFromSecurityContext().getId();
+
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    mealPlanService.getCurrentMealPlans(id),
+                    "Get meal plan successfully",
                     StatusCode.SUCCESS));
 
         } catch (Exception e) {

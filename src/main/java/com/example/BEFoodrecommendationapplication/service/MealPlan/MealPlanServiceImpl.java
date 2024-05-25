@@ -89,10 +89,10 @@ public class MealPlanServiceImpl implements MealPlanService {
         mealPlanRepository.saveAll(mealPlans);
         return mealPlanDtos;
     }
-    public ShortRecipe mapToShortRecipe(Integer id){
+    public Object mapToShortRecipe(Integer id){
         if(foodRecipeRepository.findById(id).isEmpty())
         {
-            return null;
+            return new ArrayList<>();
         }
         FoodRecipe foodRecipe =  foodRecipeRepository.findById(id).get();
         return ShortRecipe.builder()
@@ -115,6 +115,27 @@ public class MealPlanServiceImpl implements MealPlanService {
                 .description(mealPlan.getDescription())
                 .dailyCalorie(mealPlan.getDailyCalories())
                 .totalCalorie(mealPlan.getTotalCalories())
+                .mealCount(mealPlan.getMealCount())
                 .build();
+    }
+    @Override
+    public List<MealPlanDto> getCurrentMealPlans(Integer userId) {
+        List<MealPlan> mealPlans = mealPlanRepository.findCurrentMealPlans(userId, LocalDate.now());
+        List<MealPlanDto> output = new ArrayList<>();
+        for (MealPlan mealPlan : mealPlans) {
+            MealPlanDto mealPlanDto = new MealPlanDto();
+            mealPlanDto.setMealCount(mealPlan.getMealCount());
+            mealPlanDto.setDate(mealPlan.getDate());
+            mealPlanDto.setDescription(mealPlan.getDescription());
+            mealPlanDto.setBreakfast(mealPlan.getBreakfast() != null ? mapToShortRecipe(mealPlan.getBreakfast().getRecipeId()) : new ArrayList<>());
+            mealPlanDto.setDinner(mealPlan.getDinner() != null ? mapToShortRecipe(mealPlan.getDinner().getRecipeId()) : new ArrayList<>());
+            mealPlanDto.setLunch(mealPlan.getLunch() != null ? mapToShortRecipe(mealPlan.getLunch().getRecipeId()) : new ArrayList<>());
+            mealPlanDto.setAfternoonSnack(mealPlan.getAfternoonSnack() != null ? mapToShortRecipe(mealPlan.getAfternoonSnack().getRecipeId()) : new ArrayList<>());
+            mealPlanDto.setMorningSnack(mealPlan.getMorningSnack() != null ? mapToShortRecipe(mealPlan.getMorningSnack().getRecipeId()) : new ArrayList<>());
+            mealPlanDto.setDailyCalorie(mealPlan.getDailyCalorie());
+            mealPlanDto.setTotalCalorie(mealPlan.getTotalCalorie());
+            output.add(mealPlanDto);
+        }
+        return output;
     }
 }

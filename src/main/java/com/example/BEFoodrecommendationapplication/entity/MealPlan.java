@@ -37,11 +37,11 @@ public class MealPlan {
     private FoodRecipe dinner;
 
     @OneToOne
-    @JoinColumn(name = "brunch_id")
+    @JoinColumn(name = "morning_snack_id")
     private FoodRecipe morningSnack;
 
     @OneToOne
-    @JoinColumn(name = "snack_id")
+    @JoinColumn(name = "afternoon_snack_id")
     private FoodRecipe afternoonSnack;
 
     @Column(name = "meal_count")
@@ -52,14 +52,12 @@ public class MealPlan {
     private LocalDate date;
 
     @Column(name = "daily_calorie")
-    private Integer dailyCalorie;
+    private Integer dailyCalories;
 
     @Column(name = "total_calorie")
-    private Integer totalCalorie;
+    private Integer totalCalories;
 
     @Column(name = "description")
     private String description;
-
-
 
 }

@@ -9,4 +9,5 @@ import java.util.List;
 public interface MealPlanService  {
     List<MealPlanDto> editMealPlans(List<MealPlanInput> mealPlansDto, int userId);
     MealPlanInput addMealPlans(MealPlanInput mealPlanInput, int userId);
+    List<MealPlanDto> getCurrentMealPlans(Integer userId);
 }

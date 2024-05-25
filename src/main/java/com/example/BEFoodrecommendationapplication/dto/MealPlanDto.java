@@ -12,24 +12,24 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class MealPlanDto {
 
-    private ShortRecipe breakfast;
+    private Object breakfast;
 
-    private ShortRecipe lunch;
+    private Object lunch;
 
-    private ShortRecipe dinner;
+    private Object dinner;
 
-    private ShortRecipe morningSnack;
+    private Object morningSnack;
 
-    private ShortRecipe afternoonSnack;
+    private Object afternoonSnack;
 
     private int mealCount;
 
     @JsonFormat(pattern="dd-MM-yyyy")
     private LocalDate date;
 
-    private Integer dailyCalorie;
+    private Integer dailyCalories;
 
-    private Integer totalCalorie;
+    private Integer totalCalories;
 
     private String description;
 
