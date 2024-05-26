@@ -31,10 +31,7 @@ public class MealPlanServiceImpl implements MealPlanService {
     public MealPlanInput addMealPlans(MealPlanInput mealPlanInput, int userId) {
 
         User user = checkUser(userId).get();
-        if(user.isCustomPlan())
-        {
-            return mealPlanInput;
-        }
+
         MealPlan mealPlan = new MealPlan();
         mealPlan.setUser(user);
         mealPlan.setDate(LocalDate.now());
@@ -47,11 +44,16 @@ public class MealPlanServiceImpl implements MealPlanService {
     private Optional<User> checkUser(int userId) {
         Optional<User> user = userRepository.findById(userId);
         User temp;
+
         if(user.isPresent())
         {
-            temp = user.get();
-            temp.setCustomPlan(true);
-            userRepository.save(temp);
+            if(!user.get().isCustomPlan())
+            {
+                temp = user.get();
+                temp.setCustomPlan(true);
+                userRepository.save(temp);
+            }
+
         }
         else
         {
