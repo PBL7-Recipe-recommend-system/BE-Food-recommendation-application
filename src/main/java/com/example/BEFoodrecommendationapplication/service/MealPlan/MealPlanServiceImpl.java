@@ -122,6 +122,14 @@ public class MealPlanServiceImpl implements MealPlanService {
     }
     @Override
     public List<MealPlanDto> getCurrentMealPlans(Integer userId) {
+        if(userRepository.findById(userId).isPresent())
+        {
+            User user = userRepository.findById(userId).get();
+            if (!user.isCustomPlan())
+            {
+                throw new RecordNotFoundException("User hasn't created meal plan ");
+            }
+        }
         List<MealPlan> mealPlans = mealPlanRepository.findCurrentMealPlans(userId, LocalDate.now());
         List<MealPlanDto> output = new ArrayList<>();
         for (MealPlan mealPlan : mealPlans) {

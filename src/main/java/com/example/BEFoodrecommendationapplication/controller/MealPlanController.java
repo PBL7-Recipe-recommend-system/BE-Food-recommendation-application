@@ -92,7 +92,7 @@ public class MealPlanController {
                             @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = User.class)
                             )}),
-            @ApiResponse(responseCode = "500", description = "Get meal plan failed")})
+            @ApiResponse(responseCode = "404", description = "Get meal plan failed")})
     @GetMapping
     public ResponseEntity<Response> getMealPlans() {
 
@@ -107,7 +107,7 @@ public class MealPlanController {
 
         } catch (Exception e) {
 
-            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.INTERNAL_SERVER_ERROR));
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
 
         }
     }
