@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -128,7 +129,19 @@ public class UserServiceImpl implements UserService{
             rate = dietaryRate[user.getDietaryGoal()];
             dietaryGoal = user.getDietaryGoal();
         }
+        List<String> includeIngredientNames = user.getIncludeIngredients().stream()
+                .map(UserIncludeIngredient::getIngredient)
+                .map(Ingredient::getName)
+                .toList();
+
+        List<String> excludeIngredientNames = user.getExcludeIngredients().stream()
+                .map(UserExcludeIngredient::getIngredient)
+                .map(Ingredient::getName)
+                .toList();
+
+
         return UserDto.builder()
+                .id(user.getId())
                 .name(user.getName())
                 .weight(weight)
                 .height(height)
@@ -140,6 +153,8 @@ public class UserServiceImpl implements UserService{
                 .bmi(user.calculateBmi())
                 .isCustomPlan(user.isCustomPlan())
                 .recommendCalories(Math.round(user.caloriesCalculator()*rate))
+                .includeIngredients(includeIngredientNames)
+                .excludeIngredients(excludeIngredientNames)
                 .build();
     }
 

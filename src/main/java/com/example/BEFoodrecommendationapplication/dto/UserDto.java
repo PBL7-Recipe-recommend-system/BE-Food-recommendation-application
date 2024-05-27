@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,6 +13,9 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDto {
+    @JsonProperty("id")
+    private int id;
+
     @JsonProperty("name")
     private String name;
 
@@ -44,5 +48,11 @@ public class UserDto {
 
     @JsonProperty("recommendCalories")
     private Integer recommendCalories;
+
+    @JsonProperty("excludeIngredients")
+    private List<String> excludeIngredients;
+
+    @JsonProperty("includeIngredients")
+    private List<String> includeIngredients;
 
 }

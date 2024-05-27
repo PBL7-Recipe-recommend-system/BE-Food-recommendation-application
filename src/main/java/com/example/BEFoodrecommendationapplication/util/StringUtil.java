@@ -33,9 +33,7 @@ public class StringUtil {
             input = input.substring(3, input.length() - 4);
         }
         input = input.replace("\\\"", "");
-        System.out.println(input);
         input = input.replace("\\r\\n", "").replace("\\n", "").replace("\\r", "");
-        System.out.println(input);
         return new ArrayList<>(Arrays.asList(input.split("\", \"")));
     }
 
