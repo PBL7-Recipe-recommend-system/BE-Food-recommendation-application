@@ -36,25 +36,21 @@ public class MealPlanServiceImpl implements MealPlanService {
         mealPlan.setDescription(mealPlanInput.getDescription());
         mealPlan.setMealCount(mealPlanInput.getMealCount());
         mealPlanRepository.save(mealPlan);
-       return mealPlanInput;
+        return mealPlanInput;
     }
 
     private Optional<User> checkUser(int userId) {
         Optional<User> user = userRepository.findById(userId);
         User temp;
 
-        if(user.isPresent())
-        {
-            if(!user.get().isCustomPlan())
-            {
+        if (user.isPresent()) {
+            if (!user.get().isCustomPlan()) {
                 temp = user.get();
                 temp.setCustomPlan(true);
                 userRepository.save(temp);
             }
 
-        }
-        else
-        {
+        } else {
             throw new RecordNotFoundException("User not found with id: " + userId);
         }
         return user;
@@ -62,39 +58,87 @@ public class MealPlanServiceImpl implements MealPlanService {
 
     @Override
     public List<MealPlanDto> editMealPlans(List<MealPlanInput> mealPlansDtos, int userId) {
-        Optional<User> user = checkUser(userId);
+        if (userId <= 0) {
+            throw new IllegalArgumentException("The given userId must be greater than zero.");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        Set<LocalDate> processedDates = new HashSet<>();
         List<MealPlan> mealPlans = new ArrayList<>();
         List<MealPlanDto> mealPlanDtos = new ArrayList<>();
-        for (MealPlanInput mealPlanInput : mealPlansDtos) {
 
-            MealPlan mealPlan = mealPlanRepository.findByUserAndDate(user.get(), mealPlanInput.getDate());
+        for (MealPlanInput mealPlanInput : mealPlansDtos) {
+            // Check for duplicate date
+            if (!processedDates.add(mealPlanInput.getDate())) {
+                // Handle the duplicate date scenario, e.g., skip or throw an exception
+                throw new IllegalArgumentException("Duplicate date found: " + mealPlanInput.getDate());
+            }
+
+            MealPlan mealPlan = mealPlanRepository.findByUserAndDate(user, mealPlanInput.getDate());
             if (mealPlan == null) {
                 mealPlan = new MealPlan();
-                mealPlan.setUser(user.get());
+                mealPlan.setUser(user);
                 mealPlan.setDate(mealPlanInput.getDate());
             }
-            mealPlan.setBreakfast(foodRecipeRepository.findById(mealPlanInput.getBreakfast()).orElse(null));
-            mealPlan.setLunch(foodRecipeRepository.findById(mealPlanInput.getLunch()).orElse(null));
-            mealPlan.setDinner(foodRecipeRepository.findById(mealPlanInput.getDinner()).orElse(null));
-            mealPlan.setMorningSnack(foodRecipeRepository.findById(mealPlanInput.getMorningSnack()).orElse(null));
-            mealPlan.setAfternoonSnack(foodRecipeRepository.findById(mealPlanInput.getAfternoonSnack()).orElse(null));
-            mealPlan.setDate(mealPlanInput.getDate());
-            mealPlan.setDescription(mealPlanInput.getDescription());
-            mealPlan.setDailyCalories(mealPlanInput.getDailyCalories());
-            mealPlan.setTotalCalories(mealPlanInput.getTotalCalories());
-            mealPlan.setMealCount(mealPlanInput.getMealCount());
+
+            updateMealPlanFields(mealPlan, mealPlanInput);
+
             mealPlans.add(mealPlan);
             mealPlanDtos.add(mapToDto(mealPlanInput));
         }
+
         mealPlanRepository.saveAll(mealPlans);
         return mealPlanDtos;
     }
-    public Object mapToShortRecipe(Integer id){
-        if(foodRecipeRepository.findById(id).isEmpty())
-        {
+
+
+    private void updateMealPlanFields(MealPlan mealPlan, MealPlanInput input) {
+        if (input.getBreakfast() != 0) {
+            mealPlan.setBreakfast(getRecipe(input.getBreakfast()));
+        }
+        if (input.getLunch() != 0) {
+            mealPlan.setLunch(getRecipe(input.getLunch()));
+        }
+        if (input.getDinner() != 0) {
+            mealPlan.setDinner(getRecipe(input.getDinner()));
+        }
+        if (input.getMorningSnack() != 0) {
+            mealPlan.setMorningSnack(getRecipe(input.getMorningSnack()));
+        }
+        if (input.getAfternoonSnack() != 0) {
+            mealPlan.setAfternoonSnack(getRecipe(input.getAfternoonSnack()));
+        }
+        if (input.getDate() != null) {
+            mealPlan.setDate(input.getDate());
+        }
+        if (input.getDescription() != null) {
+            mealPlan.setDescription(input.getDescription());
+        }
+        if (input.getDailyCalories() != null) {
+            mealPlan.setDailyCalories(input.getDailyCalories());
+        }
+        if (input.getTotalCalories() != null) {
+            mealPlan.setTotalCalories(input.getTotalCalories());
+        }
+        if (input.getMealCount() != 0) {
+            mealPlan.setMealCount(input.getMealCount());
+        }
+    }
+
+    private FoodRecipe getRecipe(Integer recipeId) {
+        if (recipeId != null) {
+            return foodRecipeRepository.findById(recipeId).orElse(null);
+        }
+        return null;
+    }
+
+    public Object mapToShortRecipe(Integer id) {
+        if (foodRecipeRepository.findById(id).isEmpty()) {
             return new ArrayList<>();
         }
-        FoodRecipe foodRecipe =  foodRecipeRepository.findById(id).get();
+        FoodRecipe foodRecipe = foodRecipeRepository.findById(id).get();
         return ShortRecipe.builder()
                 .recipeId(foodRecipe.getRecipeId())
                 .image(stringUtil.splitStringToList(foodRecipe.getImages()).get(0))
@@ -103,6 +147,7 @@ public class MealPlanServiceImpl implements MealPlanService {
                 .name(foodRecipe.getName())
                 .build();
     }
+
     public MealPlanDto mapToDto(MealPlanInput mealPlan) {
 
         return MealPlanDto.builder()
@@ -118,13 +163,12 @@ public class MealPlanServiceImpl implements MealPlanService {
                 .mealCount(mealPlan.getMealCount())
                 .build();
     }
+
     @Override
     public List<MealPlanDto> getCurrentMealPlans(Integer userId) {
-        if(userRepository.findById(userId).isPresent())
-        {
+        if (userRepository.findById(userId).isPresent()) {
             User user = userRepository.findById(userId).get();
-            if (!user.isCustomPlan())
-            {
+            if (!user.isCustomPlan()) {
                 throw new RecordNotFoundException("User hasn't created meal plan ");
             }
         }
@@ -143,8 +187,8 @@ public class MealPlanServiceImpl implements MealPlanService {
         mealPlanDto.setDate(mealPlan.getDate());
         mealPlanDto.setDescription(mealPlan.getDescription());
         mealPlanDto.setBreakfast(mealPlan.getBreakfast() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getBreakfast().getRecipeId())) : new ArrayList<>());
-        mealPlanDto.setDinner(mealPlan.getDinner() != null ?  Collections.singletonList(mapToShortRecipe(mealPlan.getDinner().getRecipeId())) : new ArrayList<>());
-        mealPlanDto.setLunch(mealPlan.getLunch() != null ?  Collections.singletonList(mapToShortRecipe(mealPlan.getLunch().getRecipeId())) : new ArrayList<>());
+        mealPlanDto.setDinner(mealPlan.getDinner() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getDinner().getRecipeId())) : new ArrayList<>());
+        mealPlanDto.setLunch(mealPlan.getLunch() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getLunch().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setAfternoonSnack(mealPlan.getAfternoonSnack() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getAfternoonSnack().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setMorningSnack(mealPlan.getMorningSnack() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getMorningSnack().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setDailyCalories(mealPlan.getDailyCalories());

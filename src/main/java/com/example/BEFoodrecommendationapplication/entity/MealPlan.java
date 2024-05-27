@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 @Table(name = "meal_plans")
 @Getter
 @Setter
+@ToString
 public class MealPlan {
 
     @Id
@@ -45,7 +47,7 @@ public class MealPlan {
     private FoodRecipe afternoonSnack;
 
     @Column(name = "meal_count")
-    private int mealCount;
+    private Integer mealCount;
 
     @Column(name = "date", nullable = false)
     @JsonFormat(pattern="dd-MM-yyyy")
