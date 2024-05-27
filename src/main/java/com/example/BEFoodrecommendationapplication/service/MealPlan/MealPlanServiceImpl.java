@@ -15,9 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -144,11 +142,11 @@ public class MealPlanServiceImpl implements MealPlanService {
         mealPlanDto.setMealCount(mealPlan.getMealCount());
         mealPlanDto.setDate(mealPlan.getDate());
         mealPlanDto.setDescription(mealPlan.getDescription());
-        mealPlanDto.setBreakfast(mealPlan.getBreakfast() != null ? mapToShortRecipe(mealPlan.getBreakfast().getRecipeId()) : null);
-        mealPlanDto.setDinner(mealPlan.getDinner() != null ? mapToShortRecipe(mealPlan.getDinner().getRecipeId()) : null);
-        mealPlanDto.setLunch(mealPlan.getLunch() != null ? mapToShortRecipe(mealPlan.getLunch().getRecipeId()) : null);
-        mealPlanDto.setAfternoonSnack(mealPlan.getAfternoonSnack() != null ? mapToShortRecipe(mealPlan.getAfternoonSnack().getRecipeId()) : null);
-        mealPlanDto.setMorningSnack(mealPlan.getMorningSnack() != null ? mapToShortRecipe(mealPlan.getMorningSnack().getRecipeId()) : null);
+        mealPlanDto.setBreakfast(mealPlan.getBreakfast() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getBreakfast().getRecipeId())) : new ArrayList<>());
+        mealPlanDto.setDinner(mealPlan.getDinner() != null ?  Collections.singletonList(mapToShortRecipe(mealPlan.getDinner().getRecipeId())) : new ArrayList<>());
+        mealPlanDto.setLunch(mealPlan.getLunch() != null ?  Collections.singletonList(mapToShortRecipe(mealPlan.getLunch().getRecipeId())) : new ArrayList<>());
+        mealPlanDto.setAfternoonSnack(mealPlan.getAfternoonSnack() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getAfternoonSnack().getRecipeId())) : new ArrayList<>());
+        mealPlanDto.setMorningSnack(mealPlan.getMorningSnack() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getMorningSnack().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setDailyCalories(mealPlan.getDailyCalories());
         mealPlanDto.setTotalCalories(mealPlan.getTotalCalories());
         return mealPlanDto;
