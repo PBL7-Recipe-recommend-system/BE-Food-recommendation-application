@@ -2,12 +2,10 @@ package com.example.BEFoodrecommendationapplication.repository;
 
 import com.example.BEFoodrecommendationapplication.entity.MealPlan;
 import com.example.BEFoodrecommendationapplication.entity.User;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 public interface MealPlanRepository extends JpaRepository<MealPlan, Integer> {
@@ -15,4 +13,6 @@ public interface MealPlanRepository extends JpaRepository<MealPlan, Integer> {
 
     @Query("SELECT m FROM MealPlan m WHERE m.user.id = :userId AND m.date >= :today")
     List<MealPlan> findCurrentMealPlans(Integer userId, LocalDate today);
+
+    MealPlan findByUser(User user);
 }

@@ -47,10 +47,10 @@ public class MealPlan {
     private FoodRecipe afternoonSnack;
 
     @Column(name = "meal_count")
-    private Integer mealCount;
+    private Integer mealCount = 5;
 
     @Column(name = "date", nullable = false)
-    @JsonFormat(pattern="dd-MM-yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
 
     @Column(name = "daily_calorie")

@@ -33,6 +33,8 @@ public class MealPlanServiceImpl implements MealPlanService {
         MealPlan mealPlan = new MealPlan();
         mealPlan.setUser(user);
         mealPlan.setDate(LocalDate.now());
+        mealPlan.setDailyCalories(mealPlanInput.getDailyCalories());
+        mealPlan.setTotalCalories(mealPlanInput.getTotalCalories());
         mealPlan.setDescription(mealPlanInput.getDescription());
         mealPlan.setMealCount(mealPlanInput.getMealCount());
         mealPlanRepository.save(mealPlan);
@@ -68,7 +70,8 @@ public class MealPlanServiceImpl implements MealPlanService {
         Set<LocalDate> processedDates = new HashSet<>();
         List<MealPlan> mealPlans = new ArrayList<>();
         List<MealPlanDto> mealPlanDtos = new ArrayList<>();
-
+        int dailyCalories = mealPlanRepository.findByUser(user).getDailyCalories();
+        int totalCalories = mealPlanRepository.findByUser(user).getTotalCalories();
         for (MealPlanInput mealPlanInput : mealPlansDtos) {
             // Check for duplicate date
             if (!processedDates.add(mealPlanInput.getDate())) {
@@ -82,7 +85,8 @@ public class MealPlanServiceImpl implements MealPlanService {
                 mealPlan.setUser(user);
                 mealPlan.setDate(mealPlanInput.getDate());
             }
-
+            mealPlanInput.setDailyCalories(dailyCalories);
+            mealPlanInput.setTotalCalories(totalCalories);
             updateMealPlanFields(mealPlan, mealPlanInput);
 
             mealPlans.add(mealPlan);
@@ -116,15 +120,12 @@ public class MealPlanServiceImpl implements MealPlanService {
         if (input.getDescription() != null) {
             mealPlan.setDescription(input.getDescription());
         }
-        if (input.getDailyCalories() != null) {
-            mealPlan.setDailyCalories(input.getDailyCalories());
-        }
-        if (input.getTotalCalories() != null) {
-            mealPlan.setTotalCalories(input.getTotalCalories());
-        }
+
         if (input.getMealCount() != 0) {
             mealPlan.setMealCount(input.getMealCount());
         }
+        mealPlan.setTotalCalories(input.getTotalCalories());
+        mealPlan.setDailyCalories(input.getDailyCalories());
     }
 
     private FoodRecipe getRecipe(Integer recipeId) {

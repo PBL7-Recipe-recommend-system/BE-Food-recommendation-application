@@ -23,9 +23,9 @@ public class MealPlanInput {
 
     private int afternoonSnack;
 
-    private int mealCount;
+    private int mealCount = 5;
 
-    @JsonFormat(pattern="dd-MM-yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
 
     private Integer dailyCalories;
