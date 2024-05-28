@@ -1,5 +1,6 @@
 package com.example.BEFoodrecommendationapplication.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 @Getter
@@ -18,4 +19,13 @@ public class ShortRecipe {
     private String image;
 
     private int calories;
+
+    @JsonIgnore
+    private Integer totalCalories;
+
+    @JsonIgnore
+    private Double protein;
+
+    @JsonIgnore
+    private Double fat;
 }

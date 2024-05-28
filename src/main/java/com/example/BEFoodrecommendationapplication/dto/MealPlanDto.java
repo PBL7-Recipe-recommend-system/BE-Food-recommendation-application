@@ -24,12 +24,16 @@ public class MealPlanDto {
 
     private int mealCount;
 
-    @JsonFormat(pattern="dd-MM-yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
 
     private Integer dailyCalories;
 
     private Integer totalCalories;
+
+    private Integer totalProteinPercentage;
+
+    private Integer totalFatPercentage;
 
     private String description;
 

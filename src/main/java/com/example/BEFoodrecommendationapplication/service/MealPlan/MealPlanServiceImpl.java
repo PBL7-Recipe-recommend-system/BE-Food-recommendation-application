@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.*;
 
+import static java.lang.Math.round;
+
 @Service
 @RequiredArgsConstructor
 public class MealPlanServiceImpl implements MealPlanService {
@@ -70,8 +72,13 @@ public class MealPlanServiceImpl implements MealPlanService {
         Set<LocalDate> processedDates = new HashSet<>();
         List<MealPlan> mealPlans = new ArrayList<>();
         List<MealPlanDto> mealPlanDtos = new ArrayList<>();
-        int dailyCalories = mealPlanRepository.findByUser(user).getDailyCalories();
-        int totalCalories = mealPlanRepository.findByUser(user).getTotalCalories();
+
+        List<MealPlan> tempMealPlans = (List<MealPlan>) mealPlanRepository.findAllByUser(user);
+        int dailyCalories = 0;
+
+        if (!tempMealPlans.isEmpty()) {
+            dailyCalories = tempMealPlans.get(0).getDailyCalories();
+        }
         for (MealPlanInput mealPlanInput : mealPlansDtos) {
             // Check for duplicate date
             if (!processedDates.add(mealPlanInput.getDate())) {
@@ -85,15 +92,25 @@ public class MealPlanServiceImpl implements MealPlanService {
                 mealPlan.setUser(user);
                 mealPlan.setDate(mealPlanInput.getDate());
             }
-            mealPlanInput.setDailyCalories(dailyCalories);
-            mealPlanInput.setTotalCalories(totalCalories);
+
+            if (mealPlanInput.getDailyCalories() != null) {
+                mealPlanInput.setDailyCalories(mealPlanInput.getDailyCalories());
+            } else mealPlanInput.setDailyCalories(dailyCalories);
+
             updateMealPlanFields(mealPlan, mealPlanInput);
 
             mealPlans.add(mealPlan);
-            mealPlanDtos.add(mapToDto(mealPlanInput));
+
         }
 
         mealPlanRepository.saveAll(mealPlans);
+
+        List<MealPlan> output = mealPlanRepository.findAllByUser(user);
+        for (MealPlan mealPlan : output) {
+            MealPlanDto mealPlanDto = getMealPlanDto(mealPlan);
+            mealPlanDtos.add(mealPlanDto);
+        }
+
         return mealPlanDtos;
     }
 
@@ -124,7 +141,7 @@ public class MealPlanServiceImpl implements MealPlanService {
         if (input.getMealCount() != 0) {
             mealPlan.setMealCount(input.getMealCount());
         }
-        mealPlan.setTotalCalories(input.getTotalCalories());
+        mealPlan.setTotalCalories(getMealPlanDto(mealPlan).getTotalCalories());
         mealPlan.setDailyCalories(input.getDailyCalories());
     }
 
@@ -144,7 +161,7 @@ public class MealPlanServiceImpl implements MealPlanService {
                 .recipeId(foodRecipe.getRecipeId())
                 .image(stringUtil.splitStringToList(foodRecipe.getImages()).get(0))
                 .totalTime(stringUtil.cleanTime(foodRecipe.getTotalTime()))
-                .calories(Math.round(foodRecipe.getCalories()))
+                .calories(round(foodRecipe.getCalories()))
                 .name(foodRecipe.getName())
                 .build();
     }
@@ -157,6 +174,22 @@ public class MealPlanServiceImpl implements MealPlanService {
                 .dinner(mapToShortRecipe(mealPlan.getDinner()))
                 .morningSnack(mapToShortRecipe(mealPlan.getMorningSnack()))
                 .afternoonSnack(mapToShortRecipe(mealPlan.getAfternoonSnack()))
+                .date(mealPlan.getDate())
+                .description(mealPlan.getDescription())
+                .dailyCalories(mealPlan.getDailyCalories())
+                .totalCalories(mealPlan.getTotalCalories())
+                .mealCount(mealPlan.getMealCount())
+                .build();
+    }
+
+    public MealPlanDto mapToDto(MealPlan mealPlan) {
+
+        return MealPlanDto.builder()
+                .breakfast(mapToShortRecipe(mealPlan.getBreakfast().getRecipeId()))
+                .lunch(mapToShortRecipe(mealPlan.getLunch().getRecipeId()))
+                .dinner(mapToShortRecipe(mealPlan.getDinner().getRecipeId()))
+                .morningSnack(mapToShortRecipe(mealPlan.getMorningSnack().getRecipeId()))
+                .afternoonSnack(mapToShortRecipe(mealPlan.getAfternoonSnack().getRecipeId()))
                 .date(mealPlan.getDate())
                 .description(mealPlan.getDescription())
                 .dailyCalories(mealPlan.getDailyCalories())
@@ -187,13 +220,72 @@ public class MealPlanServiceImpl implements MealPlanService {
         mealPlanDto.setMealCount(mealPlan.getMealCount());
         mealPlanDto.setDate(mealPlan.getDate());
         mealPlanDto.setDescription(mealPlan.getDescription());
+
+        List<FoodRecipe> allRecipes = new ArrayList<>();
+        if (mealPlan.getBreakfast() != null) {
+            allRecipes.add(mealPlan.getBreakfast());
+        }
+        if (mealPlan.getLunch() != null) {
+            allRecipes.add(mealPlan.getLunch());
+        }
+        if (mealPlan.getDinner() != null) {
+            allRecipes.add(mealPlan.getDinner());
+        }
+        if (mealPlan.getAfternoonSnack() != null) {
+            allRecipes.add(mealPlan.getAfternoonSnack());
+        }
+        if (mealPlan.getMorningSnack() != null) {
+            allRecipes.add(mealPlan.getMorningSnack());
+        }
+
+        // Aggregate total calories, fat, saturated fat, and protein
+        double totalCalories = 0;
+        double totalFatCalories = 0;
+        double totalProteinCalories = 0;
+
+        for (FoodRecipe recipe : allRecipes) {
+            totalCalories += recipe.getCalories();
+            totalFatCalories += recipe.getFatContent() * 9;
+            totalProteinCalories += recipe.getProteinContent() * 4;
+        }
+
+
+        if (totalCalories > 0) {
+
+            double fatPercentage = (totalFatCalories / totalCalories) * 100;
+
+            double proteinPercentage = (totalProteinCalories / totalCalories) * 100;
+
+            mealPlanDto.setTotalFatPercentage((int) fatPercentage);
+
+            mealPlanDto.setTotalProteinPercentage((int) proteinPercentage);
+        } else {
+            mealPlanDto.setTotalFatPercentage(0);
+            mealPlanDto.setTotalProteinPercentage(0);
+        }
+
         mealPlanDto.setBreakfast(mealPlan.getBreakfast() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getBreakfast().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setDinner(mealPlan.getDinner() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getDinner().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setLunch(mealPlan.getLunch() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getLunch().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setAfternoonSnack(mealPlan.getAfternoonSnack() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getAfternoonSnack().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setMorningSnack(mealPlan.getMorningSnack() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getMorningSnack().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setDailyCalories(mealPlan.getDailyCalories());
-        mealPlanDto.setTotalCalories(mealPlan.getTotalCalories());
+
+        mealPlanDto.setTotalCalories((int) (totalCalories));
         return mealPlanDto;
     }
+//    private MealPlanDto getMealPlanDto(MealPlan mealPlan) {
+//        MealPlanDto mealPlanDto = new MealPlanDto();
+//        mealPlanDto.setMealCount(mealPlan.getMealCount());
+//        mealPlanDto.setDate(mealPlan.getDate());
+//        mealPlanDto.setDescription(mealPlan.getDescription());
+//        mealPlanDto.setBreakfast(mealPlan.getBreakfast() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getBreakfast().getRecipeId())) : new ArrayList<>());
+//        mealPlanDto.setDinner(mealPlan.getDinner() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getDinner().getRecipeId())) : new ArrayList<>());
+//        mealPlanDto.setLunch(mealPlan.getLunch() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getLunch().getRecipeId())) : new ArrayList<>());
+//        mealPlanDto.setAfternoonSnack(mealPlan.getAfternoonSnack() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getAfternoonSnack().getRecipeId())) : new ArrayList<>());
+//        mealPlanDto.setMorningSnack(mealPlan.getMorningSnack() != null ? Collections.singletonList(mapToShortRecipe(mealPlan.getMorningSnack().getRecipeId())) : new ArrayList<>());
+//        mealPlanDto.setDailyCalories(mealPlan.getDailyCalories());
+//        mealPlanDto.setTotalCalories(mealPlan.getTotalCalories());
+//        return mealPlanDto;
+//    }
 }

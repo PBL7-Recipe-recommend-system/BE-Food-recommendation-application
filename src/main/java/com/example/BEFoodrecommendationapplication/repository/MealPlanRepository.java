@@ -14,5 +14,5 @@ public interface MealPlanRepository extends JpaRepository<MealPlan, Integer> {
     @Query("SELECT m FROM MealPlan m WHERE m.user.id = :userId AND m.date >= :today")
     List<MealPlan> findCurrentMealPlans(Integer userId, LocalDate today);
 
-    MealPlan findByUser(User user);
+    List<MealPlan> findAllByUser(User user);
 }
