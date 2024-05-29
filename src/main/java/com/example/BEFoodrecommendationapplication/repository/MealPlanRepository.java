@@ -4,10 +4,12 @@ import com.example.BEFoodrecommendationapplication.entity.MealPlan;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@RepositoryRestResource(exported = false)
 public interface MealPlanRepository extends JpaRepository<MealPlan, Integer> {
     MealPlan findByUserAndDate(User user, LocalDate date);
 
