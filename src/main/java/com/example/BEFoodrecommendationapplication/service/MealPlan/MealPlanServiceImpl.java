@@ -72,9 +72,10 @@ public class MealPlanServiceImpl implements MealPlanService {
 
         List<MealPlan> tempMealPlans = (List<MealPlan>) mealPlanRepository.findAllByUser(user);
         int dailyCalories = 0;
-
+        String description = "";
         if (!tempMealPlans.isEmpty()) {
             dailyCalories = tempMealPlans.get(0).getDailyCalories();
+            description = tempMealPlans.get(0).getDescription();
         }
         for (MealPlanInput mealPlanInput : mealPlansDtos) {
             // Check for duplicate date
@@ -93,6 +94,10 @@ public class MealPlanServiceImpl implements MealPlanService {
             if (mealPlanInput.getDailyCalories() != null) {
                 mealPlanInput.setDailyCalories(mealPlanInput.getDailyCalories());
             } else mealPlanInput.setDailyCalories(dailyCalories);
+
+            if (mealPlanInput.getDescription() != null) {
+                mealPlanInput.setDescription(mealPlanInput.getDescription());
+            } else mealPlanInput.setDescription(description);
 
             updateMealPlanFields(mealPlan, mealPlanInput);
 
@@ -113,20 +118,27 @@ public class MealPlanServiceImpl implements MealPlanService {
 
 
     private void updateMealPlanFields(MealPlan mealPlan, MealPlanInput input) {
+        int mealCount = 0;
+
         if (input.getBreakfast() != 0) {
             mealPlan.setBreakfast(getRecipe(input.getBreakfast()));
+            mealCount++;
         }
         if (input.getLunch() != 0) {
             mealPlan.setLunch(getRecipe(input.getLunch()));
+            mealCount++;
         }
         if (input.getDinner() != 0) {
             mealPlan.setDinner(getRecipe(input.getDinner()));
+            mealCount++;
         }
         if (input.getMorningSnack() != 0) {
             mealPlan.setMorningSnack(getRecipe(input.getMorningSnack()));
+            mealCount++;
         }
         if (input.getAfternoonSnack() != 0) {
             mealPlan.setAfternoonSnack(getRecipe(input.getAfternoonSnack()));
+            mealCount++;
         }
         if (input.getDate() != null) {
             mealPlan.setDate(input.getDate());
@@ -135,9 +147,7 @@ public class MealPlanServiceImpl implements MealPlanService {
             mealPlan.setDescription(input.getDescription());
         }
 
-        if (input.getMealCount() != 0) {
-            mealPlan.setMealCount(input.getMealCount());
-        }
+        mealPlan.setMealCount(mealCount);
         mealPlan.setTotalCalories(getMealPlanDto(mealPlan).getTotalCalories());
         mealPlan.setDailyCalories(input.getDailyCalories());
     }
