@@ -31,5 +31,4 @@ public class RecommendMealPlan {
     @OneToMany(mappedBy = "recommendMealPlan")
     private Set<RecommendMealPlanRecipe> recommendMealPlanRecipes;
 
-    // getters and setters
 }

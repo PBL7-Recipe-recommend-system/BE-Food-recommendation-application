@@ -4,14 +4,14 @@ import com.example.BEFoodrecommendationapplication.dto.MealPlanDto;
 import com.example.BEFoodrecommendationapplication.dto.MealPlanInput;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.entity.MealPlan;
+import com.example.BEFoodrecommendationapplication.entity.RecommendMealPlan;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
-import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
-import com.example.BEFoodrecommendationapplication.repository.MealPlanRepository;
-import com.example.BEFoodrecommendationapplication.repository.UserRepository;
+import com.example.BEFoodrecommendationapplication.repository.*;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -23,6 +23,8 @@ public class MealPlanServiceImpl implements MealPlanService {
     private final UserRepository userRepository;
     private final FoodRecipeRepository foodRecipeRepository;
     private final StringUtil stringUtil;
+    private final RecommendMealPlanRepository recommendMealPlanRepository;
+    private final RecommendMealPlanRecipeRepository recommendMealPlanRecipeRepository;
 
     @Override
     public MealPlanInput addMealPlans(MealPlanInput mealPlanInput, int userId) {
@@ -235,6 +237,20 @@ public class MealPlanServiceImpl implements MealPlanService {
 
         mealPlanDto.setTotalCalories((int) (totalCalories));
         return mealPlanDto;
+    }
+
+    @Override
+    @Transactional
+    public void deleteUserMealPlans(User user) {
+        List<RecommendMealPlan> userMealPlans = recommendMealPlanRepository.findByUser(user);
+
+        if (!userMealPlans.isEmpty()) {
+            for (RecommendMealPlan mealPlan : userMealPlans) {
+                recommendMealPlanRecipeRepository.deleteByRecommendMealPlan(mealPlan);
+            }
+
+            recommendMealPlanRepository.deleteAll(userMealPlans);
+        }
     }
 
 }

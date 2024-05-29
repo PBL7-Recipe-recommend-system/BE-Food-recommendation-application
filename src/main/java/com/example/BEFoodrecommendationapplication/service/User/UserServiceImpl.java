@@ -5,7 +5,11 @@ import com.example.BEFoodrecommendationapplication.dto.UserDto;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
 import com.example.BEFoodrecommendationapplication.entity.*;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
-import com.example.BEFoodrecommendationapplication.repository.*;
+import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
+import com.example.BEFoodrecommendationapplication.repository.SavedRecipeRepository;
+import com.example.BEFoodrecommendationapplication.repository.UserExcludeIngredientRepository;
+import com.example.BEFoodrecommendationapplication.repository.UserRepository;
+import com.example.BEFoodrecommendationapplication.service.MealPlan.MealPlanService;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -18,14 +22,13 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
     private final UserRepository userRepository;
     private final IngredientRepository ingredientRepository;
     private final UserExcludeIngredientRepository userExcludeIngredientRepo;
     private final Cloudinary cloudinary;
     private final SavedRecipeRepository savedRecipeRepository;
     private final StringUtil stringUtil;
-    private final FoodRecipeRepository foodRecipeRepository;
+    private final MealPlanService mealPlanService;
 
     @Override
     public void saveOrDeleteRecipeForUser(User user, FoodRecipe recipe, boolean save) {
@@ -63,37 +66,56 @@ public class UserServiceImpl implements UserService {
 
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            user.setWeight(userInput.getWeight());
-            user.setHeight(userInput.getHeight());
-            user.setGender(userInput.getGender());
-            user.setBirthday(userInput.getBirthday());
-            user.setDailyActivities(userInput.getDailyActivities());
-            user.setMeals(userInput.getMeals());
-            user.setDietaryGoal(userInput.getDietaryGoal());
+
+            if (userInput.getName() != null) {
+                user.setName(userInput.getName());
+            }
+            if (userInput.getWeight() != 0) {
+                user.setWeight(userInput.getWeight());
+            }
+            if (userInput.getHeight() != 0) {
+                user.setHeight(userInput.getHeight());
+            }
+            if (userInput.getGender() != null) {
+                user.setGender(userInput.getGender());
+            }
+            if (userInput.getBirthday() != null) {
+                user.setBirthday(userInput.getBirthday());
+            }
+            if (userInput.getDailyActivities() != null) {
+                user.setDailyActivities(userInput.getDailyActivities());
+            }
+            if (userInput.getMeals() != null) {
+                user.setMeals(userInput.getMeals());
+            }
+            if (userInput.getDietaryGoal() != null) {
+                user.setDietaryGoal(userInput.getDietaryGoal());
+            }
 
             List<Ingredient> ingredients = ingredientRepository.findByNameIn(userInput.getIngredients());
             Set<UserExcludeIngredient> userExcludeIngredients = new HashSet<>();
 
             for (Ingredient ingredient : ingredients) {
-                UserExcludeIngredient userExcludeIngredient = new UserExcludeIngredient();
-                userExcludeIngredient.setUser(user);
-                userExcludeIngredient.setIngredient(ingredient);
-                userExcludeIngredients.add(userExcludeIngredient);
+                UserExcludeIngredient userExcludeIngredient = userExcludeIngredientRepo.findByUserAndIngredient(user, ingredient);
+                if (userExcludeIngredient == null) {
+                    userExcludeIngredient = new UserExcludeIngredient();
+                    userExcludeIngredient.setUser(user);
+                    userExcludeIngredient.setIngredient(ingredient);
+                    userExcludeIngredients.add(userExcludeIngredient);
+                }
             }
 
-            if (userExcludeIngredients.isEmpty()) {
-                user.setExcludeIngredients(null);
-                userExcludeIngredientRepo.saveAll(userExcludeIngredients);
-            } else {
+            if (!userExcludeIngredients.isEmpty()) {
                 user.setExcludeIngredients(userExcludeIngredients);
                 userExcludeIngredientRepo.saveAll(userExcludeIngredients);
             }
-
+            mealPlanService.deleteUserMealPlans(user);
             return userRepository.save(user);
         } else {
             throw new RecordNotFoundException("User not found with id : " + id);
         }
     }
+
 
     public UserDto getUser(Integer id) {
 

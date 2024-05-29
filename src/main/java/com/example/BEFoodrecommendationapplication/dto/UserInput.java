@@ -26,7 +26,7 @@ public class UserInput {
     @JsonProperty("gender")
     private String gender;
 
-    @JsonFormat(pattern="dd-MM-yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate birthday;
 
     @JsonProperty("dailyActivities")
@@ -40,5 +40,6 @@ public class UserInput {
 
     @JsonProperty("ingredients")
     private List<String> ingredients;
+
 
 }

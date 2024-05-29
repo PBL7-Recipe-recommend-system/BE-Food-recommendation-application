@@ -6,4 +6,6 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 @RepositoryRestResource(exported = false)
 public interface UserIncludeIngredientRepository extends JpaRepository<UserIncludeIngredient, Integer> {
+
+
 }
