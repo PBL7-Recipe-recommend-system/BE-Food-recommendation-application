@@ -74,7 +74,7 @@ public class StringUtil {
     }
 
     public Object mapToShortRecipe(Integer id) {
-        
+
         if (foodRecipeRepository.findById(id).isEmpty()) {
             return new ArrayList<>();
         }
@@ -85,6 +85,8 @@ public class StringUtil {
                 .totalTime(cleanTime(foodRecipe.getTotalTime()))
                 .calories(round(foodRecipe.getCalories()))
                 .name(foodRecipe.getName())
+                .authorName(foodRecipe.getAuthor().getName())
+                .rating(foodRecipe.getAggregatedRatings())
                 .build();
     }
 

@@ -14,6 +14,10 @@ public class ShortRecipe {
 
     private String name;
 
+    private String authorName;
+
+    private Integer rating;
+
     private String totalTime;
 
     private String image;
