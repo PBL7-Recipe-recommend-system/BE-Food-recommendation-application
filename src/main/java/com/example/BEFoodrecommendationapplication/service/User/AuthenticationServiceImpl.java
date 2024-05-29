@@ -4,10 +4,12 @@ import com.example.BEFoodrecommendationapplication.dto.AuthenticationRequest;
 import com.example.BEFoodrecommendationapplication.dto.AuthenticationResponse;
 import com.example.BEFoodrecommendationapplication.dto.RegisterRequest;
 import com.example.BEFoodrecommendationapplication.entity.Role;
-
 import com.example.BEFoodrecommendationapplication.entity.Token;
 import com.example.BEFoodrecommendationapplication.entity.User;
-import com.example.BEFoodrecommendationapplication.exception.*;
+import com.example.BEFoodrecommendationapplication.exception.DuplicateDataException;
+import com.example.BEFoodrecommendationapplication.exception.InvalidEmailException;
+import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
+import com.example.BEFoodrecommendationapplication.exception.WrongFormatPasswordException;
 import com.example.BEFoodrecommendationapplication.repository.TokenRepository;
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import com.example.BEFoodrecommendationapplication.util.EmailUtil;
@@ -31,6 +33,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
+    private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+    private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -38,9 +42,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final EmailUtil emailUtil;
     private final OtpUtil otpUtil;
     private final TokenRepository tokenRepository;
-
-    private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-    private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
 
     @Override
     @Transactional
@@ -55,9 +56,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Optional<User> existedUser = userRepository.findByEmail(request.getEmail());
         if (existedUser.isPresent()) {
             throw new DuplicateDataException("Email already exists.");
-        }
-        else
-        {
+        } else {
 
             String passwordEncode = passwordEncoder.encode(request.getPassword());
             User user = User.builder()
@@ -79,6 +78,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     }
+
     @Override
     public String verifyAccount(String email, String otp) {
         User user = userRepository.findByEmail(email)
@@ -92,11 +92,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             userRepository.save(user);
 
             return "Account Verified";
-        }
-        else {
+        } else {
             throw new RuntimeException("Wrong token or time out, please try again!");
         }
     }
+
     @Override
     public String regenerateOtp(String email) {
         User user = userRepository.findByEmail(email)
@@ -113,6 +113,35 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return "Email sent... please verify account within 1 minute";
     }
 
+    @Override
+    public AuthenticationResponse setPassword(Integer userId, String oldPassword, String newPassword, String confirmPassword) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new RecordNotFoundException("User not found with this id: " + userId)
+        );
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new BadCredentialsException("Current password is incorrect");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("New password and confirm password do not match");
+        }
+
+        return getAuthenticationResponse(newPassword, user);
+    }
+
+    private AuthenticationResponse getAuthenticationResponse(String newPassword, User user) {
+        if (!newPassword.matches(PASSWORD_REGEX)) {
+            throw new WrongFormatPasswordException("Password must contain uppercase and lowercase letters, at least 8 characters, at least one number, and at least one special character.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        revokeAllTokenByUser(user);
+        userRepository.save(user);
+        String jwtToken = jwtService.generateToken(user);
+
+        saveUserToken(jwtToken, user);
+        return AuthenticationResponse.builder().accessToken(jwtToken).build();
+    }
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -157,30 +186,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 () -> new RecordNotFoundException("User not found with this email: " + email)
         );
 
-        if (!newPassword.matches(PASSWORD_REGEX)) {
-            throw new WrongFormatPasswordException("Password must contain uppercase and lowercase letters, at least 8 characters, at least one number, and at least one special character.");
-        }
-        user.setPassword(passwordEncoder.encode(newPassword));
-        revokeAllTokenByUser(user);
-        userRepository.save(user);
-        String jwtToken = jwtService.generateToken(user);
-
-        saveUserToken(jwtToken, user);
-        return AuthenticationResponse.builder().accessToken(jwtToken).build();
+        return getAuthenticationResponse(newPassword, user);
     }
 
     private void revokeAllTokenByUser(User user) {
         List<Token> validTokens = tokenRepository.findAllTokensByUser(user.getId());
-        if(validTokens.isEmpty()) {
+        if (validTokens.isEmpty()) {
             return;
         }
 
-        validTokens.forEach(t-> {
+        validTokens.forEach(t -> {
             t.setLoggedOut(true);
         });
 
         tokenRepository.saveAll(validTokens);
     }
+
     private void saveUserToken(String jwt, User user) {
         Token token = Token.builder()
                 .token(jwt)

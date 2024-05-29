@@ -21,11 +21,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/meal-plans")
 @RequiredArgsConstructor
-@Tag(name="Meal Plan")
+@Tag(name = "Meal Plan")
 public class MealPlanController {
 
 
@@ -44,11 +45,11 @@ public class MealPlanController {
     public ResponseEntity<Response> addMealPlans(@RequestBody MealPlanInput mealPlan) {
 
         try {
-            Integer id = AuthenticationUtils.getUserFromSecurityContext().getId();
+            Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
 
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    mealPlanService.addMealPlans(mealPlan,id),
+                    mealPlanService.addMealPlans(mealPlan, id),
                     "Adds meal plan successfully",
                     StatusCode.SUCCESS));
 
@@ -58,6 +59,7 @@ public class MealPlanController {
 
         }
     }
+
     @Operation(summary = "Update meal plan")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Update meal plan successfully",
@@ -70,11 +72,11 @@ public class MealPlanController {
     public ResponseEntity<Response> editMealPlans(@RequestBody List<MealPlanInput> mealPlans) {
 
         try {
-            Integer id = AuthenticationUtils.getUserFromSecurityContext().getId();
+            Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
 
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    mealPlanService.editMealPlans(mealPlans,id),
+                    mealPlanService.editMealPlans(mealPlans, id),
                     "Update meal plan successfully",
                     StatusCode.SUCCESS));
 
@@ -97,7 +99,7 @@ public class MealPlanController {
     public ResponseEntity<Response> getMealPlans() {
 
         try {
-            Integer id = AuthenticationUtils.getUserFromSecurityContext().getId();
+            Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
 
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(

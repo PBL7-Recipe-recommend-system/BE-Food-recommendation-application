@@ -1,10 +1,12 @@
 package com.example.BEFoodrecommendationapplication.controller;
 
 import com.example.BEFoodrecommendationapplication.dto.Response;
+import com.example.BEFoodrecommendationapplication.dto.SetPasswordRequest;
 import com.example.BEFoodrecommendationapplication.dto.UserDto;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.service.FoodRecipe.FoodRecipeService;
+import com.example.BEFoodrecommendationapplication.service.User.AuthenticationService;
 import com.example.BEFoodrecommendationapplication.service.User.UserService;
 import com.example.BEFoodrecommendationapplication.util.AuthenticationUtils;
 import com.example.BEFoodrecommendationapplication.util.ResponseBuilderUtil;
@@ -23,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -32,6 +35,7 @@ public class UserController {
 
     private final UserService userService;
     private final FoodRecipeService foodRecipeService;
+    private final AuthenticationService authenticationService;
 
     @Operation(summary = "Set user profile")
     @ApiResponses(value = {
@@ -122,7 +126,7 @@ public class UserController {
     public ResponseEntity<Response> uploadFile(@RequestParam("image") MultipartFile multipartFile) throws IOException {
 
         try {
-            Integer id = AuthenticationUtils.getUserFromSecurityContext().getId();
+            Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     userService.uploadAvatar(multipartFile, id),
@@ -149,7 +153,7 @@ public class UserController {
     public ResponseEntity<Response> saveRecipeForUser(@RequestParam int foodId, @RequestParam(defaultValue = "true") boolean save) {
 
         try {
-            Integer userId = AuthenticationUtils.getUserFromSecurityContext().getId();
+            Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
 
             userService.saveOrDeleteRecipeForUser(userService.findById(userId), foodRecipeService.findById(foodId), save);
             String message = save ? "Saved successfully" : "Deleted successfully";
@@ -180,7 +184,7 @@ public class UserController {
     public ResponseEntity<Response> getSaveRecipeForUser() {
 
         try {
-            Integer userId = AuthenticationUtils.getUserFromSecurityContext().getId();
+            Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
 
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
@@ -194,6 +198,32 @@ public class UserController {
 
         }
 
+
+    }
+
+    @Operation(summary = "Set password")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Set password successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class))
+                    }),
+            @ApiResponse(responseCode = "400", description = "Set password failed")})
+    @PutMapping("/change-password")
+    public ResponseEntity<Response> changePassword(
+            @RequestBody SetPasswordRequest request
+    ) {
+        try {
+
+            Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    authenticationService.setPassword(userId, request.getCurrentPassword(), request.getNewPassword(), request.getConfirmPassword()),
+                    "Set password successfully",
+                    StatusCode.SUCCESS));
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.BAD_REQUEST));
+        }
 
     }
 }

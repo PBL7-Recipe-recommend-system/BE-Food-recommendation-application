@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/recipes")
@@ -92,7 +93,7 @@ public class FoodRecipeController {
         try {
 
             FoodRecipe foodRecipe = foodRecipeService.findById(id);
-            Integer userId = AuthenticationUtils.getUserFromSecurityContext().getId();
+            Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
             foodRecipeService.saveRecentSearch(userId, foodRecipe);
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(

@@ -16,4 +16,6 @@ public interface AuthenticationService {
     String verifyAccount(String email, String otp);
 
     String regenerateOtp(String email);
+
+    AuthenticationResponse setPassword(Integer userId, String oldPassword, String newPassword, String confirmPassword);
 }

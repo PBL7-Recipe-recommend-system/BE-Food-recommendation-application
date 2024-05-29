@@ -22,6 +22,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
     private final IngredientRepository ingredientRepository;
     private final UserExcludeIngredientRepository userExcludeIngredientRepo;
@@ -29,6 +30,7 @@ public class UserServiceImpl implements UserService {
     private final SavedRecipeRepository savedRecipeRepository;
     private final StringUtil stringUtil;
     private final MealPlanService mealPlanService;
+
 
     @Override
     public void saveOrDeleteRecipeForUser(User user, FoodRecipe recipe, boolean save) {
@@ -126,6 +128,7 @@ public class UserServiceImpl implements UserService {
         return mapUserToUserDto(user.get());
 
     }
+
 
     public UserDto mapUserToUserDto(User user) {
 
