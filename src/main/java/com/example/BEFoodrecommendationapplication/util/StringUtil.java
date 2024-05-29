@@ -1,18 +1,25 @@
 package com.example.BEFoodrecommendationapplication.util;
 
-import lombok.NoArgsConstructor;
+import com.example.BEFoodrecommendationapplication.dto.ShortRecipe;
+import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
+import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static java.lang.Math.round;
+
 @Component
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class StringUtil {
+    private final FoodRecipeRepository foodRecipeRepository;
+
     public List<String> splitStringToList(String input) {
-        if(input == null)
-        {
+        if (input == null) {
             return new ArrayList<>();
         }
         if (!input.startsWith("c")) {
@@ -55,9 +62,9 @@ public class StringUtil {
         }
         return partitioned;
     }
+
     public String cleanTime(String time) {
-        if(time == null)
-        {
+        if (time == null) {
             return "";
         }
         if (time.startsWith("PT")) {
@@ -65,4 +72,21 @@ public class StringUtil {
         }
         throw new IllegalArgumentException("Invalid time format");
     }
+
+    public Object mapToShortRecipe(Integer id) {
+        
+        if (foodRecipeRepository.findById(id).isEmpty()) {
+            return new ArrayList<>();
+        }
+        FoodRecipe foodRecipe = foodRecipeRepository.findById(id).get();
+        return ShortRecipe.builder()
+                .recipeId(foodRecipe.getRecipeId())
+                .image(splitStringToList(foodRecipe.getImages()).get(0))
+                .totalTime(cleanTime(foodRecipe.getTotalTime()))
+                .calories(round(foodRecipe.getCalories()))
+                .name(foodRecipe.getName())
+                .build();
+    }
+
+
 }

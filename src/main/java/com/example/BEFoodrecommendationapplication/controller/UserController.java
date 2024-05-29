@@ -3,8 +3,6 @@ package com.example.BEFoodrecommendationapplication.controller;
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.dto.UserDto;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
-import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
-import com.example.BEFoodrecommendationapplication.entity.SavedRecipe;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.service.FoodRecipe.FoodRecipeService;
 import com.example.BEFoodrecommendationapplication.service.User.UserService;
@@ -18,10 +16,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,7 +27,7 @@ import java.util.ArrayList;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-@Tag(name="User")
+@Tag(name = "User")
 public class UserController {
 
     private final UserService userService;
@@ -41,9 +37,9 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Set profile successfully",
                     content = {
-                    @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)
-                    )}),
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class)
+                            )}),
             @ApiResponse(responseCode = "404", description = "Set profile failed")})
     @PutMapping("/me")
     public ResponseEntity<Response> setUserProfile(@RequestBody UserInput userInput) {
@@ -129,7 +125,7 @@ public class UserController {
             Integer id = AuthenticationUtils.getUserFromSecurityContext().getId();
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    userService.uploadAvatar(multipartFile,id),
+                    userService.uploadAvatar(multipartFile, id),
                     "Upload successfully",
                     StatusCode.SUCCESS));
 
@@ -150,7 +146,7 @@ public class UserController {
                             )}),
             @ApiResponse(responseCode = "500", description = "Save recipe failed")})
     @PostMapping("/saved-recipe")
-    public ResponseEntity<Response> saveRecipeForUser(@RequestParam int foodId, @RequestParam (defaultValue = "true") boolean save) {
+    public ResponseEntity<Response> saveRecipeForUser(@RequestParam int foodId, @RequestParam(defaultValue = "true") boolean save) {
 
         try {
             Integer userId = AuthenticationUtils.getUserFromSecurityContext().getId();
@@ -166,6 +162,35 @@ public class UserController {
         } catch (Exception e) {
 
             return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.INTERNAL_SERVER_ERROR));
+
+        }
+
+
+    }
+
+    @Operation(summary = "Get recipe")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get recipe successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class)
+                            )}),
+            @ApiResponse(responseCode = "404", description = "Get recipe failed")})
+    @GetMapping("/saved-recipe")
+    public ResponseEntity<Response> getSaveRecipeForUser() {
+
+        try {
+            Integer userId = AuthenticationUtils.getUserFromSecurityContext().getId();
+
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    userService.getSavedRecipesByUser(userId),
+                    "Get recipe successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
 
         }
 

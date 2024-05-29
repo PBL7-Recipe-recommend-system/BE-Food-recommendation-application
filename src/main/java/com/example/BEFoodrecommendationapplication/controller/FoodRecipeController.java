@@ -4,7 +4,6 @@ import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.dto.SearchResult;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.entity.RecentSearch;
-import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
 import com.example.BEFoodrecommendationapplication.repository.RecentSearchRepository;
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
@@ -23,20 +22,20 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/recipes")
 @RequiredArgsConstructor
-@Tag(name="Food Recipe")
+@Tag(name = "Food Recipe")
 public class FoodRecipeController {
     private final FoodRecipeService foodRecipeService;
 
@@ -45,6 +44,7 @@ public class FoodRecipeController {
     private final FoodRecipeRepository foodRecipeRepository;
 
     private final RecentSearchRepository recentSearchRepository;
+
     @Operation(summary = "Search Recipe")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Search Recipe successfully",
@@ -60,10 +60,10 @@ public class FoodRecipeController {
                                            @RequestParam(required = false) Integer rating,
                                            @RequestParam(defaultValue = "0") Integer page,
                                            @RequestParam(defaultValue = "10") Integer size,
-                                           @RequestParam(defaultValue = "1") Integer timeRate){
+                                           @RequestParam(defaultValue = "1") Integer timeRate) {
         try {
 
-            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate,PageRequest.of(page, size));
+            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate, PageRequest.of(page, size));
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     listRecipes,
@@ -77,6 +77,7 @@ public class FoodRecipeController {
         }
 
     }
+
     @Operation(summary = "Get Detail Recipe")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Get Detail successfully",
@@ -89,31 +90,13 @@ public class FoodRecipeController {
     @Cacheable("getDetail")
     public ResponseEntity<Response> getRecipeById(@RequestParam Integer id) {
         try {
-            System.out.println(id);
+
             FoodRecipe foodRecipe = foodRecipeService.findById(id);
             Integer userId = AuthenticationUtils.getUserFromSecurityContext().getId();
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
-
-            Optional<RecentSearch> optionalRecentSearch = recentSearchRepository.findByUserAndRecipe(user, foodRecipe);
-
-            RecentSearch recentSearch;
-            if (optionalRecentSearch.isPresent()) {
-
-                recentSearch = optionalRecentSearch.get();
-                recentSearch.setTimestamp(LocalDateTime.now());
-            } else {
-
-                recentSearch = new RecentSearch();
-                recentSearch.setRecipe(foodRecipe);
-                recentSearch.setUser(user);
-                recentSearch.setTimestamp(LocalDateTime.now());
-            }
-
-            recentSearchRepository.save(recentSearch);
+            foodRecipeService.saveRecentSearch(userId, foodRecipe);
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    foodRecipeService.mapToDto(foodRecipe),
+                    foodRecipeService.mapToDto(foodRecipe, userId),
                     "Get Detail successfully",
                     StatusCode.SUCCESS));
 
@@ -123,6 +106,8 @@ public class FoodRecipeController {
 
         }
     }
+
+
     @Operation(summary = "Get Recent Search Recipe")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Get Recent Search successfully",
@@ -166,11 +151,11 @@ public class FoodRecipeController {
             @ApiResponse(responseCode = "404", description = "Get Popular failed")})
     @GetMapping("/popular")
     @Cacheable("getPopular")
-    public ResponseEntity<Response> getPopularRecipes( @RequestParam Integer page,
-                                                       @RequestParam Integer size) {
+    public ResponseEntity<Response> getPopularRecipes(@RequestParam Integer page,
+                                                      @RequestParam Integer size) {
         try {
 
-            Page<SearchResult> popularRecipes = foodRecipeService.findPopularRecipes(page,size);
+            Page<SearchResult> popularRecipes = foodRecipeService.findPopularRecipes(page, size);
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     popularRecipes,
@@ -195,7 +180,7 @@ public class FoodRecipeController {
             @ApiResponse(responseCode = "404", description = "Get Category List failed")})
     @GetMapping("/categories")
     @Cacheable("getCategory")
-    public  ResponseEntity<Response> getCategories() {
+    public ResponseEntity<Response> getCategories() {
 
         try {
             Pageable topTen = PageRequest.of(0, 10);

@@ -6,17 +6,17 @@ import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface FoodRecipeService {
 
-     Page<SearchResult> search(String name, String category, Integer rating, Integer dateRating, Pageable pageable);
+    Page<SearchResult> search(String name, String category, Integer rating, Integer dateRating, Pageable pageable);
 
-     RecipeDto mapToDto(FoodRecipe foodRecipe);
+    RecipeDto mapToDto(FoodRecipe foodRecipe, Integer userId);
 
-     FoodRecipe findById(Integer id);
+    FoodRecipe findById(Integer id);
 
-     Page<SearchResult> findPopularRecipes(int page, int size);
+    Page<SearchResult> findPopularRecipes(int page, int size);
 
-     SearchResult mapToSearchResult(FoodRecipe foodRecipe);
+    SearchResult mapToSearchResult(FoodRecipe foodRecipe);
+
+    void saveRecentSearch(Integer userId, FoodRecipe foodRecipe);
 }

@@ -5,10 +5,8 @@ import com.example.BEFoodrecommendationapplication.dto.UserDto;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
 import com.example.BEFoodrecommendationapplication.entity.*;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
-import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
-import com.example.BEFoodrecommendationapplication.repository.SavedRecipeRepository;
-import com.example.BEFoodrecommendationapplication.repository.UserExcludeIngredientRepository;
-import com.example.BEFoodrecommendationapplication.repository.UserRepository;
+import com.example.BEFoodrecommendationapplication.repository.*;
+import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -16,19 +14,18 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final IngredientRepository ingredientRepository;
     private final UserExcludeIngredientRepository userExcludeIngredientRepo;
     private final Cloudinary cloudinary;
     private final SavedRecipeRepository savedRecipeRepository;
-
-
+    private final StringUtil stringUtil;
+    private final FoodRecipeRepository foodRecipeRepository;
 
     @Override
     public void saveOrDeleteRecipeForUser(User user, FoodRecipe recipe, boolean save) {
@@ -41,16 +38,30 @@ public class UserServiceImpl implements UserService{
             SavedRecipe savedRecipe = savedRecipeRepository.findByUserAndRecipe(user, recipe);
             if (savedRecipe != null) {
                 savedRecipeRepository.delete(savedRecipe);
-            }
-            else {
+            } else {
                 throw new RecordNotFoundException("Save recipe not found");
             }
         }
     }
+
+    @Override
+    public List<Object> getSavedRecipesByUser(Integer userId) {
+        List<SavedRecipe> savedRecipes = savedRecipeRepository.findByUserId(userId);
+        List<Object> output = new ArrayList<>();
+        for (SavedRecipe savedRecipe : savedRecipes) {
+            output.add(mapToDto(savedRecipe));
+        }
+        return output;
+    }
+
+    private Object mapToDto(SavedRecipe savedRecipe) {
+        return stringUtil.mapToShortRecipe(savedRecipe.getRecipe().getRecipeId());
+    }
+
     public User save(Integer id, UserInput userInput) {
         Optional<User> optionalUser = userRepository.findById(id);
 
-        if(optionalUser.isPresent()) {
+        if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             user.setWeight(userInput.getWeight());
             user.setHeight(userInput.getHeight());
@@ -70,7 +81,7 @@ public class UserServiceImpl implements UserService{
                 userExcludeIngredients.add(userExcludeIngredient);
             }
 
-            if(userExcludeIngredients.isEmpty()) {
+            if (userExcludeIngredients.isEmpty()) {
                 user.setExcludeIngredients(null);
                 userExcludeIngredientRepo.saveAll(userExcludeIngredients);
             } else {
@@ -83,11 +94,11 @@ public class UserServiceImpl implements UserService{
             throw new RecordNotFoundException("User not found with id : " + id);
         }
     }
+
     public UserDto getUser(Integer id) {
 
         Optional<User> user = userRepository.findById(id);
-        if(user.isEmpty())
-        {
+        if (user.isEmpty()) {
             throw new RecordNotFoundException("User not found with id : " + id);
         }
         return mapUserToUserDto(user.get());
@@ -96,7 +107,7 @@ public class UserServiceImpl implements UserService{
 
     public UserDto mapUserToUserDto(User user) {
 
-        float[] dietaryRate = {0.8f,1.2f, 1.0f };
+        float[] dietaryRate = {0.8f, 1.2f, 1.0f};
         float rate = 1;
         float height = 0;
         float weight = 0;
@@ -104,28 +115,22 @@ public class UserServiceImpl implements UserService{
         String dailyActivities = "";
         int meals = 0;
         int dietaryGoal = 0;
-        if(user.getHeight() != null)
-        {
+        if (user.getHeight() != null) {
             height = user.getHeight();
         }
-        if(user.getGender() != null)
-        {
+        if (user.getGender() != null) {
             gender = user.getGender();
         }
-        if(user.getWeight() != null)
-        {
+        if (user.getWeight() != null) {
             weight = user.getWeight();
         }
-        if(user.getDailyActivities() != null)
-        {
+        if (user.getDailyActivities() != null) {
             dailyActivities = user.getDailyActivities();
         }
-        if(user.getMeals() != null)
-        {
+        if (user.getMeals() != null) {
             meals = user.getMeals();
         }
-        if(user.getDietaryGoal() != null)
-        {
+        if (user.getDietaryGoal() != null) {
             rate = dietaryRate[user.getDietaryGoal()];
             dietaryGoal = user.getDietaryGoal();
         }
@@ -152,7 +157,7 @@ public class UserServiceImpl implements UserService{
                 .dietaryGoal(dietaryGoal)
                 .bmi(user.calculateBmi())
                 .isCustomPlan(user.isCustomPlan())
-                .recommendCalories(Math.round(user.caloriesCalculator()*rate))
+                .recommendCalories(Math.round(user.caloriesCalculator() * rate))
                 .includeIngredients(includeIngredientNames)
                 .excludeIngredients(excludeIngredientNames)
                 .build();

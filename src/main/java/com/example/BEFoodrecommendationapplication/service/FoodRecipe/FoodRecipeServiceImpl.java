@@ -3,21 +3,27 @@ package com.example.BEFoodrecommendationapplication.service.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.dto.RecipeDto;
 import com.example.BEFoodrecommendationapplication.dto.SearchResult;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
+import com.example.BEFoodrecommendationapplication.entity.RecentSearch;
+import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
+import com.example.BEFoodrecommendationapplication.repository.RecentSearchRepository;
+import com.example.BEFoodrecommendationapplication.repository.SavedRecipeRepository;
+import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import com.example.BEFoodrecommendationapplication.util.FoodRecipeSpecification;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +31,9 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
     private final FoodRecipeRepository foodRecipeRepository;
     private final StringUtil stringUtil;
+    private final UserRepository userRepository;
+    private final RecentSearchRepository recentSearchRepository;
+    private final SavedRecipeRepository savedRecipeRepository;
 
 
     @Override
@@ -49,8 +58,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").descending());
             } else if (timeRate == 3) {
                 pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").ascending());
-            }
-            else if (timeRate == 4) {
+            } else if (timeRate == 4) {
                 pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("aggregatedRatings").descending().and(Sort.by("reviewCount").descending()));
             }
         }
@@ -69,14 +77,20 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         return foodRecipeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("FoodRecipe not found with id " + id));
     }
+
     @Override
     public Page<SearchResult> findPopularRecipes(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         return foodRecipeRepository.findPopularRecipes(pageRequest).map(this::mapToSearchResult);
     }
 
+    public boolean isRecipeSavedByUser(Integer userId, Integer recipeId) {
+        return savedRecipeRepository.findByUserIdAndRecipeId(userId, recipeId).isPresent();
+    }
+
     @Override
-    public RecipeDto mapToDto(FoodRecipe foodRecipe) {
+    public RecipeDto mapToDto(FoodRecipe foodRecipe, Integer userId) {
+
         return RecipeDto.builder()
                 .recipeId(foodRecipe.getRecipeId())
                 .name(foodRecipe.getName())
@@ -105,6 +119,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 .proteinContent(foodRecipe.getProteinContent())
                 .recipeServings(foodRecipe.getRecipeServings())
                 .recipeInstructions(stringUtil.partitionIntoFourParts(stringUtil.splitInstructions(foodRecipe.getRecipeInstructions())))
+                .isSaved(isRecipeSavedByUser(userId, foodRecipe.getRecipeId()))
                 .build();
     }
 
@@ -124,9 +139,31 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         return searchResult;
     }
 
+    @Override
+    public void saveRecentSearch(Integer userId, FoodRecipe foodRecipe) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
+
+        Optional<RecentSearch> optionalRecentSearch = recentSearchRepository.findByUserAndRecipe(user, foodRecipe);
+
+        RecentSearch recentSearch;
+        if (optionalRecentSearch.isPresent()) {
+
+            recentSearch = optionalRecentSearch.get();
+            recentSearch.setTimestamp(LocalDateTime.now());
+        } else {
+
+            recentSearch = new RecentSearch();
+            recentSearch.setRecipe(foodRecipe);
+            recentSearch.setUser(user);
+            recentSearch.setTimestamp(LocalDateTime.now());
+        }
+
+        recentSearchRepository.save(recentSearch);
+    }
+
     public String cleanTime(String time) {
-        if(time == null)
-        {
+        if (time == null) {
             return "";
         }
         if (time.startsWith("PT")) {
@@ -134,4 +171,6 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         }
         throw new IllegalArgumentException("Invalid time format");
     }
+
+
 }
