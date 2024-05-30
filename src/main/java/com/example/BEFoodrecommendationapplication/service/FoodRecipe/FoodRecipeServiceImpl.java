@@ -206,22 +206,27 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
     public void setRecipeAsCooked(Integer userId, Integer recipeId, Integer servingSize) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RecordNotFoundException("User not found with id " + userId));
         FoodRecipe foodRecipe = foodRecipeRepository.findById(recipeId).orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + recipeId));
-        UserCookedRecipe userCookedRecipe = userCookedRecipeRepository.findByUserAndRecipe(user, foodRecipe)
-                .orElseGet(() -> {
-                    UserCookedRecipe newUserCookedRecipe = new UserCookedRecipe();
-                    newUserCookedRecipe.setUser(user);
-                    newUserCookedRecipe.setRecipe(foodRecipe);
-                    return newUserCookedRecipe;
-                });
         LocalDate cookedDate = LocalDate.now();
-        if (userCookedRecipe.getDate() != null && userCookedRecipe.getDate().equals(cookedDate)) {
-            throw new IllegalArgumentException("The recipe was already cooked on this date");
-        }
 
-        userCookedRecipe.setIsCooked(true);
-        userCookedRecipe.setDate(cookedDate);
-        userCookedRecipe.setServingSize(servingSize);
-        userCookedRecipeRepository.save(userCookedRecipe);
+        // Check if the recipe was already cooked today
+        Optional<UserCookedRecipe> existingCookedRecipeOpt = userCookedRecipeRepository.findByUserAndRecipeAndDate(user, foodRecipe, cookedDate);
+
+        if (existingCookedRecipeOpt.isPresent()) {
+            // If the recipe was already cooked today, increase the serving size
+            UserCookedRecipe existingCookedRecipe = existingCookedRecipeOpt.get();
+            existingCookedRecipe.setServingSize(existingCookedRecipe.getServingSize() + servingSize);
+            userCookedRecipeRepository.save(existingCookedRecipe);
+        } else {
+            // If the recipe was not cooked today, create a new record
+            UserCookedRecipe newUserCookedRecipe = new UserCookedRecipe();
+            newUserCookedRecipe.setUser(user);
+            newUserCookedRecipe.setRecipe(foodRecipe);
+            newUserCookedRecipe.setIsCooked(true);
+            newUserCookedRecipe.setDate(cookedDate);
+            newUserCookedRecipe.setServingSize(servingSize);
+            userCookedRecipeRepository.save(newUserCookedRecipe);
+        }
     }
+
 
 }
