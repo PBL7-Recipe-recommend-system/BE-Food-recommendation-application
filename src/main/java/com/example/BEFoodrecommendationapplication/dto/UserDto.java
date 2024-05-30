@@ -19,6 +19,10 @@ public class UserDto {
     @JsonProperty("name")
     private String name;
 
+    @JsonFormat(pattern = "dd-MM-yyyy")
+    @JsonProperty("birthday")
+    private LocalDate birthday;
+
     @JsonProperty("weight")
     private float weight;
 

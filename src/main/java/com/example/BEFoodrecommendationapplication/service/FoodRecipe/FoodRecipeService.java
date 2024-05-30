@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface FoodRecipeService {
 
-    Page<SearchResult> search(String name, String category, Integer rating, Integer dateRating, Pageable pageable);
+    Page<SearchResult> search(String name, String category, Integer rating, Integer dateRating, Pageable pageable, Integer userId);
 
     RecipeDto mapToDto(FoodRecipe foodRecipe, Integer userId);
 
@@ -19,4 +19,6 @@ public interface FoodRecipeService {
     SearchResult mapToSearchResult(FoodRecipe foodRecipe);
 
     void saveRecentSearch(Integer userId, FoodRecipe foodRecipe);
+
+    void setRecipeAsCooked(Integer userId, Integer recipeId, Integer servingSize);
 }

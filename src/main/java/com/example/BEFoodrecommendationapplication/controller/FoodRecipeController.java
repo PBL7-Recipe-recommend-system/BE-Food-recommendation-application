@@ -2,6 +2,7 @@ package com.example.BEFoodrecommendationapplication.controller;
 
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.dto.SearchResult;
+import com.example.BEFoodrecommendationapplication.dto.SetCookedRecipeDto;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.entity.RecentSearch;
 import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
@@ -24,10 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,8 +61,8 @@ public class FoodRecipeController {
                                            @RequestParam(defaultValue = "10") Integer size,
                                            @RequestParam(defaultValue = "1") Integer timeRate) {
         try {
-
-            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate, PageRequest.of(page, size));
+            Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
+            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate, PageRequest.of(page, size), userId);
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     listRecipes,
@@ -189,6 +187,32 @@ public class FoodRecipeController {
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     top10Categories,
                     "Get Category List successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
+
+        }
+    }
+
+    @Operation(summary = "Set recipe as cooked")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Set recipe as cooked successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = Response.class))
+                    }),
+            @ApiResponse(responseCode = "404", description = "Set recipe as cooked failed")})
+    @PutMapping("/cooked-recipe")
+    public ResponseEntity<Response> setRecipeAsCooked(@RequestBody SetCookedRecipeDto dto) {
+
+        try {
+            Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
+            foodRecipeService.setRecipeAsCooked(userId, dto.getRecipeId(), dto.getServingSize());
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    new ArrayList<>(),
+                    "Set recipe as cooked successfully",
                     StatusCode.SUCCESS));
 
         } catch (Exception e) {

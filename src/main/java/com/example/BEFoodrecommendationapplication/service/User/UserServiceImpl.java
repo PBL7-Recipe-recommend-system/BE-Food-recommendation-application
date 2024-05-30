@@ -159,6 +159,7 @@ public class UserServiceImpl implements UserService {
             rate = dietaryRate[user.getDietaryGoal()];
             dietaryGoal = user.getDietaryGoal();
         }
+
         List<String> includeIngredientNames = user.getIncludeIngredients().stream()
                 .map(UserIncludeIngredient::getIngredient)
                 .map(Ingredient::getName)
@@ -178,6 +179,7 @@ public class UserServiceImpl implements UserService {
                 .gender(gender)
                 .age(user.calculateAge())
                 .dailyActivities(dailyActivities)
+                .birthday(user.getBirthday())
                 .meals(meals)
                 .dietaryGoal(dietaryGoal)
                 .bmi(user.calculateBmi())

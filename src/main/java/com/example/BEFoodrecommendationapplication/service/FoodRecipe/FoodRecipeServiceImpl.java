@@ -5,10 +5,9 @@ import com.example.BEFoodrecommendationapplication.dto.SearchResult;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.entity.RecentSearch;
 import com.example.BEFoodrecommendationapplication.entity.User;
-import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
-import com.example.BEFoodrecommendationapplication.repository.RecentSearchRepository;
-import com.example.BEFoodrecommendationapplication.repository.SavedRecipeRepository;
-import com.example.BEFoodrecommendationapplication.repository.UserRepository;
+import com.example.BEFoodrecommendationapplication.entity.UserCookedRecipe;
+import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
+import com.example.BEFoodrecommendationapplication.repository.*;
 import com.example.BEFoodrecommendationapplication.util.FoodRecipeSpecification;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +20,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -34,25 +34,50 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
     private final UserRepository userRepository;
     private final RecentSearchRepository recentSearchRepository;
     private final SavedRecipeRepository savedRecipeRepository;
+    private final UserCookedRecipeRepository userCookedRecipeRepository;
 
 
     @Override
     @Cacheable("searchRecipes")
-    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, Pageable pageable) {
+    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, Pageable pageable, Integer userId) {
         Specification<FoodRecipe> spec = Specification.where(null);
-
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
+        // Filter by name
         if (name != null) {
             spec = spec.and(FoodRecipeSpecification.nameStartsWith(name));
         }
 
+        // Filter by category
         if (category != null) {
             spec = spec.and(FoodRecipeSpecification.categoryContains(category));
         }
+
+        // Filter by rating
         if (rating != null) {
             spec = spec.and(FoodRecipeSpecification.ratingIs(rating));
         }
 
+        // Calculate user-specific nutritional requirements
+        float calories = user.caloriesCalculator();
+        int dietaryGoal = user.getDietaryGoal();
+        // Adjust protein and fat percentages based on dietary goal
+        float proteinPercentage = dietaryGoal == 1 ? 0.30f : dietaryGoal == 2 ? 0.25f : 0.35f;
+        float fatPercentage = dietaryGoal == 1 ? 0.25f : dietaryGoal == 2 ? 0.30f : 0.20f;
+        float carbPercentage = 1 - (proteinPercentage + fatPercentage);
 
+        // Calculate macronutrient content in grams
+        float proteinContent = calories * proteinPercentage / 4; // 4 kcal per gram of protein
+        float fatContent = calories * fatPercentage / 9; // 9 kcal per gram of fat
+        float carbContent = calories * carbPercentage / 4; // 4 kcal per gram of carbs
+        System.out.println(proteinContent * 0.9f + "  " + proteinContent * 1.1f);
+        // Add specifications for nutritional content
+//        spec = spec.and(FoodRecipeSpecification.caloriesBetween(calories * 0.9f, calories * 1.1f)); // +/- 10% range
+//        spec = spec.and(FoodRecipeSpecification.proteinContentBetween(proteinContent * 0.9f, proteinContent * 1.1f));
+//        spec = spec.and(FoodRecipeSpecification.fatContentBetween(fatContent * 0.9f, fatContent * 1.1f));
+//        spec = spec.and(FoodRecipeSpecification.carbohydrateContentBetween(carbContent * 0.9f, carbContent * 1.1f));
+
+        // Sort by timeRate
         if (timeRate != null) {
             if (timeRate == 2) {
                 pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").descending());
@@ -63,7 +88,10 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
             }
         }
 
+        // Execute the query
         Page<FoodRecipe> foodRecipes = foodRecipeRepository.findAll(spec, pageable);
+
+        // Fallback to keyword search if no results
         if (foodRecipes.isEmpty() && name != null) {
             spec = Specification.where(FoodRecipeSpecification.keywordStartsWith(name));
             foodRecipes = foodRecipeRepository.findAll(spec, pageable);
@@ -71,6 +99,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
         return foodRecipes.map(this::mapToSearchResult);
     }
+
 
     @Override
     public FoodRecipe findById(Integer id) {
@@ -172,5 +201,27 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         throw new IllegalArgumentException("Invalid time format");
     }
 
+
+    @Override
+    public void setRecipeAsCooked(Integer userId, Integer recipeId, Integer servingSize) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RecordNotFoundException("User not found with id " + userId));
+        FoodRecipe foodRecipe = foodRecipeRepository.findById(recipeId).orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + recipeId));
+        UserCookedRecipe userCookedRecipe = userCookedRecipeRepository.findByUserAndRecipe(user, foodRecipe)
+                .orElseGet(() -> {
+                    UserCookedRecipe newUserCookedRecipe = new UserCookedRecipe();
+                    newUserCookedRecipe.setUser(user);
+                    newUserCookedRecipe.setRecipe(foodRecipe);
+                    return newUserCookedRecipe;
+                });
+        LocalDate cookedDate = LocalDate.now();
+        if (userCookedRecipe.getDate() != null && userCookedRecipe.getDate().equals(cookedDate)) {
+            throw new IllegalArgumentException("The recipe was already cooked on this date");
+        }
+
+        userCookedRecipe.setIsCooked(true);
+        userCookedRecipe.setDate(cookedDate);
+        userCookedRecipe.setServingSize(servingSize);
+        userCookedRecipeRepository.save(userCookedRecipe);
+    }
 
 }
