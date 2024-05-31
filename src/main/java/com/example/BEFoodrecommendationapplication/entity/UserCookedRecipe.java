@@ -1,5 +1,6 @@
 package com.example.BEFoodrecommendationapplication.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +17,7 @@ public class UserCookedRecipe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -34,4 +36,6 @@ public class UserCookedRecipe {
     @Column(name = "serving_size")
     private Integer servingSize;
 
+    @Column(name = "meal")
+    private String meal;
 }

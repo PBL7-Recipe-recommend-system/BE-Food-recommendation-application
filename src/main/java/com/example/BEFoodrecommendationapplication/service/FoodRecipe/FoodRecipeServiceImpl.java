@@ -2,6 +2,7 @@ package com.example.BEFoodrecommendationapplication.service.FoodRecipe;
 
 import com.example.BEFoodrecommendationapplication.dto.RecipeDto;
 import com.example.BEFoodrecommendationapplication.dto.SearchResult;
+import com.example.BEFoodrecommendationapplication.dto.SetCookedRecipeDto;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.entity.RecentSearch;
 import com.example.BEFoodrecommendationapplication.entity.User;
@@ -203,9 +204,9 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
 
     @Override
-    public void setRecipeAsCooked(Integer userId, Integer recipeId, Integer servingSize) {
+    public void setRecipeAsCooked(Integer userId, SetCookedRecipeDto input) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RecordNotFoundException("User not found with id " + userId));
-        FoodRecipe foodRecipe = foodRecipeRepository.findById(recipeId).orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + recipeId));
+        FoodRecipe foodRecipe = foodRecipeRepository.findById(input.getRecipeId()).orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + input.getRecipeId()));
         LocalDate cookedDate = LocalDate.now();
 
         // Check if the recipe was already cooked today
@@ -214,7 +215,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         if (existingCookedRecipeOpt.isPresent()) {
             // If the recipe was already cooked today, increase the serving size
             UserCookedRecipe existingCookedRecipe = existingCookedRecipeOpt.get();
-            existingCookedRecipe.setServingSize(existingCookedRecipe.getServingSize() + servingSize);
+            existingCookedRecipe.setServingSize(existingCookedRecipe.getServingSize() + input.getServingSize());
             userCookedRecipeRepository.save(existingCookedRecipe);
         } else {
             // If the recipe was not cooked today, create a new record
@@ -223,10 +224,15 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
             newUserCookedRecipe.setRecipe(foodRecipe);
             newUserCookedRecipe.setIsCooked(true);
             newUserCookedRecipe.setDate(cookedDate);
-            newUserCookedRecipe.setServingSize(servingSize);
+            newUserCookedRecipe.setServingSize(input.getServingSize());
+            newUserCookedRecipe.setMeal(input.getMeal());
             userCookedRecipeRepository.save(newUserCookedRecipe);
         }
     }
 
-
+    @Override
+    public List<UserCookedRecipe> getCookedRecipesByUser(Integer userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RecordNotFoundException("User not found with id " + userId));
+        return userCookedRecipeRepository.findByUser(user);
+    }
 }

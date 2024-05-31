@@ -7,7 +7,6 @@ import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.entity.RecentSearch;
 import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
 import com.example.BEFoodrecommendationapplication.repository.RecentSearchRepository;
-import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import com.example.BEFoodrecommendationapplication.service.FoodRecipe.FoodRecipeService;
 import com.example.BEFoodrecommendationapplication.util.AuthenticationUtils;
 import com.example.BEFoodrecommendationapplication.util.ResponseBuilderUtil;
@@ -37,8 +36,6 @@ import java.util.Objects;
 @Tag(name = "Food Recipe")
 public class FoodRecipeController {
     private final FoodRecipeService foodRecipeService;
-
-    private final UserRepository userRepository;
 
     private final FoodRecipeRepository foodRecipeRepository;
 
@@ -209,10 +206,36 @@ public class FoodRecipeController {
 
         try {
             Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
-            foodRecipeService.setRecipeAsCooked(userId, dto.getRecipeId(), dto.getServingSize());
+            foodRecipeService.setRecipeAsCooked(userId, dto);
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     new ArrayList<>(),
                     "Set recipe as cooked successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
+
+        }
+    }
+
+    @Operation(summary = "Get cooked recipes")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get cooked recipes successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = Response.class))
+                    }),
+            @ApiResponse(responseCode = "404", description = "Get cooked recipes failed")})
+    @GetMapping("/cooked-recipe")
+    public ResponseEntity<Response> getCookedRecipe() {
+
+        try {
+            Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    foodRecipeService.getCookedRecipesByUser(userId),
+                    "Get cooked recipes successfully",
                     StatusCode.SUCCESS));
 
         } catch (Exception e) {

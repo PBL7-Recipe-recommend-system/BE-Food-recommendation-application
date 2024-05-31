@@ -10,4 +10,5 @@ import lombok.*;
 public class SetCookedRecipeDto {
     private Integer recipeId;
     private Integer servingSize;
+    private String meal;
 }
