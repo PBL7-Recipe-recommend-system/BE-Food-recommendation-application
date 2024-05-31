@@ -219,6 +219,13 @@ public class MealPlanServiceImpl implements MealPlanService {
             double fatPercentage = (totalFatCalories / totalCalories) * 100;
 
             double proteinPercentage = (totalProteinCalories / totalCalories) * 100;
+            if (mealPlan.getDailyCalories() > 0) {
+                double caloriesPercentage = (totalCalories / mealPlan.getDailyCalories()) * 100;
+                mealPlanDto.setTotalCaloriesPercentage((int) caloriesPercentage);
+            } else {
+                mealPlanDto.setTotalCaloriesPercentage(0);
+            }
+
 
             mealPlanDto.setTotalFatPercentage((int) fatPercentage);
 
@@ -226,6 +233,7 @@ public class MealPlanServiceImpl implements MealPlanService {
         } else {
             mealPlanDto.setTotalFatPercentage(0);
             mealPlanDto.setTotalProteinPercentage(0);
+            mealPlanDto.setTotalCaloriesPercentage(0);
         }
 
         mealPlanDto.setBreakfast(mealPlan.getBreakfast() != null ? Collections.singletonList(stringUtil.mapToShortRecipe(mealPlan.getBreakfast().getRecipeId())) : new ArrayList<>());

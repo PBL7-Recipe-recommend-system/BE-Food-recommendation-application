@@ -31,6 +31,8 @@ public class MealPlanDto {
 
     private Integer totalCalories;
 
+    private Integer totalCaloriesPercentage;
+
     private Integer totalProteinPercentage;
 
     private Integer totalFatPercentage;
