@@ -47,7 +47,7 @@ public class MealPlan {
     private FoodRecipe afternoonSnack;
 
     @Column(name = "meal_count")
-    private Integer mealCount = 5;
+    private Integer mealCount ;
 
     @Column(name = "date", nullable = false)
     @JsonFormat(pattern = "dd-MM-yyyy")
