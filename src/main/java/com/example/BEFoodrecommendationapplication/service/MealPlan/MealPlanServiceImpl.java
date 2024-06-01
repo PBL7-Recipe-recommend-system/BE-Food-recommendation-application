@@ -222,8 +222,10 @@ public class MealPlanServiceImpl implements MealPlanService {
             if (mealPlan.getDailyCalories() > 0) {
                 double caloriesPercentage = (totalCalories / mealPlan.getDailyCalories()) * 100;
                 mealPlanDto.setTotalCaloriesPercentage((int) caloriesPercentage);
+                mealPlanDto.setDailyCalories(mealPlan.getDailyCalories());
             } else {
                 mealPlanDto.setTotalCaloriesPercentage(0);
+                mealPlanDto.setDailyCalories(0);
             }
 
 
@@ -241,7 +243,6 @@ public class MealPlanServiceImpl implements MealPlanService {
         mealPlanDto.setLunch(mealPlan.getLunch() != null ? Collections.singletonList(stringUtil.mapToShortRecipe(mealPlan.getLunch().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setAfternoonSnack(mealPlan.getAfternoonSnack() != null ? Collections.singletonList(stringUtil.mapToShortRecipe(mealPlan.getAfternoonSnack().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setMorningSnack(mealPlan.getMorningSnack() != null ? Collections.singletonList(stringUtil.mapToShortRecipe(mealPlan.getMorningSnack().getRecipeId())) : new ArrayList<>());
-        mealPlanDto.setDailyCalories(mealPlan.getDailyCalories());
 
         mealPlanDto.setTotalCalories((int) (totalCalories));
         return mealPlanDto;

@@ -53,10 +53,10 @@ public class MealPlan {
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
 
-    @Column(name = "daily_calorie")
+    @Column(name = "daily_calories")
     private Integer dailyCalories;
 
-    @Column(name = "total_calorie")
+    @Column(name = "total_calories")
     private Integer totalCalories;
 
     @Column(name = "description")

@@ -22,8 +22,8 @@ public class RecommendMealPlan {
     @Column(name = "date", nullable = false)
     private Date date;
 
-    @Column(name = "daily_calorie")
-    private Integer dailyCalorie;
+    @Column(name = "daily_calories")
+    private Integer dailyCalories;
 
     @Column(name = "description")
     private String description;
