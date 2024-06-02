@@ -154,7 +154,7 @@ public class MealPlanServiceImpl implements MealPlanService {
         if (input.getDescription() != null) {
             mealPlan.setDescription(input.getDescription());
         }
-        if(mealPlan.getMealCount() == null)
+        if(mealPlan.getMealCount() == null || mealPlan.getMealCount() < mealCount)
         {
             mealPlan.setMealCount(mealCount);
         }
