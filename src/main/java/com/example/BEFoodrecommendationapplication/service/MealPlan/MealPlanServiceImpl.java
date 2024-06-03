@@ -108,7 +108,7 @@ public class MealPlanServiceImpl implements MealPlanService {
             } else mealPlanInput.setDescription(description);
 
             updateMealPlanFields(mealPlan, mealPlanInput);
-
+            updateMealCount(mealPlan);
             mealPlans.add(mealPlan);
 
         }
@@ -117,6 +117,7 @@ public class MealPlanServiceImpl implements MealPlanService {
 
         List<MealPlan> output = mealPlanRepository.findAllByUser(user);
         for (MealPlan mealPlan : output) {
+
             MealPlanDto mealPlanDto = getMealPlanDto(mealPlan);
             mealPlanDtos.add(mealPlanDto);
         }
@@ -124,29 +125,50 @@ public class MealPlanServiceImpl implements MealPlanService {
         return mealPlanDtos;
     }
 
+    public void updateMealCount(MealPlan mealPlan) {
+        int mealCount = 0;
+
+        if (mealPlan.getBreakfast() != null) {
+            mealCount++;
+        }
+        if (mealPlan.getAfternoonSnack() != null) {
+            mealCount++;
+        }
+        if (mealPlan.getMorningSnack() != null) {
+            mealCount++;
+        }
+        if (mealPlan.getLunch() != null) {
+            mealCount++;
+        }
+        if (mealPlan.getDinner() != null) {
+            mealCount++;
+        }
+
+        mealPlan.setMealCount(mealCount);
+//        mealPlanRepository.save(mealPlan);
+    }
 
     private void updateMealPlanFields(MealPlan mealPlan, MealPlanInput input) {
-        int mealCount = 0;
 
         if (input.getBreakfast() > 0) {
             mealPlan.setBreakfast(getRecipe(input.getBreakfast()));
-            mealCount++;
+
         }
         if (input.getLunch() > 0) {
             mealPlan.setLunch(getRecipe(input.getLunch()));
-            mealCount++;
+
         }
         if (input.getDinner() > 0) {
             mealPlan.setDinner(getRecipe(input.getDinner()));
-            mealCount++;
+
         }
         if (input.getMorningSnack() > 0) {
             mealPlan.setMorningSnack(getRecipe(input.getMorningSnack()));
-            mealCount++;
+
         }
         if (input.getAfternoonSnack() > 0) {
             mealPlan.setAfternoonSnack(getRecipe(input.getAfternoonSnack()));
-            mealCount++;
+
         }
         if (input.getDate() != null) {
             mealPlan.setDate(input.getDate());
@@ -154,10 +176,7 @@ public class MealPlanServiceImpl implements MealPlanService {
         if (input.getDescription() != null) {
             mealPlan.setDescription(input.getDescription());
         }
-        if(mealPlan.getMealCount() == null || mealPlan.getMealCount() < mealCount)
-        {
-            mealPlan.setMealCount(mealCount);
-        }
+
 
         mealPlan.setTotalCalories(getMealPlanDto(mealPlan).getTotalCalories());
 
@@ -191,6 +210,7 @@ public class MealPlanServiceImpl implements MealPlanService {
 
     private MealPlanDto getMealPlanDto(MealPlan mealPlan) {
         MealPlanDto mealPlanDto = new MealPlanDto();
+        updateMealCount(mealPlan);
         mealPlanDto.setMealCount(mealPlan.getMealCount());
         mealPlanDto.setDate(mealPlan.getDate());
         mealPlanDto.setDescription(mealPlan.getDescription());
