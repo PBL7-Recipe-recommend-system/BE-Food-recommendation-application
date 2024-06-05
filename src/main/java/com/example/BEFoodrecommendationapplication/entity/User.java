@@ -11,7 +11,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -27,13 +30,13 @@ public class User implements UserDetails {
     @Column(name = "user_id")
     private Integer id;
 
-    @Column(name="name", length = 150)
+    @Column(name = "name", length = 150)
     private String name;
 
-    @Column(name="email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name="height")
+    @Column(name = "height")
     private Float height;
 
     @Column(name = "weight")
@@ -42,12 +45,12 @@ public class User implements UserDetails {
     @Column(name = "dietary_goal")
     private Integer dietaryGoal;
 
-    @Column(name="password", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "password", columnDefinition = "TEXT", nullable = false)
     @JsonIgnore
     private String password;
 
-    @Column(name="created_at")
-    @JsonFormat(pattern="dd-MM-yyyy")
+    @Column(name = "created_at")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate createdAt;
 
     @Enumerated(EnumType.STRING)
@@ -68,11 +71,12 @@ public class User implements UserDetails {
     private Integer meals;
 
     @Column(name = "birthday")
-    @JsonFormat(pattern="dd-MM-yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate birthday;
 
     @Column(name = "active")
     private boolean active;
+
 
     @Setter
     @Column(name = "is_custom_plan")
@@ -103,8 +107,7 @@ public class User implements UserDetails {
     private Set<UserExcludeIngredient> excludeIngredients;
 
     public int calculateAge() {
-        if (this.birthday == null)
-        {
+        if (this.birthday == null) {
             return 0;
         }
         LocalDate now = LocalDate.now();
@@ -113,8 +116,7 @@ public class User implements UserDetails {
     }
 
     public float calculateBmi() {
-        if (this.weight == null || this.height == null)
-        {
+        if (this.weight == null || this.height == null) {
             return 0;
         }
         float heightInMeters = this.height / 100;
@@ -123,8 +125,7 @@ public class User implements UserDetails {
     }
 
     public float calculateBmr() {
-        if (this.weight == null || this.height == null || this.birthday == null)
-        {
+        if (this.weight == null || this.height == null || this.birthday == null) {
             return 0;
         }
         int age = this.calculateAge();
@@ -138,8 +139,7 @@ public class User implements UserDetails {
     }
 
     public float caloriesCalculator() {
-        if(this.dailyActivities == null)
-        {
+        if (this.dailyActivities == null) {
             return 0;
         }
         String[] activities = {"Little/no exercise", "Light exercise", "Moderate exercise (3-5 days/wk)", "Very active (6-7 days/wk)", "Extra active (very active & physical job)"};
@@ -149,18 +149,21 @@ public class User implements UserDetails {
 
         return this.calculateBmr() * weight;
     }
+
     public void setMeals(Integer meals) {
         if (meals != 3 && meals != 4 && meals != 5) {
             throw new IllegalArgumentException("Invalid value for meals");
         }
         this.meals = meals;
     }
+
     public void setDietaryGoal(Integer dietaryGoal) {
         if (dietaryGoal != 1 && dietaryGoal != 2 && dietaryGoal != 3) {
             throw new IllegalArgumentException("Invalid value for dietary goal");
         }
         this.dietaryGoal = dietaryGoal;
     }
+
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {

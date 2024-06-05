@@ -17,4 +17,6 @@ public interface UserCookedRecipeRepository extends JpaRepository<UserCookedReci
     Optional<UserCookedRecipe> findByUserAndRecipeAndDate(User user, FoodRecipe recipe, LocalDate date);
 
     List<UserCookedRecipe> findByUser(User user);
+
+    List<UserCookedRecipe> findByUserAndDate(User user, LocalDate date);
 }

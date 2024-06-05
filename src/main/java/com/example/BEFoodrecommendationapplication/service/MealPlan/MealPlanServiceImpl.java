@@ -237,18 +237,18 @@ public class MealPlanServiceImpl implements MealPlanService {
         double totalFatCalories = 0;
         double totalProteinCalories = 0;
 
+
         for (FoodRecipe recipe : allRecipes) {
             totalCalories += recipe.getCalories();
-            totalFatCalories += recipe.getFatContent() * 9;
-            totalProteinCalories += recipe.getProteinContent() * 4;
+            totalFatCalories += recipe.getFatContent() * 9;   // 9 calories per gram of fat
+            totalProteinCalories += recipe.getProteinContent() * 4;  // 4 calories per gram of protein
+
         }
 
-
         if (totalCalories > 0) {
-
             double fatPercentage = (totalFatCalories / totalCalories) * 100;
-
             double proteinPercentage = (totalProteinCalories / totalCalories) * 100;
+
             if (mealPlan.getDailyCalories() > 0) {
                 double caloriesPercentage = (totalCalories / mealPlan.getDailyCalories()) * 100;
                 mealPlanDto.setTotalCaloriesPercentage((int) caloriesPercentage);
@@ -258,15 +258,15 @@ public class MealPlanServiceImpl implements MealPlanService {
                 mealPlanDto.setDailyCalories(0);
             }
 
-
             mealPlanDto.setTotalFatPercentage((int) fatPercentage);
-
             mealPlanDto.setTotalProteinPercentage((int) proteinPercentage);
+
         } else {
             mealPlanDto.setTotalFatPercentage(0);
             mealPlanDto.setTotalProteinPercentage(0);
             mealPlanDto.setTotalCaloriesPercentage(0);
         }
+
 
         mealPlanDto.setBreakfast(mealPlan.getBreakfast() != null ? Collections.singletonList(stringUtil.mapToShortRecipe(mealPlan.getBreakfast().getRecipeId())) : new ArrayList<>());
         mealPlanDto.setDinner(mealPlan.getDinner() != null ? Collections.singletonList(stringUtil.mapToShortRecipe(mealPlan.getDinner().getRecipeId())) : new ArrayList<>());

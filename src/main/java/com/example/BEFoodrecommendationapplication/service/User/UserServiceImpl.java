@@ -156,7 +156,7 @@ public class UserServiceImpl implements UserService {
             meals = user.getMeals();
         }
         if (user.getDietaryGoal() != null) {
-            rate = dietaryRate[user.getDietaryGoal()];
+            rate = dietaryRate[user.getDietaryGoal() - 1];
             dietaryGoal = user.getDietaryGoal();
         }
 
