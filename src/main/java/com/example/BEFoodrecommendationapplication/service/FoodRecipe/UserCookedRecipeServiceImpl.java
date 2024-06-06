@@ -15,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -69,43 +71,38 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
 
         DailyNutritionResponse response = new DailyNutritionResponse();
 
-
         float dailyWaterIntakeRecommendation = calculateDailyWaterIntake(user);
-
         Optional<WaterIntake> waterIntake = waterIntakeRepository.findByUserIdAndDate(userId, date);
-        float waterIntakeAmount;
-        if (waterIntake.isEmpty()) {
-            waterIntakeAmount = 0;
-        } else {
-            waterIntakeAmount = waterIntake.get().getAmount();
-        }
+        float waterIntakeAmount = waterIntake.isPresent() ? waterIntake.get().getAmount() : 0;
         response.setRecommendWaterIntake(dailyWaterIntakeRecommendation);
         response.setWaterIntake(waterIntakeAmount);
 
-        for (UserCookedRecipe cookedRecipe : cookedRecipes) {
-            String meal = cookedRecipe.getMeal();
-            FoodRecipe recipe = cookedRecipe.getRecipe();
+        Map<String, MealNutrition> mealNutritionMap = new HashMap<>();
 
-            MealNutrition nutrition = response.getMeals().getOrDefault(meal, new MealNutrition());
-            // Initialize with recipe details if not already set
-            if (nutrition.getRecipeId() == null) {
-                nutrition.setRecipeId(recipe.getRecipeId());
-                nutrition.setName(recipe.getName());
-                nutrition.setServings(cookedRecipe.getServingSize());
-            }
+        for (UserCookedRecipe cookedRecipe : cookedRecipes) {
+            String meal = cookedRecipe.getMeal().toLowerCase(); // Normalize meal name
+            MealNutrition nutrition = mealNutritionMap.computeIfAbsent(meal, k -> new MealNutrition());
+            nutrition.setRecipeId(cookedRecipe.getRecipe().getRecipeId());
+            nutrition.setName(cookedRecipe.getRecipe().getName());
+            nutrition.setServings(cookedRecipe.getServingSize());
 
             // Aggregate nutritional values
-            aggregateNutrition(nutrition, recipe);
+            aggregateNutrition(nutrition, cookedRecipe.getRecipe());
 
             // Compute percentages
             computeNutrientPercentages(nutrition);
-
-            // Update the response
-            response.addMealNutrition(meal, nutrition);
         }
+
+        // Assign meal data if available
+        response.setBreakfast(mealNutritionMap.get("breakfast"));
+        response.setLunch(mealNutritionMap.get("lunch"));
+        response.setDinner(mealNutritionMap.get("dinner"));
+        response.setMorningSnack(mealNutritionMap.get("morningsnack"));
+        response.setAfternoonSnack(mealNutritionMap.get("afternoonsnack"));
 
         return response;
     }
+
 
     private void aggregateNutrition(MealNutrition nutrition, FoodRecipe recipe) {
         nutrition.setCalories(optionalSum(nutrition.getCalories(), recipe.getCalories()));
