@@ -1,6 +1,9 @@
 package com.example.BEFoodrecommendationapplication.service.FoodRecipe;
 
 
+import com.example.BEFoodrecommendationapplication.dto.DailyNutritionResponse;
+import com.example.BEFoodrecommendationapplication.dto.MealNutrition;
+import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.entity.UserCookedRecipe;
 import com.example.BEFoodrecommendationapplication.entity.WaterIntake;
@@ -12,9 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -62,35 +63,14 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
 
 
     @Override
-    public Map<String, Float> getDailyNutrition(Integer userId, LocalDate date) {
+    public DailyNutritionResponse getDailyNutrition(Integer userId, LocalDate date) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RecordNotFoundException("User not found with id " + userId));
         List<UserCookedRecipe> cookedRecipes = userCookedRecipeRepository.findByUserAndDate(user, date);
 
-        float totalCalories = 0;
-        float totalFatCalories = 0;
-        float totalProteinCalories = 0;
-        float totalCarbohydrateCalories = 0;
-        float totalFatContent = 0;
-        float totalSodiumContent = 0;
-        float totalCarbohydrateContent = 0;
-        float totalFiberContent = 0;
-        float totalSugarContent = 0;
-        float totalProteinContent = 0;
+        DailyNutritionResponse response = new DailyNutritionResponse();
+
 
         float dailyWaterIntakeRecommendation = calculateDailyWaterIntake(user);
-
-        for (UserCookedRecipe cookedRecipe : cookedRecipes) {
-            totalCalories += cookedRecipe.getRecipe().getCalories();
-            totalFatCalories += cookedRecipe.getRecipe().getFatContent() * 9;
-            totalProteinCalories += cookedRecipe.getRecipe().getProteinContent() * 4;
-            totalCarbohydrateCalories += cookedRecipe.getRecipe().getCarbonhydrateContent() * 4;
-            totalFatContent += cookedRecipe.getRecipe().getFatContent();
-            totalSodiumContent += cookedRecipe.getRecipe().getSodiumContent();
-            totalCarbohydrateContent += cookedRecipe.getRecipe().getCarbonhydrateContent();
-            totalFiberContent += cookedRecipe.getRecipe().getFiberContent();
-            totalSugarContent += cookedRecipe.getRecipe().getSugarContent();
-            totalProteinContent += cookedRecipe.getRecipe().getProteinContent();
-        }
 
         Optional<WaterIntake> waterIntake = waterIntakeRepository.findByUserIdAndDate(userId, date);
         float waterIntakeAmount;
@@ -99,38 +79,65 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
         } else {
             waterIntakeAmount = waterIntake.get().getAmount();
         }
+        response.setRecommendWaterIntake(dailyWaterIntakeRecommendation);
+        response.setWaterIntake(waterIntakeAmount);
 
-        Map<String, Float> nutrition = new HashMap<>();
-        nutrition.put("recommendedWaterIntake", dailyWaterIntakeRecommendation);
-        nutrition.put("waterIntake", waterIntakeAmount);
-        nutrition.put("calories", totalCalories);
-        nutrition.put("fatContent", totalFatContent);
-        nutrition.put("sodiumContent", totalSodiumContent);
-        nutrition.put("carbohydrateContent", totalCarbohydrateContent);
-        nutrition.put("fiberContent", totalFiberContent);
-        nutrition.put("sugarContent", totalSugarContent);
-        nutrition.put("proteinContent", totalProteinContent);
+        for (UserCookedRecipe cookedRecipe : cookedRecipes) {
+            String meal = cookedRecipe.getMeal();
+            FoodRecipe recipe = cookedRecipe.getRecipe();
 
+            MealNutrition nutrition = response.getMeals().getOrDefault(meal, new MealNutrition());
+            // Initialize with recipe details if not already set
+            if (nutrition.getRecipeId() == null) {
+                nutrition.setRecipeId(recipe.getRecipeId());
+                nutrition.setName(recipe.getName());
+                nutrition.setServings(cookedRecipe.getServingSize());
+            }
 
-        if (totalCarbohydrateContent > 0) {
-            nutrition.put("fiberPercentage", (totalFiberContent / totalCarbohydrateContent) * 100);
-            nutrition.put("sugarPercentage", (totalSugarContent / totalCarbohydrateContent) * 100);
-        } else {
-            nutrition.put("fiberPercentage", 0f);
-            nutrition.put("sugarPercentage", 0f);
+            // Aggregate nutritional values
+            aggregateNutrition(nutrition, recipe);
+
+            // Compute percentages
+            computeNutrientPercentages(nutrition);
+
+            // Update the response
+            response.addMealNutrition(meal, nutrition);
         }
 
-        if (totalCalories > 0) {
-            nutrition.put("fatPercentage", (totalFatCalories / totalCalories) * 100);
-            nutrition.put("proteinPercentage", (totalProteinCalories / totalCalories) * 100);
-            nutrition.put("carbohydratePercentage", (totalCarbohydrateCalories / totalCalories) * 100);
-        } else {
-            nutrition.put("fatPercentage", 0f);
-            nutrition.put("proteinPercentage", 0f);
-            nutrition.put("carbohydratePercentage", 0f);
-        }
-
-        return nutrition;
+        return response;
     }
+
+    private void aggregateNutrition(MealNutrition nutrition, FoodRecipe recipe) {
+        nutrition.setCalories(optionalSum(nutrition.getCalories(), recipe.getCalories()));
+        nutrition.setFatContent(optionalSum(nutrition.getFatContent(), recipe.getFatContent()));
+        nutrition.setSodiumContent(optionalSum(nutrition.getSodiumContent(), recipe.getSodiumContent()));
+        nutrition.setCarbohydrateContent(optionalSum(nutrition.getCarbohydrateContent(), recipe.getCarbonhydrateContent()));
+        nutrition.setFiberContent(optionalSum(nutrition.getFiberContent(), recipe.getFiberContent()));
+        nutrition.setSugarContent(optionalSum(nutrition.getSugarContent(), recipe.getSugarContent()));
+        nutrition.setProteinContent(optionalSum(nutrition.getProteinContent(), recipe.getProteinContent()));
+    }
+
+    private Float optionalSum(Float a, Float b) {
+        if (a == null) a = 0f;
+        if (b == null) b = 0f;
+        return a + b;
+    }
+
+    private void computeNutrientPercentages(MealNutrition nutrition) {
+        nutrition.setFiberPercentage(computePercentage(nutrition.getFiberContent(), nutrition.getCarbohydrateContent()));
+        nutrition.setSugarPercentage(computePercentage(nutrition.getSugarContent(), nutrition.getCarbohydrateContent()));
+        nutrition.setFatPercentage(computePercentage(nutrition.getFatContent(), nutrition.getCalories(), 9));
+        nutrition.setProteinPercentage(computePercentage(nutrition.getProteinContent(), nutrition.getCalories(), 4));
+        nutrition.setCarbohydratePercentage(computePercentage(nutrition.getCarbohydrateContent(), nutrition.getCalories(), 4));
+    }
+
+    private Float computePercentage(Float nutrientValue, Float totalValue) {
+        return (totalValue != null && totalValue > 0) ? (nutrientValue / totalValue) * 100 : 0;
+    }
+
+    private Float computePercentage(Float nutrientValue, Float totalCalories, int calorieFactor) {
+        return (totalCalories != null && totalCalories > 0) ? (nutrientValue * calorieFactor / totalCalories) * 100 : 0;
+    }
+
 
 }
