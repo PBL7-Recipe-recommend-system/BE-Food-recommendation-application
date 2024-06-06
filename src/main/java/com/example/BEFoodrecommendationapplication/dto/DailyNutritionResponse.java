@@ -21,5 +21,8 @@ public class DailyNutritionResponse {
     private Float recommendWaterIntake;
     private Float waterIntake;
 
+    private Integer recommendCalories;
+    private Integer totalCalories;
+
 
 }

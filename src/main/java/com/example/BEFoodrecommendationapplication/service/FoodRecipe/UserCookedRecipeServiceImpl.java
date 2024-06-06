@@ -63,7 +63,6 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
         return Math.round(baseWaterIntakeLiters * 10) / 10.0F;
     }
 
-
     @Override
     public DailyNutritionResponse getDailyNutrition(Integer userId, LocalDate date) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RecordNotFoundException("User not found with id " + userId));
@@ -72,12 +71,17 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
         DailyNutritionResponse response = new DailyNutritionResponse();
 
         float dailyWaterIntakeRecommendation = calculateDailyWaterIntake(user);
+
         Optional<WaterIntake> waterIntake = waterIntakeRepository.findByUserIdAndDate(userId, date);
+
         float waterIntakeAmount = waterIntake.isPresent() ? waterIntake.get().getAmount() : 0;
+
+        response.setRecommendCalories((int) user.caloriesCalculator());
         response.setRecommendWaterIntake(dailyWaterIntakeRecommendation);
         response.setWaterIntake(waterIntakeAmount);
 
         Map<String, MealNutrition> mealNutritionMap = new HashMap<>();
+        int totalCalories = 0; // Initialize total calories counter
 
         for (UserCookedRecipe cookedRecipe : cookedRecipes) {
             String meal = cookedRecipe.getMeal().toLowerCase(); // Normalize meal name
@@ -89,6 +93,9 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
             // Aggregate nutritional values
             aggregateNutrition(nutrition, cookedRecipe.getRecipe());
 
+            // Add recipe calories to total calories
+            totalCalories += (int) (cookedRecipe.getRecipe().getCalories() * cookedRecipe.getServingSize());
+
             // Compute percentages
             computeNutrientPercentages(nutrition);
         }
@@ -99,6 +106,9 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
         response.setDinner(mealNutritionMap.get("dinner"));
         response.setMorningSnack(mealNutritionMap.get("morningsnack"));
         response.setAfternoonSnack(mealNutritionMap.get("afternoonsnack"));
+
+        // Set total calories
+        response.setTotalCalories(totalCalories);
 
         return response;
     }
