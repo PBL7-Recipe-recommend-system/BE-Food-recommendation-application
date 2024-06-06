@@ -129,11 +129,19 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
     }
 
     private Float computePercentage(Float nutrientValue, Float totalValue) {
-        return (totalValue != null && totalValue > 0) ? (nutrientValue / totalValue) * 100 : 0;
+        if (totalValue != null && totalValue > 0) {
+            return Math.round((nutrientValue / totalValue) * 100 * 10.0) / 10.0f;
+        } else {
+            return 0.0f;
+        }
     }
 
     private Float computePercentage(Float nutrientValue, Float totalCalories, int calorieFactor) {
-        return (totalCalories != null && totalCalories > 0) ? (nutrientValue * calorieFactor / totalCalories) * 100 : 0;
+        if (totalCalories != null && totalCalories > 0) {
+            return Math.round((nutrientValue * calorieFactor / totalCalories) * 100 * 10.0) / 10.0f;
+        } else {
+            return 0.0f;
+        }
     }
 
 
