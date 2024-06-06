@@ -1,7 +1,10 @@
 package com.example.BEFoodrecommendationapplication.controller;
 
 import com.example.BEFoodrecommendationapplication.dto.Response;
+import com.example.BEFoodrecommendationapplication.entity.WaterIntake;
+import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
 import com.example.BEFoodrecommendationapplication.service.FoodRecipe.UserCookedRecipeService;
+import com.example.BEFoodrecommendationapplication.service.User.UserService;
 import com.example.BEFoodrecommendationapplication.util.AuthenticationUtils;
 import com.example.BEFoodrecommendationapplication.util.ResponseBuilderUtil;
 import com.example.BEFoodrecommendationapplication.util.StatusCode;
@@ -15,10 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -30,6 +30,7 @@ import java.util.Objects;
 @Tag(name = "Tracking Nutrition")
 public class NutritionTrackingController {
     private final UserCookedRecipeService userCookedRecipeService;
+    private final UserService userService;
 
     @Operation(summary = "Get nutrition tracking")
     @ApiResponses(value = {
@@ -53,6 +54,32 @@ public class NutritionTrackingController {
 
             return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
 
+        }
+    }
+
+    @Operation(summary = "Set water intake")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Water intake updated successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Response.class))),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    @PostMapping("/water-intake")
+    public ResponseEntity<Response> setWaterIntake(
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date,
+            @RequestParam Float amount) {
+        try {
+            Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
+            WaterIntake updatedWaterIntake = userService.updateOrCreateWaterIntake(userId, date, amount);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    updatedWaterIntake,
+                    "Water intake updated successfully",
+                    StatusCode.SUCCESS));
+        } catch (RecordNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.NOT_FOUND));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.BAD_REQUEST));
         }
     }
 }

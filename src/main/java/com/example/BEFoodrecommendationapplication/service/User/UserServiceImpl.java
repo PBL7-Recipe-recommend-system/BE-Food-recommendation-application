@@ -5,10 +5,7 @@ import com.example.BEFoodrecommendationapplication.dto.UserDto;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
 import com.example.BEFoodrecommendationapplication.entity.*;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
-import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
-import com.example.BEFoodrecommendationapplication.repository.SavedRecipeRepository;
-import com.example.BEFoodrecommendationapplication.repository.UserExcludeIngredientRepository;
-import com.example.BEFoodrecommendationapplication.repository.UserRepository;
+import com.example.BEFoodrecommendationapplication.repository.*;
 import com.example.BEFoodrecommendationapplication.service.MealPlan.MealPlanService;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -30,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final SavedRecipeRepository savedRecipeRepository;
     private final StringUtil stringUtil;
     private final MealPlanService mealPlanService;
+    private final WaterIntakeRepository waterIntakeRepository;
 
 
     @Override
@@ -47,6 +46,22 @@ public class UserServiceImpl implements UserService {
                 throw new RecordNotFoundException("Save recipe not found");
             }
         }
+    }
+
+    @Override
+    public WaterIntake updateOrCreateWaterIntake(Integer userId, LocalDate date, float amount) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            throw new RecordNotFoundException("User not found with id : " + userId);
+        }
+        WaterIntake waterIntake = waterIntakeRepository.findByUserIdAndDate(userId, date)
+                .orElse(new WaterIntake());
+
+        waterIntake.setUser(user.get()); // Assuming the User constructor can set ID
+        waterIntake.setDate(date);
+        waterIntake.setAmount(amount);
+
+        return waterIntakeRepository.save(waterIntake);
     }
 
     @Override
