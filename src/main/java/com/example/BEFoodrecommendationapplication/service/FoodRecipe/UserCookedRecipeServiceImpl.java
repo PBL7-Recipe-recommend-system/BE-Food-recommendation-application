@@ -91,7 +91,7 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
             nutrition.setServings(cookedRecipe.getServingSize());
 
             // Aggregate nutritional values
-            aggregateNutrition(nutrition, cookedRecipe.getRecipe());
+            aggregateNutrition(nutrition, cookedRecipe.getRecipe(), cookedRecipe.getServingSize());
 
             // Add recipe calories to total calories
             totalCalories += (int) (cookedRecipe.getRecipe().getCalories() * cookedRecipe.getServingSize());
@@ -114,8 +114,8 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
     }
 
 
-    private void aggregateNutrition(MealNutrition nutrition, FoodRecipe recipe) {
-        nutrition.setCalories(optionalSum(nutrition.getCalories(), recipe.getCalories()));
+    private void aggregateNutrition(MealNutrition nutrition, FoodRecipe recipe, int servings) {
+        nutrition.setCalories(optionalSum(nutrition.getCalories(), recipe.getCalories() * servings));
         nutrition.setFatContent(optionalSum(nutrition.getFatContent(), recipe.getFatContent()));
         nutrition.setSodiumContent(optionalSum(nutrition.getSodiumContent(), recipe.getSodiumContent()));
         nutrition.setCarbohydrateContent(optionalSum(nutrition.getCarbohydrateContent(), recipe.getCarbonhydrateContent()));
