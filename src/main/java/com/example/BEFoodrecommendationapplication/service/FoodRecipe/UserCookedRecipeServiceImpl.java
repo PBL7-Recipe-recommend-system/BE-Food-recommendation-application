@@ -60,7 +60,7 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
                 break;
         }
 
-        return baseWaterIntakeLiters;
+        return Math.round(baseWaterIntakeLiters * 10) / 10.0F;
     }
 
 
