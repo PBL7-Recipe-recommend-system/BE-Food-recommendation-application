@@ -13,17 +13,17 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class MealPlanInput {
 
-    private int breakfast;
+    private Integer breakfast;
 
-    private int lunch;
+    private Integer lunch;
 
-    private int dinner;
+    private Integer dinner;
 
-    private int morningSnack;
+    private Integer morningSnack;
 
-    private int afternoonSnack;
+    private Integer afternoonSnack;
 
-    private int mealCount ;
+    private int mealCount;
 
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
