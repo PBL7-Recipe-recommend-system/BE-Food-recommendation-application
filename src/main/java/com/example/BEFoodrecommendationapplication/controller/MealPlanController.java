@@ -87,6 +87,33 @@ public class MealPlanController {
         }
     }
 
+    @Operation(summary = "Delete recipes in meal plan")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Delete recipes in meal plan successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class)
+                            )}),
+            @ApiResponse(responseCode = "500", description = "Delete recipes in meal plan failed")})
+    @PutMapping("/delete-recipes")
+    public ResponseEntity<Response> deleteRecipesInMealPlan(@RequestBody MealPlanInput mealPlan) {
+
+        try {
+            Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
+
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    mealPlanService.deleteRecipeInMealPlan(id, mealPlan),
+                    "Delete recipes in meal plan successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.INTERNAL_SERVER_ERROR));
+
+        }
+    }
+
     @Operation(summary = "Get meal plan")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Get meal plan successfully",

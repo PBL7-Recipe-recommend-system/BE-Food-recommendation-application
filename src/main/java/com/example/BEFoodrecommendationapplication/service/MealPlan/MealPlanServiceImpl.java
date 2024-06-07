@@ -143,24 +143,81 @@ public class MealPlanServiceImpl implements MealPlanService {
         if (mealPlan.getDinner() != null) {
             mealCount++;
         }
-        
+
 
         mealPlan.setMealCount(mealCount);
 
     }
 
+    @Override
+    public MealPlanDto deleteRecipeInMealPlan(int userId, MealPlanInput input) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        MealPlan mealPlan = mealPlanRepository.findByUserAndDate(user, input.getDate());
+
+
+        deleteRecipe(mealPlan, input);
+
+        // Save the updated meal plan
+        mealPlanRepository.save(mealPlan);
+
+        return getMealPlanDto(mealPlan);
+    }
+
+    private void deleteRecipe(MealPlan mealPlan, MealPlanInput input) {
+        int count = 0;
+        // Check and set Breakfast
+        if (input.getBreakfast() > 0 && mealPlan.getBreakfast() != null && input.getBreakfast() == mealPlan.getBreakfast().getRecipeId()) {
+            mealPlan.setBreakfast(null);
+            count++;
+        }
+
+        // Check and set Lunch
+        if (input.getLunch() > 0 && mealPlan.getLunch() != null && input.getLunch() == mealPlan.getLunch().getRecipeId()) {
+            mealPlan.setLunch(null);
+            count++;
+        }
+
+        // Check and set Dinner
+        if (input.getDinner() > 0 && mealPlan.getDinner() != null && input.getDinner() == mealPlan.getDinner().getRecipeId()) {
+            mealPlan.setDinner(null);
+            count++;
+        }
+        if (input.getMorningSnack() > 0 && mealPlan.getMorningSnack() != null && input.getMorningSnack() == mealPlan.getMorningSnack().getRecipeId()) {
+            mealPlan.setMorningSnack(null);
+            count++;
+        }
+        if (input.getAfternoonSnack() > 0 && mealPlan.getAfternoonSnack() != null && input.getAfternoonSnack() == mealPlan.getAfternoonSnack().getRecipeId()) {
+            mealPlan.setAfternoonSnack(null);
+            count++;
+        }
+        mealPlan.setMealCount(mealPlan.getMealCount() - count);
+
+    }
+
     private void updateMealPlanFields(MealPlan mealPlan, MealPlanInput input) {
 
+        if (input.getBreakfast() > 0) {
+            mealPlan.setBreakfast(getRecipe(input.getBreakfast()));
 
-        mealPlan.setBreakfast(input.getBreakfast() != null ? getRecipe(input.getBreakfast()) : null);
+        }
+        if (input.getLunch() > 0) {
+            mealPlan.setLunch(getRecipe(input.getLunch()));
 
-        mealPlan.setLunch(input.getLunch() != null ? getRecipe(input.getLunch()) : null);
+        }
+        if (input.getDinner() > 0) {
+            mealPlan.setDinner(getRecipe(input.getDinner()));
 
-        mealPlan.setDinner(input.getDinner() != null ? getRecipe(input.getDinner()) : null);
+        }
+        if (input.getMorningSnack() > 0) {
+            mealPlan.setMorningSnack(getRecipe(input.getMorningSnack()));
 
-        mealPlan.setMorningSnack(input.getMorningSnack() != null ? getRecipe(input.getMorningSnack()) : null);
+        }
+        if (input.getAfternoonSnack() > 0) {
+            mealPlan.setAfternoonSnack(getRecipe(input.getAfternoonSnack()));
 
-        mealPlan.setAfternoonSnack(input.getAfternoonSnack() != null ? getRecipe(input.getAfternoonSnack()) : null);
+        }
         if (input.getDate() != null) {
             mealPlan.setDate(input.getDate());
         }
@@ -170,7 +227,6 @@ public class MealPlanServiceImpl implements MealPlanService {
 
 
         mealPlan.setTotalCalories(getMealPlanDto(mealPlan).getTotalCalories());
-
 
     }
 

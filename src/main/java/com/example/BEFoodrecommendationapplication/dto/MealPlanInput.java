@@ -13,15 +13,15 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class MealPlanInput {
 
-    private Integer breakfast;
+    private int breakfast;
 
-    private Integer lunch;
+    private int lunch;
 
-    private Integer dinner;
+    private int dinner;
 
-    private Integer morningSnack;
+    private int morningSnack;
 
-    private Integer afternoonSnack;
+    private int afternoonSnack;
 
     private int mealCount;
 

@@ -14,4 +14,6 @@ public interface MealPlanService {
     List<MealPlanDto> getCurrentMealPlans(Integer userId);
 
     void deleteUserMealPlans(User user);
+
+    MealPlanDto deleteRecipeInMealPlan(int userId, MealPlanInput input);
 }
