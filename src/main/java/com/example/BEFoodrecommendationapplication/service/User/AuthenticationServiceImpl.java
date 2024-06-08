@@ -73,7 +73,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             String jwtToken = jwtService.generateToken(user);
             saveUserToken(jwtToken, user);
 
-            return AuthenticationResponse.builder().accessToken(jwtToken).build();
+            return AuthenticationResponse.builder().accessToken(jwtToken).role(user.getRole()).build();
         }
 
 
@@ -168,6 +168,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
+                .role(user.getRole())
                 .build();
     }
 
