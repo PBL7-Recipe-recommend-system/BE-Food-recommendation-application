@@ -30,6 +30,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
+@CrossOrigin("${allowed.origins}")
 @Tag(name = "User")
 public class UserController {
 

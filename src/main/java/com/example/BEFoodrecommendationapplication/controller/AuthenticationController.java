@@ -21,6 +21,7 @@ import java.util.ArrayList;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@CrossOrigin("${allowed.origins}")
 @Tag(name="Authentication")
 public class AuthenticationController {
     private final AuthenticationService service;

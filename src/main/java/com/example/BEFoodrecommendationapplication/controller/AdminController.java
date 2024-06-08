@@ -26,6 +26,7 @@ import java.util.ArrayList;
 @RestController
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
+@CrossOrigin("${allowed.origins}")
 @Tag(name = "Admin", description = "Admin operations")
 public class AdminController {
 

@@ -33,6 +33,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/v1/recipes")
 @RequiredArgsConstructor
+@CrossOrigin("${allowed.origins}")
 @Tag(name = "Food Recipe")
 public class FoodRecipeController {
     private final FoodRecipeService foodRecipeService;

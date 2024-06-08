@@ -27,6 +27,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/v1/tracking/nutrition")
 @RequiredArgsConstructor
+@CrossOrigin("${allowed.origins}")
 @Tag(name = "Tracking Nutrition")
 public class NutritionTrackingController {
     private final UserCookedRecipeService userCookedRecipeService;
