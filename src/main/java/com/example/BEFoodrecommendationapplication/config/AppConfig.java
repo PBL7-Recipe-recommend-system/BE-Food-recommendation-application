@@ -26,17 +26,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class AppConfig implements WebMvcConfigurer {
     private final UserRepository repository;
 
-    @Value("${allowed.origins}")
-    private String[] theAllowedOrigins;
-    @Value("${spring.data.rest.base-path}")
-    private String basePath;
-
-    @Override
-    public void addCorsMappings(CorsRegistry cors) {
-        cors.addMapping(basePath + "/**").allowedOrigins(theAllowedOrigins).allowCredentials(true)
-                .allowedMethods("GET", "POST", "PUT", "DELETE","PATCH")
-                .allowedHeaders("*");
-    }
 
     @Bean
     public OpenAPI customOpenAPI() {
