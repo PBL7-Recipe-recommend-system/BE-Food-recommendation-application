@@ -2,6 +2,7 @@ package com.example.BEFoodrecommendationapplication.controller;
 
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
+import com.example.BEFoodrecommendationapplication.dto.UserResponse;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
 import com.example.BEFoodrecommendationapplication.service.User.AdminService;
@@ -44,7 +45,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response> getAllUsers(Pageable pageable) {
         try {
-            Page<User> users = adminService.findAllUsers(pageable);
+            Page<UserResponse> users = adminService.findAllUsers(pageable);
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     users,
                     "Users retrieved successfully",
@@ -79,6 +80,37 @@ public class AdminController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseBuilderUtil.responseBuilder(
                     new ArrayList<>(), "Failed to update user due to an internal error", StatusCode.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    @Operation(summary = "Retrieve a user", description = "Returns a user by their ID, accessible only by admins.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful retrieval of user", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied for unauthorized users")
+    })
+    @GetMapping("/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Response> getUserById(@PathVariable Integer id) {
+        try {
+            UserResponse user = adminService.findUserById(id);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    user,
+                    "User retrieved successfully",
+                    StatusCode.SUCCESS));
+        } catch (RecordNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseBuilderUtil.responseBuilder(
+                            null,
+                            "User not found",
+                            StatusCode.NOT_FOUND));
+        } catch (Exception e) {
+            // Assuming there's a possibility of a service-level exception, handle it gracefully
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseBuilderUtil.responseBuilder(
+                            null,
+                            "Failed to retrieve user due to an internal error",
+                            StatusCode.INTERNAL_SERVER_ERROR));
         }
     }
 }

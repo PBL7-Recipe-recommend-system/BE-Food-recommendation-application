@@ -61,7 +61,12 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
         // Calculate user-specific nutritional requirements
         float calories = user.caloriesCalculator();
-        int dietaryGoal = user.getDietaryGoal();
+        int dietaryGoal;
+        if (user.getDietaryGoal() != null) {
+            dietaryGoal = user.getDietaryGoal();
+        } else {
+            dietaryGoal = 1; // or any default value
+        }
         // Adjust protein and fat percentages based on dietary goal
         float proteinPercentage = dietaryGoal == 1 ? 0.30f : dietaryGoal == 2 ? 0.25f : 0.35f;
         float fatPercentage = dietaryGoal == 1 ? 0.25f : dietaryGoal == 2 ? 0.30f : 0.20f;
