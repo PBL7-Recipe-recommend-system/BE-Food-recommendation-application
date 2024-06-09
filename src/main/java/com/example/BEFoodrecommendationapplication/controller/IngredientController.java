@@ -2,6 +2,7 @@ package com.example.BEFoodrecommendationapplication.controller;
 
 import com.example.BEFoodrecommendationapplication.dto.IngredientDto;
 import com.example.BEFoodrecommendationapplication.dto.Response;
+import com.example.BEFoodrecommendationapplication.dto.UpdateIngredientsRequest;
 import com.example.BEFoodrecommendationapplication.entity.Ingredient;
 import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
 import com.example.BEFoodrecommendationapplication.service.Ingredient.IngredientService;
@@ -75,6 +76,32 @@ public class IngredientController {
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     ingredients,
                     "Get ingredients by recipe id successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
+
+        }
+    }
+
+    @Operation(summary = "Update ingredients by recipe id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Update ingredients by recipe id successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class))
+                    }),
+            @ApiResponse(responseCode = "404", description = "Update ingredients by recipe id failed")})
+    @PutMapping("/recipe/{recipeId}")
+    public ResponseEntity<Response> updateIngredientsByRecipeId(@PathVariable Integer recipeId, @RequestBody UpdateIngredientsRequest request) {
+        try {
+
+            UpdateIngredientsRequest updatedRecipe = ingredientService.updateRecipeIngredientNames(recipeId, request);
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    updatedRecipe,
+                    "Update ingredients by recipe id successfully",
                     StatusCode.SUCCESS));
 
         } catch (Exception e) {
