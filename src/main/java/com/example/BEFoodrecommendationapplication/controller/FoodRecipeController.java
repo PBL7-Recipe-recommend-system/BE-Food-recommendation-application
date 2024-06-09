@@ -55,12 +55,12 @@ public class FoodRecipeController {
     public ResponseEntity<Response> search(@RequestParam(required = false) String name,
                                            @RequestParam(required = false) String category,
                                            @RequestParam(required = false) Integer rating,
-                                           @RequestParam(defaultValue = "0") Integer page,
+                                           @RequestParam(defaultValue = "1") Integer page,
                                            @RequestParam(defaultValue = "10") Integer size,
                                            @RequestParam(defaultValue = "1") Integer timeRate) {
         try {
             Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
-            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate, PageRequest.of(page, size), userId);
+            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate, PageRequest.of(page - 1, size), userId);
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     listRecipes,
