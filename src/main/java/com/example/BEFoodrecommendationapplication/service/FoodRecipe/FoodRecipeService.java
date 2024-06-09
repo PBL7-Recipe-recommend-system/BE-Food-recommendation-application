@@ -27,4 +27,6 @@ public interface FoodRecipeService {
     void setRecipeAsCooked(Integer userId, SetCookedRecipeDto input);
 
     List<UserCookedRecipe> getCookedRecipesByUser(Integer userId);
+
+    List<String> getRecipeInstructionById(Integer id);
 }

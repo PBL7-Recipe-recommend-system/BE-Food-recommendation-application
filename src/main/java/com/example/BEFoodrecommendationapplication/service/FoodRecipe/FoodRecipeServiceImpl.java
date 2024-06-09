@@ -1,5 +1,6 @@
 package com.example.BEFoodrecommendationapplication.service.FoodRecipe;
 
+import com.example.BEFoodrecommendationapplication.dto.IngredientDto;
 import com.example.BEFoodrecommendationapplication.dto.RecipeDto;
 import com.example.BEFoodrecommendationapplication.dto.SearchResult;
 import com.example.BEFoodrecommendationapplication.dto.SetCookedRecipeDto;
@@ -25,6 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -121,6 +123,16 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
     public boolean isRecipeSavedByUser(Integer userId, Integer recipeId) {
         return savedRecipeRepository.findByUserIdAndRecipeId(userId, recipeId).isPresent();
+    }
+
+    @Override
+    public List<String> getRecipeInstructionById(Integer id) {
+        FoodRecipe foodRecipe = foodRecipeRepository.findById(id)
+                .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + id));
+
+        List<String> instruction = stringUtil.partitionIntoFourParts(stringUtil.splitInstructions(foodRecipe.getRecipeInstructions()));
+
+        return instruction;
     }
 
     @Override
