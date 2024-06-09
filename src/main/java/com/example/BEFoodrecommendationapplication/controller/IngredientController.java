@@ -110,4 +110,30 @@ public class IngredientController {
 
         }
     }
+
+    @Operation(summary = "Add ingredients by recipe id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Add ingredients by recipe id successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class))
+                    }),
+            @ApiResponse(responseCode = "404", description = "Add ingredients by recipe id failed")})
+    @PostMapping("/recipe/{id}")
+    public ResponseEntity<Response> addRecipeIngredientsById(@PathVariable Integer id, @RequestBody IngredientDto ingredientDto) {
+        try {
+
+            List<IngredientDto> ingredients = ingredientService.addIngredient(id,ingredientDto);
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    ingredients,
+                    "Add ingredients successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
+
+        }
+    }
 }

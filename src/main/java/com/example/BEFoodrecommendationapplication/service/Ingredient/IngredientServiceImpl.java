@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @Service
 @RequiredArgsConstructor
 public class IngredientServiceImpl implements IngredientService {
@@ -48,6 +50,35 @@ public class IngredientServiceImpl implements IngredientService {
         foodRecipeRepository.save(foodRecipe);
 
         return request;
+    }
+
+    @Override
+    public List<IngredientDto> addIngredient(Integer recipeId, IngredientDto ingredientDTO) {
+        FoodRecipe foodRecipe = foodRecipeRepository.findById(recipeId)
+                .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + recipeId));
+
+        String newIngredientPart = "\"" + ingredientDTO.getName() + "\"";
+        String existingIngredientsParts = foodRecipe.getRecipeIngredientsParts();
+
+        // Add new ingredient to the existing ingredients string
+        if (existingIngredientsParts == null || existingIngredientsParts.isEmpty()) {
+            existingIngredientsParts = "c(" + newIngredientPart + ")";
+        } else {
+            existingIngredientsParts = existingIngredientsParts.substring(0, existingIngredientsParts.length() - 1)
+                    + ", " + newIngredientPart + ")";
+        }
+
+        foodRecipe.setRecipeIngredientsParts(existingIngredientsParts);
+        foodRecipeRepository.save(foodRecipe);
+
+        // Parse the ingredients string back into a list of IngredientDTO
+        String ingredientsStr = existingIngredientsParts.substring(2, existingIngredientsParts.length() - 1); // Remove "c(" and ")"
+        List<IngredientDto> ingredientList = Stream.of(ingredientsStr.split(", "))
+                .map(s -> s.replace("\"", ""))
+                .map(name -> new IngredientDto(name, null, null))
+                .collect(Collectors.toList());
+
+        return ingredientList;
     }
 
 }
