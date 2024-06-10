@@ -26,7 +26,7 @@ import java.util.List;
 @RequestMapping("/api/v1/ingredients")
 @RequiredArgsConstructor
 @CrossOrigin("${allowed.origins}")
-@Tag(name="Ingredients")
+@Tag(name = "Ingredients")
 public class IngredientController {
 
     private final IngredientRepository ingredientRepository;
@@ -37,9 +37,9 @@ public class IngredientController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Get ingredients successfully",
                     content = {
-                    @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = String.class))
-            }),
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class))
+                    }),
             @ApiResponse(responseCode = "404", description = "Get ingredients failed")})
     @GetMapping("")
     public ResponseEntity<Response> getTop100Ingredients() {
@@ -97,7 +97,7 @@ public class IngredientController {
     public ResponseEntity<Response> updateIngredientsByRecipeId(@PathVariable Integer recipeId, @RequestBody UpdateIngredientsRequest request) {
         try {
 
-            UpdateIngredientsRequest updatedRecipe = ingredientService.updateRecipeIngredientNames(recipeId, request);
+            UpdateIngredientsRequest updatedRecipe = ingredientService.updateRecipeIngredientNamesAndQuantities(recipeId, request);
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     updatedRecipe,
@@ -123,7 +123,7 @@ public class IngredientController {
     public ResponseEntity<Response> addRecipeIngredientsById(@PathVariable Integer id, @RequestBody IngredientDto ingredientDto) {
         try {
 
-            List<IngredientDto> ingredients = ingredientService.addIngredient(id,ingredientDto);
+            List<IngredientDto> ingredients = ingredientService.addIngredient(id, ingredientDto);
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     ingredients,

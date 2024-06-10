@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.Math.round;
 
@@ -17,6 +18,15 @@ import static java.lang.Math.round;
 @RequiredArgsConstructor
 public class StringUtil {
     private final FoodRecipeRepository foodRecipeRepository;
+
+    public List<String> splitBySlash(String input) {
+        if (input == null || input.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(input.split("///"))
+                .map(String::trim)  // Remove any leading or trailing whitespace
+                .collect(Collectors.toList());
+    }
 
     public List<String> splitStringToList(String input) {
         if (input == null) {

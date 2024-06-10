@@ -11,6 +11,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class IngredientDto {
     private String name;
-    private Float quantity;
-    private String unit;
+    private String quantity;
 }

@@ -1,5 +1,6 @@
 package com.example.BEFoodrecommendationapplication.controller;
 
+import com.example.BEFoodrecommendationapplication.dto.RecipeDto;
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.dto.SearchResult;
 import com.example.BEFoodrecommendationapplication.dto.SetCookedRecipeDto;
@@ -243,6 +244,31 @@ public class FoodRecipeController {
 
             return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
 
+        }
+    }
+
+    @Operation(summary = "Add a new recipe")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Recipe added successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Response.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid recipe data provided")
+    })
+    @PostMapping
+    public ResponseEntity<Response> addRecipe(@RequestBody RecipeDto recipeDto) {
+        try {
+
+            Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
+            FoodRecipe recipe = foodRecipeService.addFoodRecipe(recipeDto.getName(), userId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(ResponseBuilderUtil.responseBuilder(
+                    recipe,
+                    "Recipe added successfully",
+                    StatusCode.SUCCESS));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ResponseBuilderUtil.responseBuilder(
+                    null,
+                    e.getMessage(),
+                    StatusCode.BAD_REQUEST));
         }
     }
 }

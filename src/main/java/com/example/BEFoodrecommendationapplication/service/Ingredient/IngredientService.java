@@ -8,7 +8,7 @@ import java.util.List;
 public interface IngredientService {
     List<IngredientDto> getRecipeIngredientsById(Integer id);
 
-    UpdateIngredientsRequest updateRecipeIngredientNames(Integer recipeId, UpdateIngredientsRequest request);
+    UpdateIngredientsRequest updateRecipeIngredientNamesAndQuantities(Integer recipeId, UpdateIngredientsRequest request);
 
     List<IngredientDto> addIngredient(Integer recipeId, IngredientDto ingredientDTO);
 }

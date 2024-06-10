@@ -1,11 +1,8 @@
 package com.example.BEFoodrecommendationapplication.entity;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
-
 
 import java.util.Date;
 import java.util.Set;
@@ -98,6 +95,9 @@ public class FoodRecipe {
 
     @Column(name = "recipe_instructions")
     private String recipeInstructions;
+
+    @Column(name = "ingredients_raw")
+    private String ingredientsRaw;
 
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)

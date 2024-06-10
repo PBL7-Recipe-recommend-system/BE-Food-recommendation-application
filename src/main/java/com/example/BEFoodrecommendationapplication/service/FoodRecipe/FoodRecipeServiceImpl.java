@@ -1,6 +1,5 @@
 package com.example.BEFoodrecommendationapplication.service.FoodRecipe;
 
-import com.example.BEFoodrecommendationapplication.dto.IngredientDto;
 import com.example.BEFoodrecommendationapplication.dto.RecipeDto;
 import com.example.BEFoodrecommendationapplication.dto.SearchResult;
 import com.example.BEFoodrecommendationapplication.dto.SetCookedRecipeDto;
@@ -24,9 +23,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -151,8 +150,8 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 .images(stringUtil.splitStringToList(foodRecipe.getImages()))
                 .recipeCategory(foodRecipe.getRecipeCategory())
                 .keywords(stringUtil.splitStringToList(foodRecipe.getKeywords()))
-                .recipeIngredientsQuantities(stringUtil.splitStringToList(foodRecipe.getRecipeIngredientsQuantities()))
-                .recipeIngredientsParts(stringUtil.splitStringToList(foodRecipe.getRecipeIngredientsParts()))
+                .recipeIngredientsQuantities(stringUtil.splitBySlash(foodRecipe.getRecipeIngredientsQuantities()))
+                .recipeIngredientsParts(stringUtil.splitBySlash(foodRecipe.getIngredientsRaw()))
                 .aggregatedRatings(foodRecipe.getAggregatedRatings())
                 .reviewCount(foodRecipe.getReviewCount())
                 .calories(foodRecipe.getCalories())
@@ -251,5 +250,49 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
     public List<UserCookedRecipe> getCookedRecipesByUser(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RecordNotFoundException("User not found with id " + userId));
         return userCookedRecipeRepository.findByUser(user);
+    }
+
+    @Override
+    public FoodRecipe addFoodRecipe(String name, Integer authorId) {
+        User author = userRepository.findById(authorId).orElseThrow(() -> new RecordNotFoundException("User not found with id " + authorId));
+        if (name == null) {
+            throw new IllegalArgumentException("Recipe name must not be null");
+        }
+
+        FoodRecipe newRecipe = new FoodRecipe();
+        newRecipe.setName(name);
+        newRecipe.setAuthorName(author.getName());
+        newRecipe.setAuthor(author);
+        newRecipe.setDatePublished(new Date());  // Set publishing date to now
+
+        // Set default values for other fields
+        newRecipe.setCookTime("");
+        newRecipe.setPrepTime("");
+        newRecipe.setTotalTime("");
+        newRecipe.setDescription("");
+        newRecipe.setImages("");
+        newRecipe.setRecipeCategory("");
+        newRecipe.setKeywords("");
+        newRecipe.setRecipeIngredientsQuantities("");
+        newRecipe.setRecipeIngredientsParts("");
+        newRecipe.setAggregatedRatings(0);
+        newRecipe.setReviewCount(0);
+        newRecipe.setCalories(0.0f);
+        newRecipe.setFatContent(0.0f);
+        newRecipe.setSaturatedFatContent(0.0f);
+        newRecipe.setCholesterolContent(0.0f);
+        newRecipe.setSodiumContent(0.0f);
+        newRecipe.setCarbonhydrateContent(0.0f);
+        newRecipe.setFiberContent(0.0f);
+        newRecipe.setSugarContent(0.0f);
+        newRecipe.setProteinContent(0.0f);
+        newRecipe.setRecipeServings(0);
+        newRecipe.setRecipeInstructions("");
+        newRecipe.setIngredientsRaw("");
+
+        // Save the new recipe to the repository
+        foodRecipeRepository.save(newRecipe);
+
+        return newRecipe;
     }
 }

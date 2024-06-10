@@ -29,4 +29,6 @@ public interface FoodRecipeService {
     List<UserCookedRecipe> getCookedRecipesByUser(Integer userId);
 
     List<String> getRecipeInstructionById(Integer id);
+
+    FoodRecipe addFoodRecipe(String name, Integer authorId);
 }

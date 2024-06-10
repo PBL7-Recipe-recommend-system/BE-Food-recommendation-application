@@ -54,7 +54,7 @@ public class AdminController {
                     "Users retrieved successfully",
                     StatusCode.SUCCESS));
         } catch (Exception e) {
-            // Assuming there's a possibility of a service-level exception, handle it gracefully
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseBuilderUtil.responseBuilder(
                             new ArrayList<>(),
