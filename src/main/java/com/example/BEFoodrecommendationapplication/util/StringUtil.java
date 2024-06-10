@@ -77,6 +77,9 @@ public class StringUtil {
         if (time == null) {
             return "";
         }
+        if (time.isEmpty()) {
+            return "";
+        }
         if (time.startsWith("PT")) {
             return time.replaceFirst("PT", "");
         }
