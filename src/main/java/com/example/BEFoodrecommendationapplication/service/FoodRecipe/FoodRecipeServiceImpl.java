@@ -21,6 +21,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -136,7 +137,8 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
     @Override
     public RecipeDto mapToDto(FoodRecipe foodRecipe, Integer userId) {
-
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
+        String formattedDate = formatter.format(foodRecipe.getDatePublished());
         return RecipeDto.builder()
                 .recipeId(foodRecipe.getRecipeId())
                 .name(foodRecipe.getName())
@@ -145,7 +147,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 .cookTime(cleanTime(foodRecipe.getCookTime()))
                 .prepTime(cleanTime(foodRecipe.getPrepTime()))
                 .totalTime(cleanTime(foodRecipe.getTotalTime()))
-                .datePublished(foodRecipe.getDatePublished())
+                .datePublished(formattedDate)
                 .description(foodRecipe.getDescription())
                 .images(stringUtil.splitStringToList(foodRecipe.getImages()))
                 .recipeCategory(foodRecipe.getRecipeCategory())
@@ -263,6 +265,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         newRecipe.setName(name);
         newRecipe.setAuthorName(author.getName());
         newRecipe.setAuthor(author);
+
         newRecipe.setDatePublished(new Date());  // Set publishing date to now
 
         // Set default values for other fields

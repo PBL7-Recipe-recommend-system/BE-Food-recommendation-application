@@ -2,7 +2,6 @@ package com.example.BEFoodrecommendationapplication.dto;
 
 import lombok.*;
 
-import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -26,7 +25,7 @@ public class RecipeDto {
 
     private String totalTime;
 
-    private Date datePublished;
+    private String datePublished;
 
     private String description;
 
