@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -182,8 +181,8 @@ public class FoodRecipeController {
     public ResponseEntity<Response> getCategories() {
 
         try {
-            Pageable topTen = PageRequest.of(0, 10);
-            List<Object[]> top10Categories = foodRecipeRepository.findTop10PopularCategories(topTen);
+
+            List<Object[]> top10Categories = foodRecipeRepository.findAllCategoriesOrderByPopularity();
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     top10Categories,
                     "Get Category List successfully",

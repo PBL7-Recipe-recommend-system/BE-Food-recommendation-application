@@ -299,7 +299,6 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
     @Override
     public FoodRecipe updateFoodRecipe(Integer recipeId, RecipeDto recipeDto) {
-
         FoodRecipe foodRecipe = foodRecipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + recipeId));
         String images = "c(" + recipeDto.getImages().stream()
@@ -312,26 +311,27 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 .collect(Collectors.joining(",")) + ")";
         foodRecipe.setKeywords(keywords);
 
-        foodRecipe.setCookTime(recipeDto.getCookTime());
-        foodRecipe.setPrepTime(recipeDto.getPrepTime());
-        foodRecipe.setTotalTime(recipeDto.getTotalTime());
-        foodRecipe.setDescription(recipeDto.getDescription());
-        foodRecipe.setRecipeCategory(recipeDto.getRecipeCategory());
-        foodRecipe.setAggregatedRatings(recipeDto.getAggregatedRatings());
-        foodRecipe.setReviewCount(recipeDto.getReviewCount());
-        foodRecipe.setCalories(recipeDto.getCalories());
-        foodRecipe.setFatContent(recipeDto.getFatContent());
-        foodRecipe.setSaturatedFatContent(recipeDto.getSaturatedFatContent());
-        foodRecipe.setCholesterolContent(recipeDto.getCholesterolContent());
-        foodRecipe.setSodiumContent(recipeDto.getSodiumContent());
-        foodRecipe.setCarbonhydrateContent(recipeDto.getCarbonhydrateContent());
-        foodRecipe.setFiberContent(recipeDto.getFiberContent());
-        foodRecipe.setSugarContent(recipeDto.getSugarContent());
-        foodRecipe.setProteinContent(recipeDto.getProteinContent());
-        foodRecipe.setRecipeServings(recipeDto.getRecipeServings());
-        foodRecipe.setRecipeCategory(recipeDto.getRecipeCategory());
+        // Use a ternary operator to check for null and set the previous value if so
+        foodRecipe.setCookTime(recipeDto.getCookTime() != null ? recipeDto.getCookTime() : foodRecipe.getCookTime());
+        foodRecipe.setPrepTime(recipeDto.getPrepTime() != null ? recipeDto.getPrepTime() : foodRecipe.getPrepTime());
+        foodRecipe.setTotalTime(recipeDto.getTotalTime() != null ? recipeDto.getTotalTime() : foodRecipe.getTotalTime());
+        foodRecipe.setDescription(recipeDto.getDescription() != null ? recipeDto.getDescription() : foodRecipe.getDescription());
+        foodRecipe.setRecipeCategory(recipeDto.getRecipeCategory() != null ? recipeDto.getRecipeCategory() : foodRecipe.getRecipeCategory());
+        foodRecipe.setAggregatedRatings(recipeDto.getAggregatedRatings() != null ? recipeDto.getAggregatedRatings() : foodRecipe.getAggregatedRatings());
+        foodRecipe.setReviewCount(recipeDto.getReviewCount() != null ? recipeDto.getReviewCount() : foodRecipe.getReviewCount());
+        foodRecipe.setCalories(recipeDto.getCalories() != null ? recipeDto.getCalories() : foodRecipe.getCalories());
+        foodRecipe.setFatContent(recipeDto.getFatContent() != null ? recipeDto.getFatContent() : foodRecipe.getFatContent());
+        foodRecipe.setSaturatedFatContent(recipeDto.getSaturatedFatContent() != null ? recipeDto.getSaturatedFatContent() : foodRecipe.getSaturatedFatContent());
+        foodRecipe.setCholesterolContent(recipeDto.getCholesterolContent() != null ? recipeDto.getCholesterolContent() : foodRecipe.getCholesterolContent());
+        foodRecipe.setSodiumContent(recipeDto.getSodiumContent() != null ? recipeDto.getSodiumContent() : foodRecipe.getSodiumContent());
+        foodRecipe.setCarbonhydrateContent(recipeDto.getCarbonhydrateContent() != null ? recipeDto.getCarbonhydrateContent() : foodRecipe.getCarbonhydrateContent());
+        foodRecipe.setFiberContent(recipeDto.getFiberContent() != null ? recipeDto.getFiberContent() : foodRecipe.getFiberContent());
+        foodRecipe.setSugarContent(recipeDto.getSugarContent() != null ? recipeDto.getSugarContent() : foodRecipe.getSugarContent());
+        foodRecipe.setProteinContent(recipeDto.getProteinContent() != null ? recipeDto.getProteinContent() : foodRecipe.getProteinContent());
+        foodRecipe.setRecipeServings(recipeDto.getRecipeServings() != null ? recipeDto.getRecipeServings() : foodRecipe.getRecipeServings());
 
         foodRecipeRepository.save(foodRecipe);
         return foodRecipe;
     }
+
 }
