@@ -75,7 +75,7 @@ public class StringUtil {
 
     public String cleanTime(String time) {
         if (time == null || time.isEmpty() || !time.startsWith("PT")) {
-            return "";
+            return time;
         }
         return time.replaceFirst("PT", "");
     }

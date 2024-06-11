@@ -6,6 +6,7 @@ import com.example.BEFoodrecommendationapplication.dto.SearchResult;
 import com.example.BEFoodrecommendationapplication.dto.SetCookedRecipeDto;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.entity.RecentSearch;
+import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
 import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
 import com.example.BEFoodrecommendationapplication.repository.RecentSearchRepository;
 import com.example.BEFoodrecommendationapplication.service.FoodRecipe.FoodRecipeService;
@@ -264,6 +265,35 @@ public class FoodRecipeController {
                     recipe,
                     "Recipe added successfully",
                     StatusCode.SUCCESS));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ResponseBuilderUtil.responseBuilder(
+                    null,
+                    e.getMessage(),
+                    StatusCode.BAD_REQUEST));
+        }
+    }
+
+    @Operation(summary = "Update a recipe")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Recipe updated successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Response.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid recipe data provided"),
+            @ApiResponse(responseCode = "404", description = "Recipe not found")
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<Response> updateRecipe(@PathVariable Integer id, @RequestBody RecipeDto recipeDto) {
+        try {
+            FoodRecipe recipe = foodRecipeService.updateFoodRecipe(id, recipeDto);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    recipe,
+                    "Recipe updated successfully",
+                    StatusCode.SUCCESS));
+        } catch (RecordNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseBuilderUtil.responseBuilder(
+                    null,
+                    e.getMessage(),
+                    StatusCode.NOT_FOUND));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ResponseBuilderUtil.responseBuilder(
                     null,

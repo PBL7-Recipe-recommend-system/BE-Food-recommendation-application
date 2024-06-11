@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -212,7 +213,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
     public String cleanTime(String time) {
         if (time == null || time.isEmpty() || !time.startsWith("PT")) {
-            return "";
+            return time;
         }
         return time.replaceFirst("PT", "");
     }
@@ -294,5 +295,43 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         foodRecipeRepository.save(newRecipe);
 
         return newRecipe;
+    }
+
+    @Override
+    public FoodRecipe updateFoodRecipe(Integer recipeId, RecipeDto recipeDto) {
+
+        FoodRecipe foodRecipe = foodRecipeRepository.findById(recipeId)
+                .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + recipeId));
+        String images = "c(" + recipeDto.getImages().stream()
+                .map(image -> "\"" + image + "\"")
+                .collect(Collectors.joining(",")) + ")";
+        foodRecipe.setImages(images);
+
+        String keywords = "c(" + recipeDto.getKeywords().stream()
+                .map(keyword -> "\"" + keyword + "\"")
+                .collect(Collectors.joining(",")) + ")";
+        foodRecipe.setKeywords(keywords);
+
+        foodRecipe.setCookTime(recipeDto.getCookTime());
+        foodRecipe.setPrepTime(recipeDto.getPrepTime());
+        foodRecipe.setTotalTime(recipeDto.getTotalTime());
+        foodRecipe.setDescription(recipeDto.getDescription());
+        foodRecipe.setRecipeCategory(recipeDto.getRecipeCategory());
+        foodRecipe.setAggregatedRatings(recipeDto.getAggregatedRatings());
+        foodRecipe.setReviewCount(recipeDto.getReviewCount());
+        foodRecipe.setCalories(recipeDto.getCalories());
+        foodRecipe.setFatContent(recipeDto.getFatContent());
+        foodRecipe.setSaturatedFatContent(recipeDto.getSaturatedFatContent());
+        foodRecipe.setCholesterolContent(recipeDto.getCholesterolContent());
+        foodRecipe.setSodiumContent(recipeDto.getSodiumContent());
+        foodRecipe.setCarbonhydrateContent(recipeDto.getCarbonhydrateContent());
+        foodRecipe.setFiberContent(recipeDto.getFiberContent());
+        foodRecipe.setSugarContent(recipeDto.getSugarContent());
+        foodRecipe.setProteinContent(recipeDto.getProteinContent());
+        foodRecipe.setRecipeServings(recipeDto.getRecipeServings());
+        foodRecipe.setRecipeCategory(recipeDto.getRecipeCategory());
+
+        foodRecipeRepository.save(foodRecipe);
+        return foodRecipe;
     }
 }

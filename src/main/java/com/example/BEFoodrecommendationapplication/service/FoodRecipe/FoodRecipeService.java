@@ -31,4 +31,6 @@ public interface FoodRecipeService {
     List<String> getRecipeInstructionById(Integer id);
 
     FoodRecipe addFoodRecipe(String name, Integer authorId);
+
+    FoodRecipe updateFoodRecipe(Integer recipeId, RecipeDto recipeDto);
 }

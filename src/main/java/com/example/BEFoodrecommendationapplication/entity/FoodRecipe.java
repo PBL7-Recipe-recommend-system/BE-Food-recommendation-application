@@ -1,5 +1,6 @@
 package com.example.BEFoodrecommendationapplication.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -37,6 +38,7 @@ public class FoodRecipe {
     private String totalTime;
 
     @Column(name = "date_published", nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yy")
     private Date datePublished;
 
     @Column(name = "description")
