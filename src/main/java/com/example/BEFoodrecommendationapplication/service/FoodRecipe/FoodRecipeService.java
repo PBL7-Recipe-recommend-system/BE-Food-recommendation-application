@@ -33,4 +33,10 @@ public interface FoodRecipeService {
     FoodRecipe addFoodRecipe(String name, Integer authorId);
 
     FoodRecipe updateFoodRecipe(Integer recipeId, RecipeDto recipeDto);
+
+    List<String> updateRecipeInstructionAtIndex(Integer id, int index, String newInstruction);
+
+    List<String> deleteRecipeInstructionAtIndex(Integer id, int index);
+
+    List<String> addRecipeInstruction(Integer id, String newInstruction);
 }

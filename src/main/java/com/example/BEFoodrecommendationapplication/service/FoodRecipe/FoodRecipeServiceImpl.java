@@ -150,7 +150,8 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         return result;
     }
 
-    public void updateRecipeInstructionAtIndex(Integer id, int index, String newInstruction) {
+    @Override
+    public List<String> updateRecipeInstructionAtIndex(Integer id, int index, String newInstruction) {
         FoodRecipe foodRecipe = foodRecipeRepository.findById(id)
                 .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + id));
 
@@ -158,12 +159,12 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         List<String> instructions = stringUtil.splitInstructions(foodRecipe.getRecipeInstructions());
 
         // Check if index is valid
-        if (index < 0 || index >= instructions.size()) {
+        if (index - 1 < 0 || index - 1 >= instructions.size()) {
             throw new IllegalArgumentException("Invalid index: " + index);
         }
 
         // Update the specific instruction
-        instructions.set(index, newInstruction);
+        instructions.set(index - 1, newInstruction);
 
         // Reassemble the instructions into the original format
         String updatedInstructions = formatInstructions(instructions);
@@ -171,7 +172,49 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
         // Save the updated recipe
         foodRecipeRepository.save(foodRecipe);
+
+        return instructions;
     }
+
+    @Override
+    public List<String> addRecipeInstruction(Integer id, String newInstruction) {
+        FoodRecipe foodRecipe = foodRecipeRepository.findById(id)
+                .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + id));
+
+        List<String> instructions = stringUtil.splitInstructions(foodRecipe.getRecipeInstructions());
+
+        instructions.add(newInstruction);
+
+        String updatedInstructions = formatInstructions(instructions);
+        foodRecipe.setRecipeInstructions(updatedInstructions);
+
+        foodRecipeRepository.save(foodRecipe);
+
+        return instructions;
+    }
+
+
+    @Override
+    public List<String> deleteRecipeInstructionAtIndex(Integer id, int index) {
+        FoodRecipe foodRecipe = foodRecipeRepository.findById(id)
+                .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + id));
+
+        List<String> instructions = stringUtil.splitInstructions(foodRecipe.getRecipeInstructions());
+
+        if (index - 1 < 0 || index - 1 >= instructions.size()) {
+            throw new IllegalArgumentException("Invalid index: " + index);
+        }
+
+        instructions.remove(index - 1);
+
+        String updatedInstructions = formatInstructions(instructions);
+        foodRecipe.setRecipeInstructions(updatedInstructions);
+
+        foodRecipeRepository.save(foodRecipe);
+
+        return instructions;
+    }
+
 
     @Override
     public RecipeDto mapToDto(FoodRecipe foodRecipe, Integer userId) {
