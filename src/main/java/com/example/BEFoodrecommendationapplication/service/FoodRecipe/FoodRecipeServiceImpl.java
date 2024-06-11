@@ -211,13 +211,10 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
     }
 
     public String cleanTime(String time) {
-        if (time == null) {
+        if (time == null || time.isEmpty() || !time.startsWith("PT")) {
             return "";
         }
-        if (time.startsWith("PT")) {
-            return time.replaceFirst("PT", "");
-        }
-        throw new IllegalArgumentException("Invalid time format");
+        return time.replaceFirst("PT", "");
     }
 
 
