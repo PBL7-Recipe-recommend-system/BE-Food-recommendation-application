@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.round;
@@ -43,15 +45,30 @@ public class StringUtil {
         return Arrays.asList(items);
     }
 
+
     public List<String> splitInstructions(String input) {
 
+        String data = input.replace("\n", " ")
+                .replace("\r", " ").replace("c(", "").replace("\")", "");
+//        System.out.println(data);
 
-        if (input.length() > 2) {
-            input = input.substring(3, input.length() - 4);
+        data = data.replaceAll("^\"", "");  // Remove leading quote if present.
+
+        String[] instructions = data.split("\", ");
+        Pattern spacePattern = Pattern.compile(" +");  // Regex to match one or more spaces.
+
+        List<String> result = new ArrayList<>();
+        for (String instruction : instructions) {
+            Matcher matcher = spacePattern.matcher(instruction);
+            String cleanedInstruction = matcher.replaceAll(" "); // Replace multiple spaces with a single space.
+            cleanedInstruction = cleanedInstruction.replace("\"", "").trim();
+
+            result.add(cleanedInstruction);
         }
-        input = input.replace("\\\"", "");
-        input = input.replace("\\r\\n", "").replace("\\n", "").replace("\\r", "");
-        return new ArrayList<>(Arrays.asList(input.split("\", \"")));
+//        for (String i : result) {
+//            System.out.println(i);
+//        }
+        return result;
     }
 
     public List<String> partitionIntoFourParts(List<String> instructions) {

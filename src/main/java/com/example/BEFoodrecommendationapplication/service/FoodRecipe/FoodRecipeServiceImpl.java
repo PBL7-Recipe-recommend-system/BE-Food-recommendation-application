@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -131,9 +132,45 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
         FoodRecipe foodRecipe = foodRecipeRepository.findById(id)
                 .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + id));
 
-        List<String> instruction = stringUtil.partitionIntoFourParts(stringUtil.splitInstructions(foodRecipe.getRecipeInstructions()));
+        List<String> instruction = stringUtil.splitInstructions(foodRecipe.getRecipeInstructions());
 
         return instruction;
+    }
+
+    private String formatInstructions(List<String> instructions) {
+        String result = "c(";
+        List<String> quotedInstructions = new ArrayList<>();
+
+        for (String instruction : instructions) {
+            quotedInstructions.add("\"" + instruction + "\"");
+        }
+
+        result += String.join(", ", quotedInstructions);
+        result += ")";
+        return result;
+    }
+
+    public void updateRecipeInstructionAtIndex(Integer id, int index, String newInstruction) {
+        FoodRecipe foodRecipe = foodRecipeRepository.findById(id)
+                .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + id));
+
+        // Retrieve and split the instructions
+        List<String> instructions = stringUtil.splitInstructions(foodRecipe.getRecipeInstructions());
+
+        // Check if index is valid
+        if (index < 0 || index >= instructions.size()) {
+            throw new IllegalArgumentException("Invalid index: " + index);
+        }
+
+        // Update the specific instruction
+        instructions.set(index, newInstruction);
+
+        // Reassemble the instructions into the original format
+        String updatedInstructions = formatInstructions(instructions);
+        foodRecipe.setRecipeInstructions(updatedInstructions);
+
+        // Save the updated recipe
+        foodRecipeRepository.save(foodRecipe);
     }
 
     @Override
@@ -167,7 +204,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 .sugarContent(foodRecipe.getSugarContent())
                 .proteinContent(foodRecipe.getProteinContent())
                 .recipeServings(foodRecipe.getRecipeServings())
-                .recipeInstructions(stringUtil.partitionIntoFourParts(stringUtil.splitInstructions(foodRecipe.getRecipeInstructions())))
+                .recipeInstructions(stringUtil.splitInstructions(foodRecipe.getRecipeInstructions()))
                 .isSaved(isRecipeSavedByUser(userId, foodRecipe.getRecipeId()))
                 .build();
     }
