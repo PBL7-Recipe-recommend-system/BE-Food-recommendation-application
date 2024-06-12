@@ -22,7 +22,7 @@ import java.util.ArrayList;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @CrossOrigin("${allowed.origins}")
-@Tag(name="Authentication")
+@Tag(name = "Authentication")
 public class AuthenticationController {
     private final AuthenticationService service;
 
@@ -30,9 +30,9 @@ public class AuthenticationController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Create user Success",
                     content = {
-                    @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = AuthenticationResponse.class))
-            }),
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = AuthenticationResponse.class))
+                    }),
             @ApiResponse(responseCode = "401", description = "Email already exists")
     })
     @PostMapping("/register")
@@ -44,11 +44,11 @@ public class AuthenticationController {
             return ResponseEntity.ok(
                     ResponseBuilderUtil.responseBuilder(
                             service.register(request),
-                                "Register successfully",
-                                StatusCode.SUCCESS)
+                            "Register successfully",
+                            StatusCode.SUCCESS)
             );
 
-        }catch (DuplicateDataException | InvalidEmailException | WrongFormatPasswordException e){
+        } catch (DuplicateDataException | InvalidEmailException | WrongFormatPasswordException e) {
 
 
             return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.UNAUTHORIZED));
@@ -60,9 +60,9 @@ public class AuthenticationController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Authentication Success",
                     content = {
-                    @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = AuthenticationResponse.class))
-            }),
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = AuthenticationResponse.class))
+                    }),
             @ApiResponse(responseCode = "401", description = "Invalid Email or password")})
     @PostMapping("/authenticate")
     public ResponseEntity<Response> authenticate(
@@ -75,7 +75,7 @@ public class AuthenticationController {
                     "Authenticate success",
                     StatusCode.SUCCESS));
 
-        }catch (InvalidEmailException | RecordNotFoundException e){
+        } catch (InvalidEmailException | RecordNotFoundException e) {
 
 
             return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.UNAUTHORIZED));
@@ -86,9 +86,9 @@ public class AuthenticationController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Send email successfully",
                     content = {
-                    @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = String.class))
-            }),
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class))
+                    }),
             @ApiResponse(responseCode = "400", description = "Send email failed")})
     @PutMapping("/forgot-password")
     public ResponseEntity<Response> forgotPassword(
@@ -102,12 +102,13 @@ public class AuthenticationController {
                     service.forgotPassword(email),
                     StatusCode.SUCCESS));
 
-        }catch (ErrorException | RecordNotFoundException e){
+        } catch (ErrorException | RecordNotFoundException e) {
 
             return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.BAD_REQUEST));
         }
 
     }
+
     @Operation(summary = "Verify account")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Verify account successfully",
@@ -118,14 +119,14 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "400", description = "Verify account failed")})
     @PostMapping("/otp-verification")
     public ResponseEntity<Response> verifyAccount(@RequestParam String email,
-                                                @RequestBody OtpRequest otp) {
+                                                  @RequestBody OtpRequest otp) {
         try {
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     new ArrayList<>(),
                     service.verifyAccount(email, otp.getOtp()),
                     StatusCode.SUCCESS));
-        }catch (RecordNotFoundException e){
+        } catch (RecordNotFoundException e) {
 
             return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.BAD_REQUEST));
         }
@@ -147,31 +148,32 @@ public class AuthenticationController {
                     new ArrayList<>(),
                     service.regenerateOtp(email),
                     StatusCode.SUCCESS));
-        }catch (RecordNotFoundException e){
+        } catch (RecordNotFoundException e) {
 
             return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.BAD_REQUEST));
         }
     }
+
     @Operation(summary = "Set password")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Set password successfully",
                     content = {
-                    @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = String.class))
-            }),
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class))
+                    }),
             @ApiResponse(responseCode = "400", description = "Set password failed")})
     @PutMapping("/set-password")
     public ResponseEntity<Response> setPassword(
-            @RequestParam String email, @RequestBody SetPasswordRequest request
+            @RequestParam String email, @RequestBody String password
     ) {
         try {
 
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    service.setPassword(email, request.getNewPassword()),
+                    service.setPassword(email, password),
                     "Set password successfully",
                     StatusCode.SUCCESS));
-        }catch (RecordNotFoundException e){
+        } catch (RecordNotFoundException e) {
 
             return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.BAD_REQUEST));
         }
