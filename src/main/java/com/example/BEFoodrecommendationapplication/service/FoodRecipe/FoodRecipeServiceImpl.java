@@ -218,7 +218,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
     @Override
     public RecipeDto mapToDto(FoodRecipe foodRecipe, Integer userId) {
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
         String formattedDate = formatter.format(foodRecipe.getDatePublished());
         return RecipeDto.builder()
                 .recipeId(foodRecipe.getRecipeId())
