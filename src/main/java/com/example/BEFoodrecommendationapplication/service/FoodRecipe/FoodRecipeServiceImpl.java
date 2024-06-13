@@ -381,16 +381,19 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
     public FoodRecipe updateFoodRecipe(Integer recipeId, RecipeDto recipeDto) {
         FoodRecipe foodRecipe = foodRecipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + recipeId));
-        String images = "c(" + recipeDto.getImages().stream()
-                .map(image -> "\"" + image + "\"")
-                .collect(Collectors.joining(",")) + ")";
+        String images = recipeDto.getImages() != null ?
+                "c(" + recipeDto.getImages().stream()
+                        .map(image -> "\"" + image + "\"")
+                        .collect(Collectors.joining(",")) + ")"
+                : "";
         foodRecipe.setImages(images);
 
-        String keywords = "c(" + recipeDto.getKeywords().stream()
-                .map(keyword -> "\"" + keyword + "\"")
-                .collect(Collectors.joining(",")) + ")";
+        String keywords = recipeDto.getKeywords() != null ?
+                "c(" + recipeDto.getKeywords().stream()
+                        .map(keyword -> "\"" + keyword + "\"")
+                        .collect(Collectors.joining(",")) + ")"
+                : "";
         foodRecipe.setKeywords(keywords);
-
         // Use a ternary operator to check for null and set the previous value if so
         foodRecipe.setCookTime(recipeDto.getCookTime() != null ? recipeDto.getCookTime() : foodRecipe.getCookTime());
         foodRecipe.setPrepTime(recipeDto.getPrepTime() != null ? recipeDto.getPrepTime() : foodRecipe.getPrepTime());
