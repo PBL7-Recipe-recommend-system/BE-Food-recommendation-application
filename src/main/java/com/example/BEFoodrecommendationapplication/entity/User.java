@@ -91,6 +91,10 @@ public class User implements UserDetails {
     @JsonIgnore
     private LocalDateTime otpGeneratedTime;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private UserDietRestriction userDietRestriction;
+
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<Token> tokens;

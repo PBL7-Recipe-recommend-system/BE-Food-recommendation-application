@@ -26,4 +26,6 @@ public interface UserService {
     List<Object> getSavedRecipesByUser(Integer userId);
 
     WaterIntake updateOrCreateWaterIntake(Integer userId, LocalDate date, float amount);
+
+    UserDto mapUserToUserDto(User user);
 }

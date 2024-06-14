@@ -38,6 +38,9 @@ public class UserInput {
     @JsonProperty("dietaryGoal")
     private Integer dietaryGoal;
 
+    @JsonProperty("condition")
+    private String condition;
+
     @JsonProperty("ingredients")
     private List<String> ingredients;
 

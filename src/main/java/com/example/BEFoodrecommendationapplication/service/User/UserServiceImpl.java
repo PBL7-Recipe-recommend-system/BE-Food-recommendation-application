@@ -29,6 +29,8 @@ public class UserServiceImpl implements UserService {
     private final StringUtil stringUtil;
     private final MealPlanService mealPlanService;
     private final WaterIntakeRepository waterIntakeRepository;
+    private final UserDietRestrictionRepository userDietRestrictionRepository;
+    private final DietRestrictionRepository dietRestrictionRepository;
 
 
     @Override
@@ -126,7 +128,34 @@ public class UserServiceImpl implements UserService {
                 user.setExcludeIngredients(userExcludeIngredients);
                 userExcludeIngredientRepo.saveAll(userExcludeIngredients);
             }
+
+
+            String dietRestriction = userInput.getCondition();
+            if (dietRestriction != null) {
+                DietRestriction restriction = dietRestrictionRepository.findByType(dietRestriction);
+                if (restriction == null) {
+                    restriction = new DietRestriction();
+                    restriction.setType(dietRestriction);
+                    restriction = dietRestrictionRepository.save(restriction);
+                }
+
+                UserDietRestriction userDietRestriction = userDietRestrictionRepository.findByUser(user);
+
+                if (userDietRestriction == null) {
+                    // If no UserDietRestriction exists, create a new one
+                    userDietRestriction = new UserDietRestriction();
+                    userDietRestriction.setUser(user);
+                    userDietRestriction.setDietRestriction(restriction);
+                } else {
+                    // If a UserDietRestriction already exists, update the DietRestriction
+                    userDietRestriction.setDietRestriction(restriction);
+                }
+
+                userDietRestrictionRepository.save(userDietRestriction);
+            }
+
             mealPlanService.deleteUserMealPlans(user);
+
             return userRepository.save(user);
         } else {
             throw new RecordNotFoundException("User not found with id : " + id);
@@ -144,7 +173,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
-
+    @Override
     public UserDto mapUserToUserDto(User user) {
 
         float[] dietaryRate = {0.8f, 1.2f, 1.0f};
@@ -185,6 +214,15 @@ public class UserServiceImpl implements UserService {
                 .map(Ingredient::getName)
                 .toList();
 
+        UserDietRestriction userDietRestriction = user.getUserDietRestriction();
+        String dietRestriction = null;
+        if (userDietRestriction != null) {
+            DietRestriction restriction = userDietRestriction.getDietRestriction();
+            if (restriction != null) {
+                dietRestriction = restriction.getType();
+            }
+        }
+
 
         return UserDto.builder()
                 .id(user.getId())
@@ -202,6 +240,7 @@ public class UserServiceImpl implements UserService {
                 .recommendCalories(Math.round(user.caloriesCalculator() * rate))
                 .includeIngredients(includeIngredientNames)
                 .excludeIngredients(excludeIngredientNames)
+                .condition(dietRestriction)
                 .build();
     }
 

@@ -44,8 +44,12 @@ public class UserDto {
     @JsonProperty("dietaryGoal")
     private Integer dietaryGoal;
 
+
     @JsonProperty("bmi")
     private Float bmi;
+
+    @JsonProperty("condition")
+    private String condition;
 
     @JsonProperty("isCustomPlan")
     private Boolean isCustomPlan;

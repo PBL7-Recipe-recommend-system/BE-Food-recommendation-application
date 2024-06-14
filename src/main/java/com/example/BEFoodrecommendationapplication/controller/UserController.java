@@ -49,11 +49,12 @@ public class UserController {
     @PutMapping("/me")
     public ResponseEntity<Response> setUserProfile(@RequestBody UserInput userInput) {
         try {
-            Integer id = AuthenticationUtils.getUserFromSecurityContext().getId();
+            Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
             User user = userService.save(id, userInput);
-
+            UserDto newUser = userService.mapUserToUserDto(user);
+            newUser.setCondition(userInput.getCondition());
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    user,
+                    newUser,
                     "Set profile successfully",
                     StatusCode.SUCCESS));
 
