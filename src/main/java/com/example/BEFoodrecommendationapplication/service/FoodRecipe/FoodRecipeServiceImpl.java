@@ -182,7 +182,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
                 .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + id));
 
         List<String> instructions = stringUtil.splitInstructions(foodRecipe.getRecipeInstructions());
-
+        index--;
         // Check if index is valid
         if (index < 0 || index > instructions.size()) {
             throw new IllegalArgumentException("Invalid index: " + index);
