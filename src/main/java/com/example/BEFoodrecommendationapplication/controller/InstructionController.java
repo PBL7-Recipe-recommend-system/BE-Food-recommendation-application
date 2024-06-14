@@ -110,7 +110,7 @@ public class InstructionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseBuilderUtil.responseBuilder(null, e.getMessage(), StatusCode.INTERNAL_SERVER_ERROR));
         }
     }
-    
+
 
     @Operation(summary = "Add a new instruction to a recipe")
     @ApiResponses(value = {
@@ -125,7 +125,7 @@ public class InstructionController {
             @RequestBody UpdateInstructionRequest newInstruction) {
 
         try {
-            List<String> updatedInstructions = foodRecipeService.addRecipeInstruction(recipeId, newInstruction.getInstruction());
+            List<String> updatedInstructions = foodRecipeService.addRecipeInstruction(recipeId, newInstruction.getInstruction(), newInstruction.getStep());
             return ResponseEntity.ok().body(ResponseBuilderUtil.responseBuilder(
                     updatedInstructions,
                     "New instruction added successfully",

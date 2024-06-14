@@ -177,13 +177,18 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
     }
 
     @Override
-    public List<String> addRecipeInstruction(Integer id, String newInstruction) {
+    public List<String> addRecipeInstruction(Integer id, String newInstruction, int index) {
         FoodRecipe foodRecipe = foodRecipeRepository.findById(id)
                 .orElseThrow(() -> new RecordNotFoundException("Recipe not found with id " + id));
 
         List<String> instructions = stringUtil.splitInstructions(foodRecipe.getRecipeInstructions());
 
-        instructions.add(newInstruction);
+        // Check if index is valid
+        if (index < 0 || index > instructions.size()) {
+            throw new IllegalArgumentException("Invalid index: " + index);
+        }
+
+        instructions.add(index, newInstruction);
 
         String updatedInstructions = formatInstructions(instructions);
         foodRecipe.setRecipeInstructions(updatedInstructions);

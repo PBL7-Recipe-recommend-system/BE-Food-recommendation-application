@@ -38,5 +38,5 @@ public interface FoodRecipeService {
 
     List<String> deleteRecipeInstructionAtIndex(Integer id, int index);
 
-    List<String> addRecipeInstruction(Integer id, String newInstruction);
+    List<String> addRecipeInstruction(Integer id, String newInstruction, int index);
 }
