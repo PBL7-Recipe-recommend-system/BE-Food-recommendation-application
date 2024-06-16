@@ -56,7 +56,7 @@ public class AdminController {
                     StatusCode.SUCCESS));
         } catch (Exception e) {
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+            return ResponseEntity.status(HttpStatus.OK).body(
                     ResponseBuilderUtil.responseBuilder(
                             new ArrayList<>(),
                             "Failed to retrieve users due to an internal error",
@@ -81,7 +81,7 @@ public class AdminController {
                     StatusCode.SUCCESS));
         } catch (Exception e) {
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+            return ResponseEntity.status(HttpStatus.OK).body(
                     ResponseBuilderUtil.responseBuilder(
                             new ArrayList<>(),
                             e.getMessage(),
@@ -104,10 +104,10 @@ public class AdminController {
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     updatedUser, "User updated successfully", StatusCode.SUCCESS));
         } catch (RecordNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseBuilderUtil.responseBuilder(
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(
                     new ArrayList<>(), "User not found", StatusCode.NOT_FOUND));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseBuilderUtil.responseBuilder(
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(
                     new ArrayList<>(), "Failed to update user due to an internal error", StatusCode.INTERNAL_SERVER_ERROR));
         }
     }
@@ -128,14 +128,14 @@ public class AdminController {
                     "User retrieved successfully",
                     StatusCode.SUCCESS));
         } catch (RecordNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+            return ResponseEntity.status(HttpStatus.OK).body(
                     ResponseBuilderUtil.responseBuilder(
                             new ArrayList<>(),
                             "User not found",
                             StatusCode.NOT_FOUND));
         } catch (Exception e) {
             // Assuming there's a possibility of a service-level exception, handle it gracefully
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+            return ResponseEntity.status(HttpStatus.OK).body(
                     ResponseBuilderUtil.responseBuilder(
                             new ArrayList<>(),
                             "Failed to retrieve user due to an internal error",
@@ -153,14 +153,14 @@ public class AdminController {
                     "Locked user successfully",
                     StatusCode.SUCCESS));
         } catch (RecordNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+            return ResponseEntity.status(HttpStatus.OK).body(
                     ResponseBuilderUtil.responseBuilder(
                             new ArrayList<>(),
                             "User not found",
                             StatusCode.NOT_FOUND));
         } catch (Exception e) {
             // Assuming there's a possibility of a service-level exception, handle it gracefully
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+            return ResponseEntity.status(HttpStatus.OK).body(
                     ResponseBuilderUtil.responseBuilder(
                             new ArrayList<>(),
                             "Failed to lock user due to an internal error",
@@ -178,14 +178,14 @@ public class AdminController {
                     "Unlocked user successfully",
                     StatusCode.SUCCESS));
         } catch (RecordNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+            return ResponseEntity.status(HttpStatus.OK).body(
                     ResponseBuilderUtil.responseBuilder(
                             new ArrayList<>(),
                             "User not found",
                             StatusCode.NOT_FOUND));
         } catch (Exception e) {
             // Assuming there's a possibility of a service-level exception, handle it gracefully
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+            return ResponseEntity.status(HttpStatus.OK).body(
                     ResponseBuilderUtil.responseBuilder(
                             new ArrayList<>(),
                             "Failed to unlock user due to an internal error",
