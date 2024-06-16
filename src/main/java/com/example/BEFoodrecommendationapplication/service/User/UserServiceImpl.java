@@ -11,6 +11,7 @@ import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -162,6 +163,17 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    @Transactional
+    public void activateUser(Integer id) {
+        userRepository.activateUser(id);
+    }
+
+    @Override
+    @Transactional
+    public void deactivateUser(Integer id) {
+        userRepository.deactivateUser(id);
+    }
 
     public UserDto getUser(Integer id) {
 

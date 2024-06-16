@@ -158,7 +158,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RecordNotFoundException("There is no user with that email!"));
         if (!user.isActive()) {
-            throw new RuntimeException("Your account is not verified");
+            throw new RuntimeException("Your account is locked");
         }
 
         String jwtToken = jwtService.generateToken(user);

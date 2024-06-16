@@ -1,5 +1,6 @@
 package com.example.BEFoodrecommendationapplication.dto;
 
+import com.example.BEFoodrecommendationapplication.entity.Role;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import lombok.*;
 
@@ -16,6 +17,7 @@ public class UserResponse {
     private String gender;
     private LocalDate birthday;
     private String avatar;
+    private Role role;
 
     public static UserResponse fromUser(User user) {
         return UserResponse.builder()
@@ -25,6 +27,7 @@ public class UserResponse {
                 .gender(user.getGender())
                 .birthday(user.getBirthday())
                 .avatar(user.getAvatar())
+                .role(user.getRole())
                 .build();
     }
 }

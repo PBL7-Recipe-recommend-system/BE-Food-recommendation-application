@@ -104,15 +104,65 @@ public class AdminController {
         } catch (RecordNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseBuilderUtil.responseBuilder(
-                            null,
+                            new ArrayList<>(),
                             "User not found",
                             StatusCode.NOT_FOUND));
         } catch (Exception e) {
             // Assuming there's a possibility of a service-level exception, handle it gracefully
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseBuilderUtil.responseBuilder(
-                            null,
+                            new ArrayList<>(),
                             "Failed to retrieve user due to an internal error",
+                            StatusCode.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    @PutMapping("/users/{id}/lock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Response> lockUserById(@PathVariable Integer id) {
+        try {
+            userService.deactivateUser(id);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    new ArrayList<>(),
+                    "Locked user successfully",
+                    StatusCode.SUCCESS));
+        } catch (RecordNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseBuilderUtil.responseBuilder(
+                            new ArrayList<>(),
+                            "User not found",
+                            StatusCode.NOT_FOUND));
+        } catch (Exception e) {
+            // Assuming there's a possibility of a service-level exception, handle it gracefully
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseBuilderUtil.responseBuilder(
+                            new ArrayList<>(),
+                            "Failed to lock user due to an internal error",
+                            StatusCode.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    @PutMapping("/users/{id}/unlock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Response> unlockUserById(@PathVariable Integer id) {
+        try {
+            userService.activateUser(id);
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    new ArrayList<>(),
+                    "Unlocked user successfully",
+                    StatusCode.SUCCESS));
+        } catch (RecordNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseBuilderUtil.responseBuilder(
+                            new ArrayList<>(),
+                            "User not found",
+                            StatusCode.NOT_FOUND));
+        } catch (Exception e) {
+            // Assuming there's a possibility of a service-level exception, handle it gracefully
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseBuilderUtil.responseBuilder(
+                            new ArrayList<>(),
+                            "Failed to unlock user due to an internal error",
                             StatusCode.INTERNAL_SERVER_ERROR));
         }
     }

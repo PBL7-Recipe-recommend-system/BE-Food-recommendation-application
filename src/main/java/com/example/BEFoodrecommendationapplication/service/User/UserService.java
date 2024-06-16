@@ -28,4 +28,8 @@ public interface UserService {
     WaterIntake updateOrCreateWaterIntake(Integer userId, LocalDate date, float amount);
 
     UserDto mapUserToUserDto(User user);
+
+    void deactivateUser(Integer id);
+
+    void activateUser(Integer id);
 }
