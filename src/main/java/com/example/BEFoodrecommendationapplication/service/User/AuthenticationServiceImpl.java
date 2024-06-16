@@ -3,6 +3,7 @@ package com.example.BEFoodrecommendationapplication.service.User;
 import com.example.BEFoodrecommendationapplication.dto.AuthenticationRequest;
 import com.example.BEFoodrecommendationapplication.dto.AuthenticationResponse;
 import com.example.BEFoodrecommendationapplication.dto.RegisterRequest;
+import com.example.BEFoodrecommendationapplication.dto.UserResponse;
 import com.example.BEFoodrecommendationapplication.entity.Role;
 import com.example.BEFoodrecommendationapplication.entity.Token;
 import com.example.BEFoodrecommendationapplication.entity.User;
@@ -78,6 +79,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     }
+
+
 
     @Override
     public String verifyAccount(String email, String otp) {

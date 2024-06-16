@@ -2,6 +2,7 @@ package com.example.BEFoodrecommendationapplication.dto;
 
 import com.example.BEFoodrecommendationapplication.entity.Role;
 import com.example.BEFoodrecommendationapplication.entity.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -18,6 +19,8 @@ public class UserResponse {
     private LocalDate birthday;
     private String avatar;
     private Role role;
+    private Boolean isActive;
+
 
     public static UserResponse fromUser(User user) {
         return UserResponse.builder()
@@ -28,6 +31,7 @@ public class UserResponse {
                 .birthday(user.getBirthday())
                 .avatar(user.getAvatar())
                 .role(user.getRole())
+                .isActive(user.isActive())
                 .build();
     }
 }

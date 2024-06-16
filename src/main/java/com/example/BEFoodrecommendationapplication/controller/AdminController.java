@@ -1,5 +1,6 @@
 package com.example.BEFoodrecommendationapplication.controller;
 
+import com.example.BEFoodrecommendationapplication.dto.AddUserRequest;
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
 import com.example.BEFoodrecommendationapplication.dto.UserResponse;
@@ -59,6 +60,31 @@ public class AdminController {
                     ResponseBuilderUtil.responseBuilder(
                             new ArrayList<>(),
                             "Failed to retrieve users due to an internal error",
+                            StatusCode.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    @Operation(summary = "Add user", description = "Adds a new user to the system, accessible only by admins.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Add user successfully", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "403", description = "Add user failed")
+    })
+    @PostMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Response> addUser(@RequestBody AddUserRequest userRequest) {
+        try {
+            adminService.addUserAccount(userRequest);
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                   new ArrayList<>(),
+                    "Add user successfully",
+                    StatusCode.SUCCESS));
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseBuilderUtil.responseBuilder(
+                            new ArrayList<>(),
+                            e.getMessage(),
                             StatusCode.INTERNAL_SERVER_ERROR));
         }
     }
