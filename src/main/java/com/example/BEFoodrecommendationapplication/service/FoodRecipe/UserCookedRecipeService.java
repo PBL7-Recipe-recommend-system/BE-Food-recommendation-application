@@ -6,5 +6,5 @@ import java.time.LocalDate;
 
 public interface UserCookedRecipeService {
 
-    public DailyNutritionResponse getDailyNutrition(Integer userId, LocalDate date);
+    DailyNutritionResponse getDailyNutrition(Integer userId, LocalDate date);
 }

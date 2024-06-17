@@ -11,14 +11,12 @@ import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundExcep
 import com.example.BEFoodrecommendationapplication.repository.UserCookedRecipeRepository;
 import com.example.BEFoodrecommendationapplication.repository.UserRepository;
 import com.example.BEFoodrecommendationapplication.repository.WaterIntakeRepository;
+import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +29,8 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
 
 
     private final UserRepository userRepository;
+
+    private final StringUtil stringUtil;
 
     public float calculateDailyWaterIntake(User user) {
         float waterIntakePerKg = 35; // milliliters of water per kilogram of body weight
@@ -80,16 +80,18 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
         response.setRecommendWaterIntake(dailyWaterIntakeRecommendation);
         response.setWaterIntake(waterIntakeAmount);
 
-        Map<String, MealNutrition> mealNutritionMap = new HashMap<>();
+        Map<String, List<MealNutrition>> mealNutritionMap = new HashMap<>();
         int totalCalories = 0; // Initialize total calories counter
 
         for (UserCookedRecipe cookedRecipe : cookedRecipes) {
             String meal = cookedRecipe.getMeal().toLowerCase(); // Normalize meal name
-            MealNutrition nutrition = mealNutritionMap.computeIfAbsent(meal, k -> new MealNutrition());
+            List<MealNutrition> mealNutritions = mealNutritionMap.computeIfAbsent(meal, k -> new ArrayList<>());
+
+            MealNutrition nutrition = new MealNutrition();
             nutrition.setRecipeId(cookedRecipe.getRecipe().getRecipeId());
             nutrition.setName(cookedRecipe.getRecipe().getName());
             nutrition.setServings(cookedRecipe.getServingSize());
-
+            nutrition.setImage(stringUtil.splitStringToList(cookedRecipe.getRecipe().getImages()).get(0));
             // Aggregate nutritional values
             aggregateNutrition(nutrition, cookedRecipe.getRecipe(), cookedRecipe.getServingSize());
 
@@ -98,6 +100,10 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
 
             // Compute percentages
             computeNutrientPercentages(nutrition);
+
+            mealNutritions.add(nutrition);
+            System.out.println(cookedRecipe.getServingSize());
+            System.out.println(totalCalories);
         }
 
         // Assign meal data if available

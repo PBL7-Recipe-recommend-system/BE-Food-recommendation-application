@@ -10,6 +10,7 @@ import lombok.*;
 public class MealNutrition {
     private Integer recipeId;
     private String name;
+    private String image;
     private Integer servings;
 
     private Float calories;

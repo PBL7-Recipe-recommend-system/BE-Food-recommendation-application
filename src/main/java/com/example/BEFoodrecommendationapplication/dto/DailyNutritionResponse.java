@@ -5,18 +5,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class DailyNutritionResponse {
-    private MealNutrition breakfast;
-    private MealNutrition lunch;
-    private MealNutrition dinner;
+    private List<MealNutrition> breakfast;
+    private List<MealNutrition> lunch;
+    private List<MealNutrition> dinner;
 
-    private MealNutrition morningSnack;
+    private List<MealNutrition> morningSnack;
 
-    private MealNutrition afternoonSnack;
+    private List<MealNutrition> afternoonSnack;
 
     private Float recommendWaterIntake;
     private Float waterIntake;
