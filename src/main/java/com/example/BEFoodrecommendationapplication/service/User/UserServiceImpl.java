@@ -193,6 +193,7 @@ public class UserServiceImpl implements UserService {
         float height = 0;
         float weight = 0;
         String gender = "";
+        String avatar = "";
         String dailyActivities = "";
         int meals = 0;
         int dietaryGoal = 0;
@@ -204,6 +205,10 @@ public class UserServiceImpl implements UserService {
         }
         if (user.getWeight() != null) {
             weight = user.getWeight();
+        }
+
+        if (user.getAvatar() != null) {
+            avatar = user.getAvatar();
         }
         if (user.getDailyActivities() != null) {
             dailyActivities = user.getDailyActivities();
@@ -242,6 +247,7 @@ public class UserServiceImpl implements UserService {
                 .weight(weight)
                 .height(height)
                 .gender(gender)
+                .avatar(avatar)
                 .age(user.calculateAge())
                 .dailyActivities(dailyActivities)
                 .birthday(user.getBirthday())

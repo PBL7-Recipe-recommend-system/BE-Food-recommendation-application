@@ -35,6 +35,9 @@ public class UserDto {
     @JsonProperty("age")
     private Integer age;
 
+    @JsonProperty("avatar")
+    private String avatar;
+
     @JsonProperty("dailyActivities")
     private String dailyActivities;
 
