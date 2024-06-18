@@ -20,8 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -126,15 +124,14 @@ public class MealPlanController {
                             )}),
             @ApiResponse(responseCode = "404", description = "Get meal plan failed")})
     @GetMapping
-    public ResponseEntity<Response> getMealPlans(@RequestParam String date) {
+    public ResponseEntity<Response> getMealPlans() {
 
         try {
             Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-            LocalDate localDate = LocalDate.parse(date, formatter);
+
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
-                    mealPlanService.getCustomMealPlans(id, localDate),
+                    mealPlanService.getCustomMealPlans(id),
                     "Get meal plan successfully",
                     StatusCode.SUCCESS));
 

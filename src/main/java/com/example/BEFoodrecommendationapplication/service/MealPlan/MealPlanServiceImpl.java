@@ -237,15 +237,19 @@ public class MealPlanServiceImpl implements MealPlanService {
     }
 
     @Override
-    public CustomMealPlanDto getCustomMealPlans(Integer userId, LocalDate date) {
+    public List<CustomMealPlanDto> getCustomMealPlans(Integer userId) {
         if (userRepository.findById(userId).isPresent()) {
             User user = userRepository.findById(userId).get();
             if (!user.isCustomPlan()) {
                 throw new RecordNotFoundException("User hasn't created meal plan ");
             }
         }
-        CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, date);
-        return mapToDto(customMealPlan);
+        LocalDate today = LocalDate.now();
+        LocalDate sevenDaysFromNow = today.plusDays(7);
+        List<CustomMealPlan> customMealPlans = customMealPlanRepository.findAllByUserIdAndDateBetween(userId, today, sevenDaysFromNow);
+        return customMealPlans.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
     }
 
     public CustomMealPlanDto mapToDto(CustomMealPlan customMealPlan) {

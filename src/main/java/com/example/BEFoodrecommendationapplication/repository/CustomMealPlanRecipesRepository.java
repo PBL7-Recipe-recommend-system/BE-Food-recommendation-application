@@ -9,6 +9,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 @RepositoryRestResource(exported = false)
 public interface CustomMealPlanRecipesRepository extends JpaRepository<CustomMealPlanRecipes, Integer> {
 
+
     CustomMealPlanRecipes findByCustomMealPlanAndRecipeIdAndMealType(CustomMealPlan customMealPlan, Integer recipeId, MealType mealType);
 
     boolean existsByCustomMealPlanAndRecipeIdAndMealType(CustomMealPlan customMealPlan, Integer recipeId, MealType mealType);
