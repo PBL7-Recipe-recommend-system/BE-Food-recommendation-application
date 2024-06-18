@@ -13,4 +13,6 @@ public interface IngredientService {
     List<IngredientDto> addIngredient(Integer recipeId, IngredientDto ingredientDTO);
 
     List<String> getAllIngredient(String name);
+
+    List<String> getUserIngredients(Integer userId, String includeOrExclude);
 }

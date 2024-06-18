@@ -4,9 +4,13 @@ import com.example.BEFoodrecommendationapplication.dto.IngredientDto;
 import com.example.BEFoodrecommendationapplication.dto.UpdateIngredientsRequest;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
 import com.example.BEFoodrecommendationapplication.entity.Ingredient;
+import com.example.BEFoodrecommendationapplication.entity.UserExcludeIngredient;
+import com.example.BEFoodrecommendationapplication.entity.UserIncludeIngredient;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
 import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
 import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
+import com.example.BEFoodrecommendationapplication.repository.UserExcludeIngredientRepository;
+import com.example.BEFoodrecommendationapplication.repository.UserIncludeIngredientRepository;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,8 @@ public class IngredientServiceImpl implements IngredientService {
     private final FoodRecipeRepository foodRecipeRepository;
     private final IngredientRepository ingredientRepository;
     private final StringUtil stringUtil;
+    private final UserIncludeIngredientRepository userIncludeIngredientRepository;
+    private final UserExcludeIngredientRepository userExcludeIngredientRepository;
 
 
     @Override
@@ -128,5 +134,22 @@ public class IngredientServiceImpl implements IngredientService {
                 .collect(Collectors.toList());
     }
 
-
+    @Override
+    public List<String> getUserIngredients(Integer userId, String includeOrExclude) {
+        if ("include".equalsIgnoreCase(includeOrExclude)) {
+            return userIncludeIngredientRepository.findAllByUserId(userId).stream()
+                    .map(UserIncludeIngredient::getIngredient)
+                    .map(Ingredient::getName)
+                    .map(stringUtil::capitalizeFirstLetterOfEachWord)
+                    .collect(Collectors.toList());
+        } else if ("exclude".equalsIgnoreCase(includeOrExclude)) {
+            return userExcludeIngredientRepository.findAllByUserId(userId).stream()
+                    .map(UserExcludeIngredient::getIngredient)
+                    .map(Ingredient::getName)
+                    .map(stringUtil::capitalizeFirstLetterOfEachWord)
+                    .collect(Collectors.toList());
+        } else {
+            throw new IllegalArgumentException("Invalid includeOrExclude parameter. Must be 'include' or 'exclude'.");
+        }
+    }
 }

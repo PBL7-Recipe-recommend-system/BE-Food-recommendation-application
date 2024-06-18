@@ -6,6 +6,7 @@ import com.example.BEFoodrecommendationapplication.dto.UserDto;
 import com.example.BEFoodrecommendationapplication.dto.UserInput;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.service.FoodRecipe.FoodRecipeService;
+import com.example.BEFoodrecommendationapplication.service.Ingredient.IngredientService;
 import com.example.BEFoodrecommendationapplication.service.User.AuthenticationService;
 import com.example.BEFoodrecommendationapplication.service.User.UserService;
 import com.example.BEFoodrecommendationapplication.util.AuthenticationUtils;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -37,6 +39,7 @@ public class UserController {
     private final UserService userService;
     private final FoodRecipeService foodRecipeService;
     private final AuthenticationService authenticationService;
+    private final IngredientService ingredientService;
 
     @Operation(summary = "Set user profile")
     @ApiResponses(value = {
@@ -65,6 +68,31 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Get ingredients")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get ingredients successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class))
+                    }),
+            @ApiResponse(responseCode = "404", description = "Get ingredients failed")})
+    @GetMapping("/ingredients")
+    public ResponseEntity<Response> getIngredients(@RequestParam String includeOrExclude) {
+        try {
+            Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
+            List<String> ingredients = ingredientService.getUserIngredients(id, includeOrExclude);
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    ingredients,
+                    "Get ingredients successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
+
+        }
+    }
 
     @Operation(summary = "Get user")
     @ApiResponses(value = {
