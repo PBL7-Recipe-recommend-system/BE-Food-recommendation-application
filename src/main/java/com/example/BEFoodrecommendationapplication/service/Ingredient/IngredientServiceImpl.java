@@ -124,7 +124,12 @@ public class IngredientServiceImpl implements IngredientService {
     }
 
     public List<String> getAllIngredient(String name) {
-        return ingredientRepository.findAllByNameContains(name).stream()
+        List<Ingredient> ingredients = ingredientRepository.findAllByNameContainingIgnoreCase(name);
+        if (ingredients.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return ingredients.stream()
                 .map(Ingredient::getName)
                 .map(stringUtil::capitalizeFirstLetterOfEachWord)
                 .collect(Collectors.toList());

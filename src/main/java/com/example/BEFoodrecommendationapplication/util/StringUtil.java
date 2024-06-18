@@ -102,9 +102,11 @@ public class StringUtil {
         StringBuilder capitalizedStr = new StringBuilder();
 
         for (String word : words) {
-            String firstLetter = word.substring(0, 1).toUpperCase();
-            String restOfWord = word.substring(1).toLowerCase();
-            capitalizedStr.append(firstLetter).append(restOfWord).append(" ");
+            if (!word.isEmpty()) {
+                String firstLetter = word.substring(0, 1).toUpperCase();
+                String restOfWord = word.substring(1).toLowerCase();
+                capitalizedStr.append(firstLetter).append(restOfWord).append(" ");
+            }
         }
 
         return capitalizedStr.toString().trim();
