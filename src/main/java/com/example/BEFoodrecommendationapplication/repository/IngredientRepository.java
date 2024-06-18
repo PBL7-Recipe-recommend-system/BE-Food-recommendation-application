@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @RepositoryRestResource(exported = false)
@@ -16,4 +17,6 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Integer>
     List<Ingredient> findByNameIn(List<String> names);
 
     List<Ingredient> findAllByNameContains(String name);
+
+    Optional<Ingredient> findByNameIgnoreCase(String name);
 }

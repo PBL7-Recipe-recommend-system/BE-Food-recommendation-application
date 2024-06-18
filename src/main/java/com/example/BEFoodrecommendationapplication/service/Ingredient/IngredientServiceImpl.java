@@ -2,18 +2,13 @@ package com.example.BEFoodrecommendationapplication.service.Ingredient;
 
 import com.example.BEFoodrecommendationapplication.dto.IngredientDto;
 import com.example.BEFoodrecommendationapplication.dto.UpdateIngredientsRequest;
-import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
-import com.example.BEFoodrecommendationapplication.entity.Ingredient;
-import com.example.BEFoodrecommendationapplication.entity.UserExcludeIngredient;
-import com.example.BEFoodrecommendationapplication.entity.UserIncludeIngredient;
+import com.example.BEFoodrecommendationapplication.entity.*;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
-import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
-import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
-import com.example.BEFoodrecommendationapplication.repository.UserExcludeIngredientRepository;
-import com.example.BEFoodrecommendationapplication.repository.UserIncludeIngredientRepository;
+import com.example.BEFoodrecommendationapplication.repository.*;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +26,7 @@ public class IngredientServiceImpl implements IngredientService {
     private final StringUtil stringUtil;
     private final UserIncludeIngredientRepository userIncludeIngredientRepository;
     private final UserExcludeIngredientRepository userExcludeIngredientRepository;
+    private final UserRepository userRepository;
 
 
     @Override
@@ -148,6 +144,53 @@ public class IngredientServiceImpl implements IngredientService {
                     .map(Ingredient::getName)
                     .map(stringUtil::capitalizeFirstLetterOfEachWord)
                     .collect(Collectors.toList());
+        } else {
+            throw new IllegalArgumentException("Invalid includeOrExclude parameter. Must be 'include' or 'exclude'.");
+        }
+    }
+
+    @Override
+    public void addUserIngredients(Integer userId, List<String> ingredientNames, String includeOrExclude) {
+        for (String ingredientName : ingredientNames) {
+            // Find the ingredient by name, ignoring case
+            Ingredient ingredient = ingredientRepository.findByNameIgnoreCase(ingredientName)
+                    .orElseThrow(() -> new RecordNotFoundException("Ingredient not found with name " + ingredientName));
+            User user = userRepository.findById(userId).get();
+            if ("include".equalsIgnoreCase(includeOrExclude)) {
+                // Create a new UserIncludeIngredient and save it
+                UserIncludeIngredient userIncludeIngredient = new UserIncludeIngredient();
+                userIncludeIngredient.setUser(user);
+                userIncludeIngredient.setIngredient(ingredient);
+                userIncludeIngredientRepository.save(userIncludeIngredient);
+            } else if ("exclude".equalsIgnoreCase(includeOrExclude)) {
+                // Create a new UserExcludeIngredient and save it
+                UserExcludeIngredient userExcludeIngredient = new UserExcludeIngredient();
+                userExcludeIngredient.setUser(user);
+                userExcludeIngredient.setIngredient(ingredient);
+                userExcludeIngredientRepository.save(userExcludeIngredient);
+            } else {
+                throw new IllegalArgumentException("Invalid includeOrExclude parameter. Must be 'include' or 'exclude'.");
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteUserIngredient(Integer userId, String ingredientName, String includeOrExclude) {
+        // Find the ingredient by name, ignoring case
+        Ingredient ingredient = ingredientRepository.findByNameIgnoreCase(ingredientName)
+                .orElseThrow(() -> new RecordNotFoundException("Ingredient not found with name " + ingredientName));
+        User user = userRepository.findById(userId).get();
+        if ("include".equalsIgnoreCase(includeOrExclude)) {
+            // Find the UserIncludeIngredient and delete it
+            UserIncludeIngredient userIncludeIngredient = userIncludeIngredientRepository.findByUserAndIngredient(user, ingredient)
+                    .orElseThrow(() -> new RecordNotFoundException("UserIncludeIngredient not found for user " + userId + " and ingredient " + ingredientName));
+            userIncludeIngredientRepository.delete(userIncludeIngredient);
+        } else if ("exclude".equalsIgnoreCase(includeOrExclude)) {
+            // Find the UserExcludeIngredient and delete it
+            UserExcludeIngredient userExcludeIngredient = userExcludeIngredientRepository.findByUserAndIngredient(user, ingredient)
+                    .orElseThrow(() -> new RecordNotFoundException("UserExcludeIngredient not found for user " + userId + " and ingredient " + ingredientName));
+            userExcludeIngredientRepository.delete(userExcludeIngredient);
         } else {
             throw new IllegalArgumentException("Invalid includeOrExclude parameter. Must be 'include' or 'exclude'.");
         }

@@ -116,7 +116,8 @@ public class UserServiceImpl implements UserService {
             Set<UserExcludeIngredient> userExcludeIngredients = new HashSet<>();
 
             for (Ingredient ingredient : ingredients) {
-                UserExcludeIngredient userExcludeIngredient = userExcludeIngredientRepo.findByUserAndIngredient(user, ingredient);
+                UserExcludeIngredient userExcludeIngredient = userExcludeIngredientRepo.findByUserAndIngredient(user, ingredient)
+                        .orElseThrow(() -> new RecordNotFoundException("UserExcludeIngredient not found for user " + user + " and ingredient " + ingredient));
                 if (userExcludeIngredient == null) {
                     userExcludeIngredient = new UserExcludeIngredient();
                     userExcludeIngredient.setUser(user);

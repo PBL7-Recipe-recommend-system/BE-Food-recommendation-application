@@ -1,9 +1,6 @@
 package com.example.BEFoodrecommendationapplication.controller;
 
-import com.example.BEFoodrecommendationapplication.dto.Response;
-import com.example.BEFoodrecommendationapplication.dto.SetPasswordRequest;
-import com.example.BEFoodrecommendationapplication.dto.UserDto;
-import com.example.BEFoodrecommendationapplication.dto.UserInput;
+import com.example.BEFoodrecommendationapplication.dto.*;
 import com.example.BEFoodrecommendationapplication.entity.User;
 import com.example.BEFoodrecommendationapplication.service.FoodRecipe.FoodRecipeService;
 import com.example.BEFoodrecommendationapplication.service.Ingredient.IngredientService;
@@ -93,6 +90,59 @@ public class UserController {
 
         }
     }
+
+    @Operation(summary = "Add ingredients")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Add ingredients successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class))
+                    }),
+            @ApiResponse(responseCode = "404", description = "Add ingredients failed")})
+    @PostMapping("/ingredients")
+    public ResponseEntity<Response> addIngredients(@RequestParam String includeOrExclude, @RequestBody IngredientInput ingredientInput) {
+        try {
+            Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
+            ingredientService.addUserIngredients(id, ingredientInput.getIngredients(), includeOrExclude);
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    new ArrayList<>(),
+                    "Add ingredients successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
+
+        }
+    }
+
+    @Operation(summary = "Delete ingredients")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Delete ingredients successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class))
+                    }),
+            @ApiResponse(responseCode = "404", description = "Delete ingredients failed")})
+    @DeleteMapping("/ingredients")
+    public ResponseEntity<Response> deleteIngredients(@RequestParam String includeOrExclude, @RequestBody DeleteIngredientInput ingredientInput) {
+        try {
+            Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
+            ingredientService.deleteUserIngredient(id, ingredientInput.getName(), includeOrExclude);
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    new ArrayList<>(),
+                    "Delete ingredients successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
+
+        }
+    }
+
 
     @Operation(summary = "Get user")
     @ApiResponses(value = {
