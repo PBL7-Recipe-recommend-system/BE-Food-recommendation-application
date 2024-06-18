@@ -97,6 +97,19 @@ public class StringUtil {
         return time.replaceFirst("PT", "");
     }
 
+    public String capitalizeFirstLetterOfEachWord(String str) {
+        String[] words = str.split(" ");
+        StringBuilder capitalizedStr = new StringBuilder();
+
+        for (String word : words) {
+            String firstLetter = word.substring(0, 1).toUpperCase();
+            String restOfWord = word.substring(1).toLowerCase();
+            capitalizedStr.append(firstLetter).append(restOfWord).append(" ");
+        }
+
+        return capitalizedStr.toString().trim();
+    }
+
     public Object mapToShortRecipe(Integer id) {
 
         if (foodRecipeRepository.findById(id).isEmpty()) {

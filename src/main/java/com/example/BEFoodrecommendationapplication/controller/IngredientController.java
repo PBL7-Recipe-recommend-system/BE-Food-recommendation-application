@@ -3,7 +3,6 @@ package com.example.BEFoodrecommendationapplication.controller;
 import com.example.BEFoodrecommendationapplication.dto.IngredientDto;
 import com.example.BEFoodrecommendationapplication.dto.Response;
 import com.example.BEFoodrecommendationapplication.dto.UpdateIngredientsRequest;
-import com.example.BEFoodrecommendationapplication.entity.Ingredient;
 import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
 import com.example.BEFoodrecommendationapplication.service.Ingredient.IngredientService;
 import com.example.BEFoodrecommendationapplication.util.ResponseBuilderUtil;
@@ -42,10 +41,10 @@ public class IngredientController {
                     }),
             @ApiResponse(responseCode = "404", description = "Get ingredients failed")})
     @GetMapping("")
-    public ResponseEntity<Response> getTop100Ingredients() {
+    public ResponseEntity<Response> getTop100Ingredients(@RequestParam String name) {
         try {
 
-            List<Ingredient> ingredients = ingredientRepository.find100Ingredients();
+            List<String> ingredients = ingredientService.getAllIngredient(name);
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     ingredients,

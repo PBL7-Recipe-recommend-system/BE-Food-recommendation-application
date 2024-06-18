@@ -6,13 +6,6 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
-enum MealType {
-    breakfast,
-    lunch,
-    dinner,
-    morningSnack,
-    afternoonSnack
-}
 
 @Entity
 @Getter

@@ -11,4 +11,6 @@ public interface IngredientService {
     UpdateIngredientsRequest updateRecipeIngredientNamesAndQuantities(Integer recipeId, UpdateIngredientsRequest request);
 
     List<IngredientDto> addIngredient(Integer recipeId, IngredientDto ingredientDTO);
+
+    List<String> getAllIngredient(String name);
 }

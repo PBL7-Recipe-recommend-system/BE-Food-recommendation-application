@@ -1,11 +1,9 @@
 package com.example.BEFoodrecommendationapplication.service.MealPlan;
 
-import com.example.BEFoodrecommendationapplication.dto.MealPlanDto;
-import com.example.BEFoodrecommendationapplication.dto.MealPlanInput;
-import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
-import com.example.BEFoodrecommendationapplication.entity.MealPlan;
-import com.example.BEFoodrecommendationapplication.entity.RecommendMealPlan;
-import com.example.BEFoodrecommendationapplication.entity.User;
+import com.example.BEFoodrecommendationapplication.dto.AddRecipeMealPlanInput;
+import com.example.BEFoodrecommendationapplication.dto.CustomMealPlanDto;
+import com.example.BEFoodrecommendationapplication.dto.CustomMealPlanInput;
+import com.example.BEFoodrecommendationapplication.entity.*;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
 import com.example.BEFoodrecommendationapplication.repository.*;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
@@ -15,32 +13,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class MealPlanServiceImpl implements MealPlanService {
-    private final MealPlanRepository mealPlanRepository;
     private final UserRepository userRepository;
     private final FoodRecipeRepository foodRecipeRepository;
     private final StringUtil stringUtil;
     private final RecommendMealPlanRepository recommendMealPlanRepository;
     private final RecommendMealPlanRecipeRepository recommendMealPlanRecipeRepository;
+    private final CustomMealPlanRepository customMealPlanRepository;
+    private final CustomMealPlanRecipesRepository customMealPlanRecipesRepository;
 
-    @Override
-    public MealPlanInput addMealPlans(MealPlanInput mealPlanInput, int userId) {
-
-        User user = checkUser(userId).get();
-
-        MealPlan mealPlan = new MealPlan();
-        mealPlan.setUser(user);
-        mealPlan.setDate(LocalDate.now());
-        mealPlan.setDailyCalories(mealPlanInput.getDailyCalories());
-        mealPlan.setTotalCalories(mealPlanInput.getTotalCalories());
-        mealPlan.setDescription(mealPlanInput.getDescription());
-        mealPlan.setMealCount(mealPlanInput.getMealCount());
-        mealPlanRepository.save(mealPlan);
-        return mealPlanInput;
-    }
 
     private Optional<User> checkUser(int userId) {
         Optional<User> user = userRepository.findById(userId);
@@ -59,70 +44,310 @@ public class MealPlanServiceImpl implements MealPlanService {
         return user;
     }
 
+
+    @Transactional
     @Override
-    public List<MealPlanDto> editMealPlans(List<MealPlanInput> mealPlansDtos, int userId) {
-        if (userId <= 0) {
-            throw new IllegalArgumentException("The given userId must be greater than zero.");
+    public CustomMealPlanDto editCustomMealPlan(CustomMealPlanInput customMealPlanInput, Integer userId) {
+        User user = checkUser(userId).get();
+        CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, customMealPlanInput.getDate());
+
+        if (customMealPlan == null) {
+            customMealPlan = new CustomMealPlan();
+            customMealPlan.setUserId(userId);
+            customMealPlan.setDate(customMealPlanInput.getDate());
         }
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
-
-        Set<LocalDate> processedDates = new HashSet<>();
-        List<MealPlan> mealPlans = new ArrayList<>();
-        List<MealPlanDto> mealPlanDtos = new ArrayList<>();
-
-        List<MealPlan> tempMealPlans = (List<MealPlan>) mealPlanRepository.findAllByUser(user);
-
-        int dailyCalories = 0;
-        String description = "";
-        if (!tempMealPlans.isEmpty()) {
-            dailyCalories = tempMealPlans.get(0).getDailyCalories();
-            description = tempMealPlans.get(0).getDescription();
+        if (customMealPlanInput.getDescription() != null) {
+            customMealPlan.setDescription(customMealPlanInput.getDescription());
+        }
+        if (customMealPlanInput.getDailyCalories() != null) {
+            customMealPlan.setDailyCalories(customMealPlanInput.getDailyCalories());
         }
 
-        for (MealPlanInput mealPlanInput : mealPlansDtos) {
-            // Check for duplicate date
-            if (!processedDates.add(mealPlanInput.getDate())) {
-                // Handle the duplicate date scenario, e.g., skip or throw an exception
-                throw new IllegalArgumentException("Duplicate date found: " + mealPlanInput.getDate());
+        int mealCount = 0;
+        if (customMealPlanInput.getBreakfastDishIds() != null) mealCount++;
+        if (customMealPlanInput.getLunchDishIds() != null) mealCount++;
+        if (customMealPlanInput.getDinnerDishIds() != null) mealCount++;
+        if (customMealPlanInput.getAfternoonSnackDishIds() != null) mealCount++;
+        if (customMealPlanInput.getMorningSnackDishIds() != null) mealCount++;
+
+        // Set the meal count in the CustomMealPlan
+        customMealPlan.setMealCount(mealCount);
+
+        // Save and flush CustomMealPlan first to ensure it has an ID for the foreign key reference
+        customMealPlan = customMealPlanRepository.saveAndFlush(customMealPlan);
+
+        List<CustomMealPlanRecipes> customMealPlanRecipesList = new ArrayList<>();
+
+        // Handle adding meal plan recipes for different meals
+        processMealPlanRecipes(customMealPlanInput.getBreakfastDishIds(), customMealPlan, customMealPlanRecipesList, MealType.breakfast);
+        processMealPlanRecipes(customMealPlanInput.getLunchDishIds(), customMealPlan, customMealPlanRecipesList, MealType.lunch);
+        processMealPlanRecipes(customMealPlanInput.getDinnerDishIds(), customMealPlan, customMealPlanRecipesList, MealType.dinner);
+        processMealPlanRecipes(customMealPlanInput.getAfternoonSnackDishIds(), customMealPlan, customMealPlanRecipesList, MealType.afternoonSnack);
+        processMealPlanRecipes(customMealPlanInput.getMorningSnackDishIds(), customMealPlan, customMealPlanRecipesList, MealType.morningSnack);
+
+        // Calculate total calories from all the recipes in the meal plan
+        double totalCalories = 0;
+        for (CustomMealPlanRecipes recipe : customMealPlanRecipesList) {
+            FoodRecipe foodRecipe = foodRecipeRepository.findById(recipe.getRecipeId()).get();
+            totalCalories += foodRecipe.getCalories();
+        }
+
+        // Set the total calories in the CustomMealPlan
+        customMealPlan.setTotalCalories((int) totalCalories);
+
+        // Then save the CustomMealPlanRecipes
+        customMealPlanRecipesRepository.saveAll(customMealPlanRecipesList);
+
+        // Save the updated CustomMealPlan
+        customMealPlanRepository.save(customMealPlan);
+
+        return mapToDto(customMealPlan);
+    }
+
+    private void processMealPlanRecipes(List<Integer> dishIds, CustomMealPlan customMealPlan, List<CustomMealPlanRecipes> customMealPlanRecipesList, MealType mealType) {
+        if (dishIds != null) {
+            for (Integer dishId : dishIds) {
+                if (!customMealPlanRecipesRepository.existsByCustomMealPlanAndRecipeIdAndMealType(customMealPlan, dishId, mealType)) {
+                    CustomMealPlanRecipes customMealPlanRecipes = new CustomMealPlanRecipes();
+                    customMealPlanRecipes.setCustomMealPlan(customMealPlan);
+                    customMealPlanRecipes.setRecipeId(dishId);
+                    customMealPlanRecipes.setMealType(mealType);
+                    customMealPlanRecipesList.add(customMealPlanRecipes);
+                }
             }
+        }
+    }
 
-            MealPlan mealPlan = mealPlanRepository.findByUserAndDate(user, mealPlanInput.getDate());
+    @Override
+    public void addRecipeToMealPlan(AddRecipeMealPlanInput input, Integer userId) {
+        CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, input.getDate());
 
-            if (mealPlan == null) {
-                mealPlan = new MealPlan();
-                mealPlan.setUser(user);
-                mealPlan.setDate(mealPlanInput.getDate());
+        if (customMealPlan == null) {
+            customMealPlan = new CustomMealPlan();
+            customMealPlan.setUserId(userId);
+            customMealPlan.setDate(input.getDate());
+            customMealPlan = customMealPlanRepository.save(customMealPlan);
+        }
+
+        // Find the recipe
+        FoodRecipe foodRecipe = foodRecipeRepository.findById(input.getRecipeId()).get();
+
+        // Check if a CustomMealPlanRecipes with the same CustomMealPlan, recipeId, and mealType already exists
+        boolean exists = customMealPlanRecipesRepository.existsByCustomMealPlanAndRecipeIdAndMealType(customMealPlan, foodRecipe.getRecipeId(), MealType.valueOf(input.getMeal()));
+
+        // If it doesn't exist, create a new CustomMealPlanRecipes object and add it to the meal plan
+        if (!exists) {
+            CustomMealPlanRecipes customMealPlanRecipes = new CustomMealPlanRecipes();
+            customMealPlanRecipes.setCustomMealPlan(customMealPlan);
+            customMealPlanRecipes.setRecipeId(foodRecipe.getRecipeId());
+            customMealPlanRecipes.setMealType(MealType.valueOf(input.getMeal()));
+
+            customMealPlan.getCustomMealPlanRecipes().add(customMealPlanRecipes);
+            customMealPlanRecipesRepository.save(customMealPlanRecipes);
+            customMealPlanRepository.save(customMealPlan);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeRecipeFromMealPlan(AddRecipeMealPlanInput input, Integer userId) {
+        // Find the meal plan for the given date
+        CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, input.getDate());
+
+        if (customMealPlan != null) {
+
+            FoodRecipe foodRecipe = foodRecipeRepository.findById(input.getRecipeId()).get();
+
+            CustomMealPlanRecipes customMealPlanRecipes = customMealPlanRecipesRepository.findByCustomMealPlanAndRecipeIdAndMealType(customMealPlan, foodRecipe.getRecipeId(), MealType.valueOf(input.getMeal()));
+
+            if (customMealPlanRecipes != null) {
+                customMealPlan.getCustomMealPlanRecipes().remove(customMealPlanRecipes);
+                customMealPlanRecipesRepository.delete(customMealPlanRecipes);
+                customMealPlanRepository.save(customMealPlan);
             }
+        }
+    }
 
+    public int countDistinctMealTypes(CustomMealPlan input) {
+        Set<MealType> distinctMealTypes = new HashSet<>();
 
-            if (mealPlanInput.getDailyCalories() != null) {
+        if (input.getCustomMealPlanRecipes() != null) {
+            for (CustomMealPlanRecipes recipe : input.getCustomMealPlanRecipes()) {
+                distinctMealTypes.add(recipe.getMealType());
+            }
+        }
+        input.setMealCount(distinctMealTypes.size());
+        customMealPlanRepository.save(input);
+        return distinctMealTypes.size();
+    }
 
-                mealPlan.setDailyCalories(mealPlanInput.getDailyCalories());
+    @Override
+    public void addCustomMealPlan(CustomMealPlanInput customMealPlanInput, Integer userId) {
+        User user = checkUser(userId).get();
 
-            } else mealPlan.setDailyCalories(dailyCalories);
+        // Check if a CustomMealPlan with the given date already exists
+        CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, customMealPlanInput.getDate());
 
-            if (mealPlanInput.getDescription() != null) {
-                mealPlanInput.setDescription(mealPlanInput.getDescription());
-            } else mealPlanInput.setDescription(description);
-
-            updateMealPlanFields(mealPlan, mealPlanInput);
-            updateMealCount(mealPlan);
-            mealPlans.add(mealPlan);
-
+        // If it doesn't exist, create a new one
+        if (customMealPlan == null) {
+            customMealPlan = new CustomMealPlan();
+            customMealPlan.setUserId(userId);
+            customMealPlan.setDate(customMealPlanInput.getDate());
         }
 
-        mealPlanRepository.saveAll(mealPlans);
+        customMealPlan.setDescription(customMealPlanInput.getDescription());
+        customMealPlan.setDailyCalories(customMealPlanInput.getDailyCalories());
 
-        List<MealPlan> output = mealPlanRepository.findAllByUser(user);
-        for (MealPlan mealPlan : output) {
+        List<CustomMealPlanRecipes> customMealPlanRecipesList = new ArrayList<>();
+        int mealCount = 0;
+        double totalCalories = 0;
 
-            MealPlanDto mealPlanDto = getMealPlanDto(mealPlan);
-            mealPlanDtos.add(mealPlanDto);
+        // Process each meal type
+        List<List<Integer>> allMealDishIds = Arrays.asList(customMealPlanInput.getBreakfastDishIds(), customMealPlanInput.getLunchDishIds(), customMealPlanInput.getDinnerDishIds(), customMealPlanInput.getMorningSnackDishIds(), customMealPlanInput.getAfternoonSnackDishIds());
+        List<MealType> allMealTypes = Arrays.asList(MealType.breakfast, MealType.lunch, MealType.dinner, MealType.morningSnack, MealType.afternoonSnack);
+
+        for (int i = 0; i < allMealDishIds.size(); i++) {
+            List<Integer> dishIds = allMealDishIds.get(i);
+            MealType mealType = allMealTypes.get(i);
+
+            if (dishIds != null) {
+                mealCount++;
+                for (Integer dishId : dishIds) {
+
+                    CustomMealPlanRecipes customMealPlanRecipes = new CustomMealPlanRecipes();
+                    customMealPlanRecipes.setCustomMealPlan(customMealPlan);
+                    customMealPlanRecipes.setRecipeId(dishId);
+                    customMealPlanRecipes.setMealType(mealType);
+                    customMealPlanRecipesList.add(customMealPlanRecipes);
+
+                    // Retrieve the recipe and add its calories to the total
+                    FoodRecipe foodRecipe = foodRecipeRepository.findById(dishId).get();
+                    totalCalories += foodRecipe.getCalories();
+
+                }
+            }
         }
 
-        return mealPlanDtos;
+        customMealPlan.setMealCount(mealCount);
+        customMealPlan.setTotalCalories((int) totalCalories);
+        customMealPlanRepository.saveAndFlush(customMealPlan);
+        customMealPlanRecipesRepository.saveAllAndFlush(customMealPlanRecipesList);
+
+    }
+
+    @Override
+    public CustomMealPlanDto getCustomMealPlans(Integer userId, LocalDate date) {
+        if (userRepository.findById(userId).isPresent()) {
+            User user = userRepository.findById(userId).get();
+            if (!user.isCustomPlan()) {
+                throw new RecordNotFoundException("User hasn't created meal plan ");
+            }
+        }
+        CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, date);
+        return mapToDto(customMealPlan);
+    }
+
+    public CustomMealPlanDto mapToDto(CustomMealPlan customMealPlan) {
+        List<Object> breakfast = customMealPlan.getCustomMealPlanRecipes() != null ?
+                customMealPlan.getCustomMealPlanRecipes().stream()
+                        .filter(recipe -> recipe.getMealType() == MealType.breakfast)
+                        .map(recipe -> stringUtil.mapToShortRecipe(recipe.getRecipeId()))
+                        .collect(Collectors.toList()) : new ArrayList<>();
+
+        List<Object> lunch = customMealPlan.getCustomMealPlanRecipes() != null ?
+                customMealPlan.getCustomMealPlanRecipes().stream()
+                        .filter(recipe -> recipe.getMealType() == MealType.lunch)
+                        .map(recipe -> stringUtil.mapToShortRecipe(recipe.getRecipeId()))
+                        .collect(Collectors.toList()) : new ArrayList<>();
+
+        List<Object> dinner = customMealPlan.getCustomMealPlanRecipes() != null ?
+                customMealPlan.getCustomMealPlanRecipes().stream()
+                        .filter(recipe -> recipe.getMealType() == MealType.dinner)
+                        .map(recipe -> stringUtil.mapToShortRecipe(recipe.getRecipeId()))
+                        .collect(Collectors.toList()) : new ArrayList<>();
+
+        List<Object> morningSnack = customMealPlan.getCustomMealPlanRecipes() != null ?
+                customMealPlan.getCustomMealPlanRecipes().stream()
+                        .filter(recipe -> recipe.getMealType() == MealType.morningSnack)
+                        .map(recipe -> stringUtil.mapToShortRecipe(recipe.getRecipeId()))
+                        .collect(Collectors.toList()) : new ArrayList<>();
+
+        List<Object> afternoonSnack = customMealPlan.getCustomMealPlanRecipes() != null ?
+                customMealPlan.getCustomMealPlanRecipes().stream()
+                        .filter(recipe -> recipe.getMealType() == MealType.afternoonSnack)
+                        .map(recipe -> stringUtil.mapToShortRecipe(recipe.getRecipeId()))
+                        .collect(Collectors.toList()) : new ArrayList<>();
+
+        int mealCount = 0;
+
+        if (breakfast != null && !breakfast.isEmpty()) {
+            mealCount++;
+        }
+
+        if (lunch != null && !lunch.isEmpty()) {
+            mealCount++;
+        }
+
+        if (dinner != null && !dinner.isEmpty()) {
+            mealCount++;
+        }
+
+        if (morningSnack != null && !morningSnack.isEmpty()) {
+            mealCount++;
+        }
+
+        if (afternoonSnack != null && !afternoonSnack.isEmpty()) {
+            mealCount++;
+        }
+
+        LocalDate date = customMealPlan.getDate();
+
+        Integer dailyCalories = customMealPlan.getDailyCalories();
+
+
+        double totalCalories = 0;
+        double totalProtein = 0;
+        double totalFat = 0;
+
+
+        // Calculate total calories, protein, and fat
+        for (CustomMealPlanRecipes recipe : customMealPlan.getCustomMealPlanRecipes()) {
+            FoodRecipe foodRecipe = foodRecipeRepository.findById(recipe.getRecipeId()).get();
+            totalCalories += foodRecipe.getCalories();
+            totalProtein += foodRecipe.getProteinContent();
+            totalFat += foodRecipe.getFatContent();
+        }
+
+        for (CustomMealPlanRecipes recipe : customMealPlan.getCustomMealPlanRecipes()) {
+            FoodRecipe foodRecipe = foodRecipeRepository.findById(recipe.getRecipeId()).get();
+            totalCalories += foodRecipe.getCalories();
+            totalProtein += foodRecipe.getProteinContent();
+            totalFat += foodRecipe.getFatContent();
+        }
+
+        // Calculate percentages
+        Integer totalCaloriesPercentage = totalCalories != 0 ? (int) ((totalCalories / customMealPlan.getDailyCalories()) * 100) : 0;
+        Integer totalProteinPercentage = totalCalories != 0 ? (int) ((totalProtein * 4 / totalCalories) * 100) : 0; // Protein has 4 calories per gram
+        Integer totalFatPercentage = totalCalories != 0 ? (int) ((totalFat * 9 / totalCalories) * 100) : 0; // Fat has 9 calories per gram
+
+        String description = customMealPlan.getDescription();
+
+        return CustomMealPlanDto.builder()
+                .breakfast(breakfast)
+                .lunch(lunch)
+                .dinner(dinner)
+                .morningSnack(morningSnack)
+                .afternoonSnack(afternoonSnack)
+                .mealCount(mealCount)
+                .date(date)
+                .dailyCalories(dailyCalories)
+                .totalCalories((int) totalCalories)
+                .totalCaloriesPercentage(totalCaloriesPercentage)
+                .totalProteinPercentage(totalProteinPercentage)
+                .totalFatPercentage(totalFatPercentage)
+                .description(description)
+                .build();
     }
 
     public void updateMealCount(MealPlan mealPlan) {
@@ -149,181 +374,6 @@ public class MealPlanServiceImpl implements MealPlanService {
 
     }
 
-    @Override
-    public MealPlanDto deleteRecipeInMealPlan(int userId, MealPlanInput input) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
-
-        MealPlan mealPlan = mealPlanRepository.findByUserAndDate(user, input.getDate());
-
-
-        deleteRecipe(mealPlan, input);
-
-        // Save the updated meal plan
-        mealPlanRepository.save(mealPlan);
-
-        return getMealPlanDto(mealPlan);
-    }
-
-    private void deleteRecipe(MealPlan mealPlan, MealPlanInput input) {
-        int count = 0;
-        // Check and set Breakfast
-        if (input.getBreakfast() > 0 && mealPlan.getBreakfast() != null && input.getBreakfast() == mealPlan.getBreakfast().getRecipeId()) {
-            mealPlan.setBreakfast(null);
-            count++;
-        }
-
-        // Check and set Lunch
-        if (input.getLunch() > 0 && mealPlan.getLunch() != null && input.getLunch() == mealPlan.getLunch().getRecipeId()) {
-            mealPlan.setLunch(null);
-            count++;
-        }
-
-        // Check and set Dinner
-        if (input.getDinner() > 0 && mealPlan.getDinner() != null && input.getDinner() == mealPlan.getDinner().getRecipeId()) {
-            mealPlan.setDinner(null);
-            count++;
-        }
-        if (input.getMorningSnack() > 0 && mealPlan.getMorningSnack() != null && input.getMorningSnack() == mealPlan.getMorningSnack().getRecipeId()) {
-            mealPlan.setMorningSnack(null);
-            count++;
-        }
-        if (input.getAfternoonSnack() > 0 && mealPlan.getAfternoonSnack() != null && input.getAfternoonSnack() == mealPlan.getAfternoonSnack().getRecipeId()) {
-            mealPlan.setAfternoonSnack(null);
-            count++;
-        }
-        mealPlan.setMealCount(mealPlan.getMealCount() - count);
-
-    }
-
-    private void updateMealPlanFields(MealPlan mealPlan, MealPlanInput input) {
-
-        if (input.getBreakfast() > 0) {
-            mealPlan.setBreakfast(getRecipe(input.getBreakfast()));
-
-        }
-        if (input.getLunch() > 0) {
-            mealPlan.setLunch(getRecipe(input.getLunch()));
-
-        }
-        if (input.getDinner() > 0) {
-            mealPlan.setDinner(getRecipe(input.getDinner()));
-
-        }
-        if (input.getMorningSnack() > 0) {
-            mealPlan.setMorningSnack(getRecipe(input.getMorningSnack()));
-
-        }
-        if (input.getAfternoonSnack() > 0) {
-            mealPlan.setAfternoonSnack(getRecipe(input.getAfternoonSnack()));
-
-        }
-        if (input.getDate() != null) {
-            mealPlan.setDate(input.getDate());
-        }
-        if (input.getDescription() != null) {
-            mealPlan.setDescription(input.getDescription());
-        }
-
-
-        mealPlan.setTotalCalories(getMealPlanDto(mealPlan).getTotalCalories());
-
-    }
-
-    private FoodRecipe getRecipe(Integer recipeId) {
-        if (recipeId != null) {
-            return foodRecipeRepository.findById(recipeId).orElse(null);
-        }
-        return null;
-    }
-
-
-    @Override
-    public List<MealPlanDto> getCurrentMealPlans(Integer userId) {
-        if (userRepository.findById(userId).isPresent()) {
-            User user = userRepository.findById(userId).get();
-            if (!user.isCustomPlan()) {
-                throw new RecordNotFoundException("User hasn't created meal plan ");
-            }
-        }
-        List<MealPlan> mealPlans = mealPlanRepository.findCurrentMealPlans(userId, LocalDate.now());
-        List<MealPlanDto> output = new ArrayList<>();
-        for (MealPlan mealPlan : mealPlans) {
-            MealPlanDto mealPlanDto = getMealPlanDto(mealPlan);
-            output.add(mealPlanDto);
-        }
-        return output;
-    }
-
-    private MealPlanDto getMealPlanDto(MealPlan mealPlan) {
-        MealPlanDto mealPlanDto = new MealPlanDto();
-        updateMealCount(mealPlan);
-        mealPlanDto.setMealCount(mealPlan.getMealCount());
-        mealPlanDto.setDate(mealPlan.getDate());
-        mealPlanDto.setDescription(mealPlan.getDescription());
-
-        List<FoodRecipe> allRecipes = new ArrayList<>();
-        if (mealPlan.getBreakfast() != null) {
-            allRecipes.add(mealPlan.getBreakfast());
-        }
-        if (mealPlan.getLunch() != null) {
-            allRecipes.add(mealPlan.getLunch());
-        }
-        if (mealPlan.getDinner() != null) {
-            allRecipes.add(mealPlan.getDinner());
-        }
-        if (mealPlan.getAfternoonSnack() != null) {
-            allRecipes.add(mealPlan.getAfternoonSnack());
-        }
-        if (mealPlan.getMorningSnack() != null) {
-            allRecipes.add(mealPlan.getMorningSnack());
-        }
-
-        // Aggregate total calories, fat, saturated fat, and protein
-        double totalCalories = 0;
-        double totalFatCalories = 0;
-        double totalProteinCalories = 0;
-
-
-        for (FoodRecipe recipe : allRecipes) {
-            totalCalories += recipe.getCalories();
-            totalFatCalories += recipe.getFatContent() * 9;   // 9 calories per gram of fat
-            totalProteinCalories += recipe.getProteinContent() * 4;  // 4 calories per gram of protein
-
-        }
-
-        if (totalCalories > 0) {
-            double fatPercentage = (totalFatCalories / totalCalories) * 100;
-            double proteinPercentage = (totalProteinCalories / totalCalories) * 100;
-
-            if (mealPlan.getDailyCalories() > 0) {
-                double caloriesPercentage = (totalCalories / mealPlan.getDailyCalories()) * 100;
-                mealPlanDto.setTotalCaloriesPercentage((int) caloriesPercentage);
-                mealPlanDto.setDailyCalories(mealPlan.getDailyCalories());
-            } else {
-                mealPlanDto.setTotalCaloriesPercentage(0);
-                mealPlanDto.setDailyCalories(0);
-            }
-
-            mealPlanDto.setTotalFatPercentage((int) fatPercentage);
-            mealPlanDto.setTotalProteinPercentage((int) proteinPercentage);
-
-        } else {
-            mealPlanDto.setTotalFatPercentage(0);
-            mealPlanDto.setTotalProteinPercentage(0);
-            mealPlanDto.setTotalCaloriesPercentage(0);
-        }
-
-
-        mealPlanDto.setBreakfast(mealPlan.getBreakfast() != null ? Collections.singletonList(stringUtil.mapToShortRecipe(mealPlan.getBreakfast().getRecipeId())) : new ArrayList<>());
-        mealPlanDto.setDinner(mealPlan.getDinner() != null ? Collections.singletonList(stringUtil.mapToShortRecipe(mealPlan.getDinner().getRecipeId())) : new ArrayList<>());
-        mealPlanDto.setLunch(mealPlan.getLunch() != null ? Collections.singletonList(stringUtil.mapToShortRecipe(mealPlan.getLunch().getRecipeId())) : new ArrayList<>());
-        mealPlanDto.setAfternoonSnack(mealPlan.getAfternoonSnack() != null ? Collections.singletonList(stringUtil.mapToShortRecipe(mealPlan.getAfternoonSnack().getRecipeId())) : new ArrayList<>());
-        mealPlanDto.setMorningSnack(mealPlan.getMorningSnack() != null ? Collections.singletonList(stringUtil.mapToShortRecipe(mealPlan.getMorningSnack().getRecipeId())) : new ArrayList<>());
-
-        mealPlanDto.setTotalCalories((int) (totalCalories));
-        return mealPlanDto;
-    }
 
     @Override
     @Transactional

@@ -4,7 +4,6 @@ import com.example.BEFoodrecommendationapplication.entity.Ingredient;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -15,4 +14,6 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Integer>
     List<Ingredient> find100Ingredients();
 
     List<Ingredient> findByNameIn(List<String> names);
+
+    List<Ingredient> findAllByNameContains(String name);
 }

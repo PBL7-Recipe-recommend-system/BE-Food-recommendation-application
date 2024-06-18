@@ -3,8 +3,10 @@ package com.example.BEFoodrecommendationapplication.service.Ingredient;
 import com.example.BEFoodrecommendationapplication.dto.IngredientDto;
 import com.example.BEFoodrecommendationapplication.dto.UpdateIngredientsRequest;
 import com.example.BEFoodrecommendationapplication.entity.FoodRecipe;
+import com.example.BEFoodrecommendationapplication.entity.Ingredient;
 import com.example.BEFoodrecommendationapplication.exception.RecordNotFoundException;
 import com.example.BEFoodrecommendationapplication.repository.FoodRecipeRepository;
+import com.example.BEFoodrecommendationapplication.repository.IngredientRepository;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import java.util.stream.IntStream;
 public class IngredientServiceImpl implements IngredientService {
 
     private final FoodRecipeRepository foodRecipeRepository;
+    private final IngredientRepository ingredientRepository;
     private final StringUtil stringUtil;
 
 
@@ -116,6 +119,13 @@ public class IngredientServiceImpl implements IngredientService {
                 .collect(Collectors.toList());
 
         return ingredientList;
+    }
+
+    public List<String> getAllIngredient(String name) {
+        return ingredientRepository.findAllByNameContains(name).stream()
+                .map(Ingredient::getName)
+                .map(stringUtil::capitalizeFirstLetterOfEachWord)
+                .collect(Collectors.toList());
     }
 
 
