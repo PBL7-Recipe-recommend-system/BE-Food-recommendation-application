@@ -63,11 +63,16 @@ public class FoodRecipeController {
             Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
             long startTime = System.nanoTime();
             System.out.println("Searching start time: " + startTime + " nanoseconds");
-            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate, page,size, userId);
+
+            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate, PageRequest.of(page,size) , userId);
 
             long endTime = System.nanoTime();
             System.out.println("Searching end time: " + endTime + " nanoseconds");
-            System.out.println("Total execution time: " + (endTime - startTime) + " nanoseconds");
+
+            long durationInNanoseconds = endTime - startTime;
+            double durationInSeconds = durationInNanoseconds / 1_000_000_000.0;
+            System.out.println("Total execution time: " + durationInSeconds + " seconds");
+
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     listRecipes,
                     "Search Recipe successfully",

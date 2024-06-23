@@ -38,88 +38,88 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
 
-//    @Override
-//    @Cacheable("searchRecipes")
-//    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, Pageable pageable, Integer userId) {
-//        Specification<FoodRecipe> spec = Specification.where(null);
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
-//        // Filter by name
-//        if (name != null) {
-//            spec = spec.and(FoodRecipeSpecification.nameStartsWith(name));
-//        }
-//
-//        // Filter by category
-//        if (category != null) {
-//            spec = spec.and(FoodRecipeSpecification.categoryContains(category));
-//        }
-//
-//        // Filter by rating
-//        if (rating != null) {
-//            spec = spec.and(FoodRecipeSpecification.ratingIs(rating));
-//        }
-//
-//
-//        // Sort by timeRate
-//        if (timeRate != null) {
-//            if (timeRate == 2) {
-//                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").descending());
-//            } else if (timeRate == 3) {
-//                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").ascending());
-//            } else if (timeRate == 4) {
-//                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("aggregatedRatings").descending().and(Sort.by("reviewCount").descending()));
-//            }
-//        }
-//
-//        // Execute the query
-//        Page<FoodRecipe> foodRecipes = foodRecipeRepository.findAll(spec, pageable);
-//
-//        // Fallback to keyword search if no results
-//        if (foodRecipes.isEmpty() && name != null) {
-//            spec = Specification.where(FoodRecipeSpecification.keywordStartsWith(name));
-//            foodRecipes = foodRecipeRepository.findAll(spec, pageable);
-//        }
-//
-//        return foodRecipes.map(this::mapToSearchResult);
-//    }
     @Override
-    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, int page, int pageSize, Integer userId) {
+    @Cacheable("searchRecipes")
+    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, Pageable pageable, Integer userId) {
+        Specification<FoodRecipe> spec = Specification.where(null);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
+        // Filter by name
+        if (name != null) {
+            spec = spec.and(FoodRecipeSpecification.nameStartsWith(name));
+        }
+
+        // Filter by category
+        if (category != null) {
+            spec = spec.and(FoodRecipeSpecification.categoryContains(category));
+        }
+
+        // Filter by rating
+        if (rating != null) {
+            spec = spec.and(FoodRecipeSpecification.ratingIs(rating));
+        }
 
 
-        List<FoodRecipe> recipes = searchRecipes(name, category, rating, timeRate, page, pageSize);
-        List<SearchResult> searchResults = recipes.stream()
-                .map(this::mapToSearchResult)
-                .collect(Collectors.toList());
+        // Sort by timeRate
+        if (timeRate != null) {
+            if (timeRate == 2) {
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").descending());
+            } else if (timeRate == 3) {
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").ascending());
+            } else if (timeRate == 4) {
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("aggregatedRatings").descending().and(Sort.by("reviewCount").descending()));
+            }
+        }
 
-        Page<SearchResult> result = new PageImpl<>(searchResults, PageRequest.of(page, pageSize), searchResults.size());
+        // Execute the query
+        Page<FoodRecipe> foodRecipes = foodRecipeRepository.findAll(spec, pageable);
 
+        // Fallback to keyword search if no results
+        if (foodRecipes.isEmpty() && name != null) {
+            spec = Specification.where(FoodRecipeSpecification.keywordStartsWith(name));
+            foodRecipes = foodRecipeRepository.findAll(spec, pageable);
+        }
 
-
-        return result;
+        return foodRecipes.map(this::mapToSearchResult);
     }
-
-    public List<FoodRecipe> searchRecipes(String name, String category, Integer rating, Integer timeRate, int page, int pageSize) {
-        String sql = "SELECT * FROM food_recipe WHERE 1=1 " +
-                "AND (name LIKE CONCAT(LOWER(:name), '%') OR :name IS NULL) " +
-                "AND (LOWER(recipe_category) LIKE CONCAT('%', LOWER(:category), '%') OR :category IS NULL) " +
-                "AND (aggregated_ratings = :rating OR :rating IS NULL) " +
-                "ORDER BY " +
-                "CASE WHEN :timeRate = 2 THEN date_published END DESC, " +
-                "CASE WHEN :timeRate = 3 THEN date_published END ASC, " +
-                "CASE WHEN :timeRate = 4 THEN aggregated_ratings END DESC, " +
-                "CASE WHEN :timeRate = 4 THEN review_count END DESC " +
-                "LIMIT :offset, :pageSize";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("name", name);
-        params.put("category", category);
-        params.put("rating", rating);
-        params.put("timeRate", timeRate);
-        params.put("offset", (page - 1) * pageSize);
-        params.put("pageSize", pageSize);
-
-        return jdbcTemplate.query(sql, params, new FoodRecipeRowMapper());
-    }
+//    @Override
+//    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, int page, int pageSize, Integer userId) {
+//
+//
+//        List<FoodRecipe> recipes = searchRecipes(name, category, rating, timeRate, page, pageSize);
+//        List<SearchResult> searchResults = recipes.stream()
+//                .map(this::mapToSearchResult)
+//                .collect(Collectors.toList());
+//
+//        Page<SearchResult> result = new PageImpl<>(searchResults, PageRequest.of(page, pageSize), searchResults.size());
+//
+//
+//
+//        return result;
+//    }
+//
+//    public List<FoodRecipe> searchRecipes(String name, String category, Integer rating, Integer timeRate, int page, int pageSize) {
+//        String sql = "SELECT * FROM food_recipe WHERE 1=1 " +
+//                "AND (name LIKE CONCAT(LOWER(:name), '%') OR :name IS NULL) " +
+//                "AND (LOWER(recipe_category) LIKE CONCAT('%', LOWER(:category), '%') OR :category IS NULL) " +
+//                "AND (aggregated_ratings = :rating OR :rating IS NULL) " +
+//                "ORDER BY " +
+//                "CASE WHEN :timeRate = 2 THEN date_published END DESC, " +
+//                "CASE WHEN :timeRate = 3 THEN date_published END ASC, " +
+//                "CASE WHEN :timeRate = 4 THEN aggregated_ratings END DESC, " +
+//                "CASE WHEN :timeRate = 4 THEN review_count END DESC " +
+//                "LIMIT :offset, :pageSize";
+//
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("name", name);
+//        params.put("category", category);
+//        params.put("rating", rating);
+//        params.put("timeRate", timeRate);
+//        params.put("offset", (page - 1) * pageSize);
+//        params.put("pageSize", pageSize);
+//
+//        return jdbcTemplate.query(sql, params, new FoodRecipeRowMapper());
+//    }
 
 
     @Override
