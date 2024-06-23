@@ -88,6 +88,32 @@ public class MealPlanController {
         }
     }
 
+    @Operation(summary = "Edit meal plan description")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Edit meal plan description successfully",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class))
+                    }),
+            @ApiResponse(responseCode = "404", description = "Edit meal plan description failed")})
+    @PutMapping("/description")
+    public ResponseEntity<Response> editMealPlanDescription(@RequestBody AddRecipeMealPlanInput mealPlans) {
+        try {
+            Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
+            mealPlanService.editMealPlanDescription(id, mealPlans.getDate(), mealPlans.getDescription());
+
+            return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
+                    new ArrayList<>(),
+                    "Edit meal plan description successfully",
+                    StatusCode.SUCCESS));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseBuilderUtil.responseBuilder(new ArrayList<>(), e.getMessage(), StatusCode.NOT_FOUND));
+
+        }
+    }
+
     @Operation(summary = "Delete recipes in meal plan")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Delete recipes in meal plan successfully",

@@ -20,4 +20,6 @@ public class AddRecipeMealPlanInput {
 
     private String meal;
 
+    private String description;
+
 }
