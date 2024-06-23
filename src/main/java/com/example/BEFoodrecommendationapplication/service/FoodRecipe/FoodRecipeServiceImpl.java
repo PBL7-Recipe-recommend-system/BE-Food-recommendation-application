@@ -13,21 +13,16 @@ import com.example.BEFoodrecommendationapplication.util.FoodRecipeSpecification;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,74 +35,84 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
     private final RecentSearchRepository recentSearchRepository;
     private final SavedRecipeRepository savedRecipeRepository;
     private final UserCookedRecipeRepository userCookedRecipeRepository;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
 
+//    @Override
+//    @Cacheable("searchRecipes")
+//    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, Pageable pageable, Integer userId) {
+//        Specification<FoodRecipe> spec = Specification.where(null);
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
+//        // Filter by name
+//        if (name != null) {
+//            spec = spec.and(FoodRecipeSpecification.nameStartsWith(name));
+//        }
+//
+//        // Filter by category
+//        if (category != null) {
+//            spec = spec.and(FoodRecipeSpecification.categoryContains(category));
+//        }
+//
+//        // Filter by rating
+//        if (rating != null) {
+//            spec = spec.and(FoodRecipeSpecification.ratingIs(rating));
+//        }
+//
+//
+//        // Sort by timeRate
+//        if (timeRate != null) {
+//            if (timeRate == 2) {
+//                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").descending());
+//            } else if (timeRate == 3) {
+//                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").ascending());
+//            } else if (timeRate == 4) {
+//                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("aggregatedRatings").descending().and(Sort.by("reviewCount").descending()));
+//            }
+//        }
+//
+//        // Execute the query
+//        Page<FoodRecipe> foodRecipes = foodRecipeRepository.findAll(spec, pageable);
+//
+//        // Fallback to keyword search if no results
+//        if (foodRecipes.isEmpty() && name != null) {
+//            spec = Specification.where(FoodRecipeSpecification.keywordStartsWith(name));
+//            foodRecipes = foodRecipeRepository.findAll(spec, pageable);
+//        }
+//
+//        return foodRecipes.map(this::mapToSearchResult);
+//    }
     @Override
-    @Cacheable("searchRecipes")
-    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, Pageable pageable, Integer userId) {
-        Specification<FoodRecipe> spec = Specification.where(null);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
-        // Filter by name
-        if (name != null) {
-            spec = spec.and(FoodRecipeSpecification.nameStartsWith(name));
-        }
+    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, int page, int pageSize, Integer userId) {
+        List<FoodRecipe> recipes = searchRecipes(name, category, rating, timeRate, page, pageSize);
+        List<SearchResult> searchResults = recipes.stream()
+                .map(this::mapToSearchResult)
+                .collect(Collectors.toList());
 
-        // Filter by category
-        if (category != null) {
-            spec = spec.and(FoodRecipeSpecification.categoryContains(category));
-        }
+        return new PageImpl<>(searchResults, PageRequest.of(page, pageSize), searchResults.size());
+    }
 
-        // Filter by rating
-        if (rating != null) {
-            spec = spec.and(FoodRecipeSpecification.ratingIs(rating));
-        }
+    public List<FoodRecipe> searchRecipes(String name, String category, Integer rating, Integer timeRate, int page, int pageSize) {
+        String sql = "SELECT * FROM food_recipe WHERE 1=1 " +
+                "AND (name LIKE CONCAT(LOWER(:name), '%') OR :name IS NULL) " +
+                "AND (LOWER(recipe_category) LIKE CONCAT('%', LOWER(:category), '%') OR :category IS NULL) " +
+                "AND (aggregated_ratings = :rating OR :rating IS NULL) " +
+                "ORDER BY " +
+                "CASE WHEN :timeRate = 2 THEN date_published END DESC, " +
+                "CASE WHEN :timeRate = 3 THEN date_published END ASC, " +
+                "CASE WHEN :timeRate = 4 THEN aggregated_ratings END DESC, " +
+                "CASE WHEN :timeRate = 4 THEN review_count END DESC " +
+                "LIMIT :offset, :pageSize";
 
-        // Calculate user-specific nutritional requirements
-        float calories = user.caloriesCalculator();
-        int dietaryGoal;
-        if (user.getDietaryGoal() != null) {
-            dietaryGoal = user.getDietaryGoal();
-        } else {
-            dietaryGoal = 1;
-        }
-        // Adjust protein and fat percentages based on dietary goal
-        float proteinPercentage = dietaryGoal == 1 ? 0.30f : dietaryGoal == 2 ? 0.25f : 0.35f;
-        float fatPercentage = dietaryGoal == 1 ? 0.25f : dietaryGoal == 2 ? 0.30f : 0.20f;
-        float carbPercentage = 1 - (proteinPercentage + fatPercentage);
+        Map<String, Object> params = new HashMap<>();
+        params.put("name", name);
+        params.put("category", category);
+        params.put("rating", rating);
+        params.put("timeRate", timeRate);
+        params.put("offset", (page - 1) * pageSize);
+        params.put("pageSize", pageSize);
 
-        // Calculate macronutrient content in grams
-        float proteinContent = calories * proteinPercentage / 4; // 4 kcal per gram of protein
-        float fatContent = calories * fatPercentage / 9; // 9 kcal per gram of fat
-        float carbContent = calories * carbPercentage / 4; // 4 kcal per gram of carbs
-        System.out.println(proteinContent * 0.9f + "  " + proteinContent * 1.1f);
-        // Add specifications for nutritional content
-//        spec = spec.and(FoodRecipeSpecification.caloriesBetween(calories * 0.9f, calories * 1.1f)); // +/- 10% range
-//        spec = spec.and(FoodRecipeSpecification.proteinContentBetween(proteinContent * 0.9f, proteinContent * 1.1f));
-//        spec = spec.and(FoodRecipeSpecification.fatContentBetween(fatContent * 0.9f, fatContent * 1.1f));
-//        spec = spec.and(FoodRecipeSpecification.carbohydrateContentBetween(carbContent * 0.9f, carbContent * 1.1f));
-
-        // Sort by timeRate
-        if (timeRate != null) {
-            if (timeRate == 2) {
-                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").descending());
-            } else if (timeRate == 3) {
-                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("datePublished").ascending());
-            } else if (timeRate == 4) {
-                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("aggregatedRatings").descending().and(Sort.by("reviewCount").descending()));
-            }
-        }
-
-        // Execute the query
-        Page<FoodRecipe> foodRecipes = foodRecipeRepository.findAll(spec, pageable);
-
-        // Fallback to keyword search if no results
-        if (foodRecipes.isEmpty() && name != null) {
-            spec = Specification.where(FoodRecipeSpecification.keywordStartsWith(name));
-            foodRecipes = foodRecipeRepository.findAll(spec, pageable);
-        }
-
-        return foodRecipes.map(this::mapToSearchResult);
+        return jdbcTemplate.query(sql, params, new FoodRecipeRowMapper());
     }
 
 

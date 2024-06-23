@@ -12,7 +12,8 @@ import java.util.List;
 
 public interface FoodRecipeService {
 
-    Page<SearchResult> search(String name, String category, Integer rating, Integer dateRating, Pageable pageable, Integer userId);
+//    List<FoodRecipe> searchRecipes(String name, String category, Integer rating, Integer timeRate, int page, int pageSize);
+    Page<SearchResult> search(String name, String category, Integer rating, Integer dateRating, int page, int pageSize, Integer userId);
 
     RecipeDto mapToDto(FoodRecipe foodRecipe, Integer userId);
 

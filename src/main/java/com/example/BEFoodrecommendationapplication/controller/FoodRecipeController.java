@@ -61,7 +61,7 @@ public class FoodRecipeController {
                                            @RequestParam(defaultValue = "1") Integer timeRate) {
         try {
             Integer userId = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
-            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate, PageRequest.of(page - 1, size), userId);
+            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate, page,size, userId);
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     listRecipes,
