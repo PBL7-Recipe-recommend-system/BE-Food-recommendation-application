@@ -84,12 +84,18 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 //    }
     @Override
     public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, int page, int pageSize, Integer userId) {
+
+
         List<FoodRecipe> recipes = searchRecipes(name, category, rating, timeRate, page, pageSize);
         List<SearchResult> searchResults = recipes.stream()
                 .map(this::mapToSearchResult)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(searchResults, PageRequest.of(page, pageSize), searchResults.size());
+        Page<SearchResult> result = new PageImpl<>(searchResults, PageRequest.of(page, pageSize), searchResults.size());
+
+
+
+        return result;
     }
 
     public List<FoodRecipe> searchRecipes(String name, String category, Integer rating, Integer timeRate, int page, int pageSize) {
