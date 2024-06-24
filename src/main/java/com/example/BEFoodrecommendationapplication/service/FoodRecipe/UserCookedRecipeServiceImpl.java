@@ -96,7 +96,7 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
             aggregateNutrition(nutrition, cookedRecipe.getRecipe(), cookedRecipe.getServingSize());
 
             // Add recipe calories to total calories
-            totalCalories += (int) (cookedRecipe.getRecipe().getCalories() * cookedRecipe.getServingSize());
+            totalCalories += (int) (cookedRecipe.getRecipe().getCalories() / cookedRecipe.getRecipe().getRecipeServings() * cookedRecipe.getServingSize());
 
             // Compute percentages
             computeNutrientPercentages(nutrition);
@@ -121,13 +121,13 @@ public class UserCookedRecipeServiceImpl implements UserCookedRecipeService {
 
 
     private void aggregateNutrition(MealNutrition nutrition, FoodRecipe recipe, int servings) {
-        nutrition.setCalories(optionalSum(nutrition.getCalories(), recipe.getCalories() * servings));
-        nutrition.setFatContent(optionalSum(nutrition.getFatContent(), recipe.getFatContent()));
-        nutrition.setSodiumContent(optionalSum(nutrition.getSodiumContent(), recipe.getSodiumContent()));
-        nutrition.setCarbohydrateContent(optionalSum(nutrition.getCarbohydrateContent(), recipe.getCarbonhydrateContent()));
-        nutrition.setFiberContent(optionalSum(nutrition.getFiberContent(), recipe.getFiberContent()));
-        nutrition.setSugarContent(optionalSum(nutrition.getSugarContent(), recipe.getSugarContent()));
-        nutrition.setProteinContent(optionalSum(nutrition.getProteinContent(), recipe.getProteinContent()));
+        nutrition.setCalories(optionalSum(nutrition.getCalories(), recipe.getCalories() / recipe.getRecipeServings() * servings));
+        nutrition.setFatContent(optionalSum(nutrition.getFatContent(), recipe.getFatContent() / recipe.getRecipeServings() * servings));
+        nutrition.setSodiumContent(optionalSum(nutrition.getSodiumContent(), recipe.getSodiumContent() / recipe.getRecipeServings() * servings));
+        nutrition.setCarbohydrateContent(optionalSum(nutrition.getCarbohydrateContent(), recipe.getCarbonhydrateContent() / recipe.getRecipeServings() * servings));
+        nutrition.setFiberContent(optionalSum(nutrition.getFiberContent(), recipe.getFiberContent() / recipe.getRecipeServings() * servings));
+        nutrition.setSugarContent(optionalSum(nutrition.getSugarContent(), recipe.getSugarContent() / recipe.getRecipeServings() * servings));
+        nutrition.setProteinContent(optionalSum(nutrition.getProteinContent(), recipe.getProteinContent() / recipe.getRecipeServings() * servings));
     }
 
     private Float optionalSum(Float a, Float b) {
