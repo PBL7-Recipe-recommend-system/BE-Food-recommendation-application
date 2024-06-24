@@ -22,4 +22,6 @@ public class AddRecipeMealPlanInput {
 
     private String description;
 
+    private Integer dailyCalories;
+
 }

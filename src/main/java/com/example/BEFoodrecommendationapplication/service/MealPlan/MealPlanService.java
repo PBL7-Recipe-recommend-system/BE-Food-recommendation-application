@@ -23,5 +23,5 @@ public interface MealPlanService {
 
     void removeRecipeFromMealPlan(AddRecipeMealPlanInput input, Integer userId);
 
-    void editMealPlanDescription(Integer userId, LocalDate date, String description);
+    void editMealPlanDescription(Integer userId, LocalDate date, Integer dailyCalo, String description);
 }

@@ -100,7 +100,7 @@ public class MealPlanController {
     public ResponseEntity<Response> editMealPlanDescription(@RequestBody AddRecipeMealPlanInput mealPlans) {
         try {
             Integer id = Objects.requireNonNull(AuthenticationUtils.getUserFromSecurityContext()).getId();
-            mealPlanService.editMealPlanDescription(id, mealPlans.getDate(), mealPlans.getDescription());
+            mealPlanService.editMealPlanDescription(id, mealPlans.getDate(), mealPlans.getDailyCalories(), mealPlans.getDescription());
 
             return ResponseEntity.ok(ResponseBuilderUtil.responseBuilder(
                     new ArrayList<>(),

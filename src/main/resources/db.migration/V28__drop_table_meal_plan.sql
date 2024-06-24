@@ -1,0 +1,1 @@
+Drop table meal_plans;

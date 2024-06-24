@@ -168,12 +168,15 @@ public class MealPlanServiceImpl implements MealPlanService {
             }
         }
     }
+
     @Override
-    public void editMealPlanDescription(Integer userId, LocalDate date, String description) {
+    public void editMealPlanDescription(Integer userId, LocalDate date, Integer dailyCalo, String description) {
         CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, date);
         customMealPlan.setDescription(description);
+        customMealPlan.setDailyCalories(dailyCalo);
         customMealPlanRepository.save(customMealPlan);
     }
+
     public int countDistinctMealTypes(CustomMealPlan input) {
         Set<MealType> distinctMealTypes = new HashSet<>();
 
