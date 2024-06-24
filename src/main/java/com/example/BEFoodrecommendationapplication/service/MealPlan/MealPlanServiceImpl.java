@@ -172,6 +172,11 @@ public class MealPlanServiceImpl implements MealPlanService {
     @Override
     public void editMealPlanDescription(Integer userId, LocalDate date, Integer dailyCalo, String description) {
         CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, date);
+        if (customMealPlan == null) {
+            customMealPlan = new CustomMealPlan();
+            customMealPlan.setUserId(userId);
+            customMealPlan.setDate(date);
+        }
         customMealPlan.setDescription(description);
         customMealPlan.setDailyCalories(dailyCalo);
         customMealPlanRepository.save(customMealPlan);
@@ -196,16 +201,27 @@ public class MealPlanServiceImpl implements MealPlanService {
 
         // Check if a CustomMealPlan with the given date already exists
         CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, customMealPlanInput.getDate());
+        CustomMealPlan customMealPlan1 = customMealPlanRepository.findByUserId(userId);
+        Integer dailyCalories = 0;
+        String description = "No description";
+        if (customMealPlan1 != null) {
+            dailyCalories = customMealPlan1.getDailyCalories();
+            description = customMealPlan1.getDescription();
+        }
 
         // If it doesn't exist, create a new one
         if (customMealPlan == null) {
             customMealPlan = new CustomMealPlan();
             customMealPlan.setUserId(userId);
             customMealPlan.setDate(customMealPlanInput.getDate());
+            customMealPlan.setDailyCalories(dailyCalories);
+            customMealPlan.setDescription(description);
+        }
+        if (customMealPlanInput.getDescription() != null && customMealPlanInput.getDailyCalories() != null) {
+            customMealPlan.setDescription(customMealPlanInput.getDescription());
+            customMealPlan.setDailyCalories(customMealPlanInput.getDailyCalories());
         }
 
-        customMealPlan.setDescription(customMealPlanInput.getDescription());
-        customMealPlan.setDailyCalories(customMealPlanInput.getDailyCalories());
 
         List<CustomMealPlanRecipes> customMealPlanRecipesList = new ArrayList<>();
         int mealCount = 0;
