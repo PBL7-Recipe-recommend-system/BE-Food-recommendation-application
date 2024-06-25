@@ -122,11 +122,14 @@ public class MealPlanServiceImpl implements MealPlanService {
     @Override
     public void addRecipeToMealPlan(AddRecipeMealPlanInput input, Integer userId) {
         CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, input.getDate());
-
+        Integer dailyCalo = 0;
+        String description = "No description";
         if (customMealPlan == null) {
             customMealPlan = new CustomMealPlan();
             customMealPlan.setUserId(userId);
             customMealPlan.setDate(input.getDate());
+            customMealPlan.setDescription(description);
+            customMealPlan.setDailyCalories(0);
             customMealPlan = customMealPlanRepository.save(customMealPlan);
         }
 
