@@ -274,6 +274,21 @@ public class MealPlanServiceImpl implements MealPlanService {
         LocalDate today = LocalDate.now();
         LocalDate sevenDaysFromNow = today.plusDays(7);
         List<CustomMealPlan> customMealPlans = customMealPlanRepository.findAllByUserIdAndDateBetween(userId, today, sevenDaysFromNow);
+
+        // If no custom meal plans are found, create 7 empty plans
+        if (customMealPlans.isEmpty()) {
+            for (int i = 0; i < 7; i++) {
+                CustomMealPlan emptyPlan = new CustomMealPlan();
+                emptyPlan.setUserId(userId);
+                emptyPlan.setDate(today.plusDays(i));
+                emptyPlan.setDailyCalories(0);
+                emptyPlan.setDescription("No description");
+                emptyPlan.setMealCount(5);
+                customMealPlanRepository.save(emptyPlan);
+                customMealPlans.add(emptyPlan);
+            }
+        }
+
         return customMealPlans.stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
