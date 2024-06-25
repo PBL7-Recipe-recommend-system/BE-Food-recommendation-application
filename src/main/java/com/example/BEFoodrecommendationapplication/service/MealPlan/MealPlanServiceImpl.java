@@ -121,15 +121,24 @@ public class MealPlanServiceImpl implements MealPlanService {
 
     @Override
     public void addRecipeToMealPlan(AddRecipeMealPlanInput input, Integer userId) {
-        CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, input.getDate());
+        LocalDate previousDay = input.getDate().minusDays(1);
+        CustomMealPlan previousDayMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, previousDay);
+
         Integer dailyCalo = 0;
         String description = "No description";
+        if (previousDayMealPlan != null && previousDayMealPlan.getDailyCalories() != null) {
+            dailyCalo = previousDayMealPlan.getDailyCalories();
+            description = previousDayMealPlan.getDescription();
+        }
+
+        CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, input.getDate());
+
         if (customMealPlan == null) {
             customMealPlan = new CustomMealPlan();
             customMealPlan.setUserId(userId);
             customMealPlan.setDate(input.getDate());
             customMealPlan.setDescription(description);
-            customMealPlan.setDailyCalories(0);
+            customMealPlan.setDailyCalories(dailyCalo);
             customMealPlan = customMealPlanRepository.save(customMealPlan);
         }
 
@@ -202,65 +211,31 @@ public class MealPlanServiceImpl implements MealPlanService {
     public void addCustomMealPlan(CustomMealPlanInput customMealPlanInput, Integer userId) {
         User user = checkUser(userId).get();
 
-        // Check if a CustomMealPlan with the given date already exists
-        CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, customMealPlanInput.getDate());
-        CustomMealPlan customMealPlan1 = customMealPlanRepository.findByUserId(userId);
-        Integer dailyCalories = 0;
-        String description = "No description";
-        if (customMealPlan1 != null) {
-            dailyCalories = customMealPlan1.getDailyCalories();
-            description = customMealPlan1.getDescription();
-        }
+        // Create a CustomMealPlan for each of the next 7 days
+        for (int i = 0; i < 7; i++) {
+            LocalDate currentDay = customMealPlanInput.getDate().plusDays(i);
+            CustomMealPlan customMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, currentDay);
 
-        // If it doesn't exist, create a new one
-        if (customMealPlan == null) {
-            customMealPlan = new CustomMealPlan();
-            customMealPlan.setUserId(userId);
-            customMealPlan.setDate(customMealPlanInput.getDate());
-            customMealPlan.setDailyCalories(dailyCalories);
-            customMealPlan.setDescription(description);
-        }
-        if (customMealPlanInput.getDescription() != null && customMealPlanInput.getDailyCalories() != null) {
-            customMealPlan.setDescription(customMealPlanInput.getDescription());
-            customMealPlan.setDailyCalories(customMealPlanInput.getDailyCalories());
-        }
+            // If a CustomMealPlan for the current day doesn't exist, create a new one
+            if (customMealPlan == null) {
+                customMealPlan = new CustomMealPlan();
+                customMealPlan.setUserId(userId);
+                customMealPlan.setDate(currentDay);
 
-
-        List<CustomMealPlanRecipes> customMealPlanRecipesList = new ArrayList<>();
-        int mealCount = 0;
-        double totalCalories = 0;
-
-        // Process each meal type
-        List<List<Integer>> allMealDishIds = Arrays.asList(customMealPlanInput.getBreakfastDishIds(), customMealPlanInput.getLunchDishIds(), customMealPlanInput.getDinnerDishIds(), customMealPlanInput.getMorningSnackDishIds(), customMealPlanInput.getAfternoonSnackDishIds());
-        List<MealType> allMealTypes = Arrays.asList(MealType.breakfast, MealType.lunch, MealType.dinner, MealType.morningSnack, MealType.afternoonSnack);
-
-        for (int i = 0; i < allMealDishIds.size(); i++) {
-            List<Integer> dishIds = allMealDishIds.get(i);
-            MealType mealType = allMealTypes.get(i);
-
-            if (dishIds != null) {
-                mealCount++;
-                for (Integer dishId : dishIds) {
-
-                    CustomMealPlanRecipes customMealPlanRecipes = new CustomMealPlanRecipes();
-                    customMealPlanRecipes.setCustomMealPlan(customMealPlan);
-                    customMealPlanRecipes.setRecipeId(dishId);
-                    customMealPlanRecipes.setMealType(mealType);
-                    customMealPlanRecipesList.add(customMealPlanRecipes);
-
-                    // Retrieve the recipe and add its calories to the total
-                    FoodRecipe foodRecipe = foodRecipeRepository.findById(dishId).get();
-                    totalCalories += foodRecipe.getCalories();
-
+                // Set the daily calories and description to the values from the previous day's CustomMealPlan, if it exists
+                LocalDate previousDay = currentDay.minusDays(1);
+                CustomMealPlan previousDayMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, previousDay);
+                if (previousDayMealPlan != null) {
+                    customMealPlan.setDailyCalories(previousDayMealPlan.getDailyCalories());
+                    customMealPlan.setDescription(previousDayMealPlan.getDescription());
+                } else {
+                    customMealPlan.setDailyCalories(customMealPlanInput.getDailyCalories());
+                    customMealPlan.setDescription(customMealPlan.getDescription());
                 }
+
+                customMealPlanRepository.save(customMealPlan);
             }
         }
-
-        customMealPlan.setMealCount(mealCount);
-        customMealPlan.setTotalCalories((int) totalCalories);
-        customMealPlanRepository.saveAndFlush(customMealPlan);
-        customMealPlanRecipesRepository.saveAllAndFlush(customMealPlanRecipesList);
-
     }
 
     @Override
@@ -275,14 +250,28 @@ public class MealPlanServiceImpl implements MealPlanService {
         LocalDate sevenDaysFromNow = today.plusDays(7);
         List<CustomMealPlan> customMealPlans = customMealPlanRepository.findAllByUserIdAndDateBetween(userId, today, sevenDaysFromNow);
 
-        // If no custom meal plans are found, create 7 empty plans
-        if (customMealPlans.isEmpty()) {
-            for (int i = 0; i < 7; i++) {
+        // If there are missing meal plans, create them
+        for (int i = 0; i < 7; i++) {
+            LocalDate currentDay = today.plusDays(i);
+            boolean exists = customMealPlans.stream().anyMatch(plan -> plan.getDate().equals(currentDay));
+            if (!exists) {
                 CustomMealPlan emptyPlan = new CustomMealPlan();
                 emptyPlan.setUserId(userId);
-                emptyPlan.setDate(today.plusDays(i));
-                emptyPlan.setDailyCalories(0);
-                emptyPlan.setDescription("No description");
+                emptyPlan.setDate(currentDay);
+
+                // Get the daily calories from the day before
+                LocalDate previousDay = currentDay.minusDays(1);
+                CustomMealPlan previousDayMealPlan = customMealPlanRepository.findByUserIdAndDate(userId, previousDay);
+                Integer dailyCalories = 0;
+                String description = "No description";
+                if (previousDayMealPlan != null && previousDayMealPlan.getDailyCalories() != null) {
+                    dailyCalories = previousDayMealPlan.getDailyCalories();
+                    description = previousDayMealPlan.getDescription();
+                }
+
+                // Set the daily calories to the value from the day before
+                emptyPlan.setDailyCalories(dailyCalories);
+                emptyPlan.setDescription(description);
                 emptyPlan.setMealCount(5);
                 customMealPlanRepository.save(emptyPlan);
                 customMealPlans.add(emptyPlan);
