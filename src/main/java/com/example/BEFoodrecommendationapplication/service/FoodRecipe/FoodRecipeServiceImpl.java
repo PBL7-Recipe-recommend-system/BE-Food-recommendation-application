@@ -13,7 +13,10 @@ import com.example.BEFoodrecommendationapplication.util.FoodRecipeSpecification;
 import com.example.BEFoodrecommendationapplication.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -22,7 +25,10 @@ import org.springframework.stereotype.Service;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,7 +46,7 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
 
     @Override
     @Cacheable("searchRecipes")
-    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, Pageable pageable, Integer userId) {
+    public Page<SearchResult> search(String name, String category, Integer rating, Integer timeRate, Integer minCalories, Integer maxCalories, Pageable pageable, Integer userId) {
         Specification<FoodRecipe> spec = Specification.where(null);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
@@ -59,6 +65,10 @@ public class FoodRecipeServiceImpl implements FoodRecipeService {
             spec = spec.and(FoodRecipeSpecification.ratingIs(rating));
         }
 
+        // Filter by calories
+        if (minCalories != null && maxCalories != null) {
+            spec = spec.and(FoodRecipeSpecification.caloriesBetween(minCalories, maxCalories));
+        }
 
         // Sort by timeRate
         if (timeRate != null) {

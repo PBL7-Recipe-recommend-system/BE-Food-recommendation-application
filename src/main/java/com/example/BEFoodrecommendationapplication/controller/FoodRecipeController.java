@@ -56,6 +56,8 @@ public class FoodRecipeController {
     public ResponseEntity<Response> search(@RequestParam(required = false) String name,
                                            @RequestParam(required = false) String category,
                                            @RequestParam(required = false) Integer rating,
+                                           @RequestParam(required = false) Integer minCalories,
+                                           @RequestParam(required = false) Integer maxCalories,
                                            @RequestParam(defaultValue = "1") Integer page,
                                            @RequestParam(defaultValue = "10") Integer size,
                                            @RequestParam(defaultValue = "1") Integer timeRate) {
@@ -64,7 +66,7 @@ public class FoodRecipeController {
             long startTime = System.nanoTime();
             System.out.println("Searching start time: " + startTime + " nanoseconds");
 
-            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate, PageRequest.of(page,size) , userId);
+            Page<SearchResult> listRecipes = foodRecipeService.search(name, category, rating, timeRate, minCalories, maxCalories, PageRequest.of(page, size), userId);
 
             long endTime = System.nanoTime();
             System.out.println("Searching end time: " + endTime + " nanoseconds");

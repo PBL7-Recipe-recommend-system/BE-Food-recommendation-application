@@ -17,6 +17,10 @@ public class FoodRecipeSpecification {
         return (root, query, cb) -> cb.like(cb.lower(root.get("recipeCategory")), "%" + category.toLowerCase() + "%");
     }
 
+    public static Specification<FoodRecipe> caloriesBetween(Integer minCalories, Integer maxCalories) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("calories"), minCalories, maxCalories);
+    }
+
     public static Specification<FoodRecipe> ratingIs(Integer rating) {
         return (root, query, cb) -> cb.equal(root.get("aggregatedRatings"), rating);
     }
