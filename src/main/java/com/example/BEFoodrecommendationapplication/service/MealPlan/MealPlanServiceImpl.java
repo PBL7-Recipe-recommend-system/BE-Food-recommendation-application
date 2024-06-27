@@ -353,14 +353,7 @@ public class MealPlanServiceImpl implements MealPlanService {
             totalProtein += foodRecipe.getProteinContent();
             totalFat += foodRecipe.getFatContent();
         }
-
-        for (CustomMealPlanRecipes recipe : customMealPlan.getCustomMealPlanRecipes()) {
-            FoodRecipe foodRecipe = foodRecipeRepository.findById(recipe.getRecipeId()).get();
-            totalCalories += foodRecipe.getCalories();
-            totalProtein += foodRecipe.getProteinContent();
-            totalFat += foodRecipe.getFatContent();
-        }
-
+        
         // Calculate percentages
         Integer totalCaloriesPercentage = totalCalories != 0 ? (int) ((totalCalories / customMealPlan.getDailyCalories()) * 100) : 0;
         Integer totalProteinPercentage = totalCalories != 0 ? (int) ((totalProtein * 4 / totalCalories) * 100) : 0; // Protein has 4 calories per gram
